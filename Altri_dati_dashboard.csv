@@ -1,101 +1,56 @@
 Mese,Nazione,Visitatori Nazione,Regione,Visitatori Regione,Città europee,Visitatori Città europee,Province Italiane,Visitatori Province italiane,Comuni CM di Bologna,Visitatori CM di Bologna
-Maggio,italia,35.120,,,,,,,,
-Maggio,usa,2.606,,,,,,,,
-Maggio,francia/france,1.456,,,,,,,,
-Maggio,germania/germany,1.243,,,,,,,,
-Maggio,regno unito/united kingdom,1.224,,,,,,,,
-Maggio,spagna/spain,830,,,,,,,,
-Maggio,austria,579,,,,,,,,
-Maggio,belgio/belgium,563,,,,,,,,
-Maggio,canada,563,,,,,,,,
-Maggio,polonia/poland,541,,,,,,,,
-Maggio,,,emilia-romagna,25.741,,,,,,
-Maggio,,,marche,1.873,,,,,,
-Maggio,,,veneto,1.554,,,,,,
-Maggio,,,lombardia,1.378,,,,,,
-Maggio,,,toscana,923,,,,,,
-Maggio,,,lazio,737,,,,,,
-Maggio,,,piemonte,589,,,,,,
-Maggio,,,puglia,334,,,,,,
-Maggio,,,sicilia,310,,,,,,
-Maggio,,,campania,257,,,,,,
-Maggio,,,,,london,574,,,,
-Maggio,,,,,paris,527,,,,
-Maggio,,,,,berlin,349,,,,
-Maggio,,,,,madrid,265,,,,
-Maggio,,,,,vienna,221,,,,
-Maggio,,,,,warsaw,179,,,,
-Maggio,,,,,athens,163,,,,
-Maggio,,,,,amsterdam,121,,,,
-Maggio,,,,,barcelona,121,,,,
-Maggio,,,,,brussels,100,,,,
-Maggio,,,,,,,bologna,18.228,,
-Maggio,,,,,,,modena,2.224,,
-Maggio,,,,,,,forlì-cesena,1.405,,
-Maggio,,,,,,,ferrara,1.083,,
-Maggio,,,,,,,ravenna,811,,
-Maggio,,,,,,,pesaro e urbino,744,,
-Maggio,,,,,,,roma,668,,
-Maggio,,,,,,,rimini,663,,
-Maggio,,,,,,,reggio nell'emilia,595,,
-Maggio,,,,,,,milano,583,,
-Maggio,,,,,,,,,bologna,14.206
-Maggio,,,,,,,,,casalecchio di reno,418
-Maggio,,,,,,,,,san lazzaro di savena,337
-Maggio,,,,,,,,,san giovanni in persiceto,278
-Maggio,,,,,,,,,castel maggiore,263
-Maggio,,,,,,,,,zola predosa,247
-Maggio,,,,,,,,,granarolo dell'emilia,236
-Maggio,,,,,,,,,imola,215
-Maggio,,,,,,,,,baricella,208
-Maggio,,,,,,,,,pianoro,182
-Aprile,italia,36.731,,,,,,,,
-Aprile,usa,2.378,,,,,,,,
-Aprile,francia/france,2.122,,,,,,,,
-Aprile,germania/germany,1.526,,,,,,,,
-Aprile,regno unito/united kingdom,1.166,,,,,,,,
-Aprile,spagna/spain,1.081,,,,,,,,
-Aprile,canada,961,,,,,,,,
-Aprile,austria,658,,,,,,,,
-Aprile,belgio/belgium,586,,,,,,,,
-Aprile,polonia/poland,554,,,,,,,,
-Aprile,,,emilia-romagna,24.780,,,,,,
-Aprile,,,lombardia,1.814,,,,,,
-Aprile,,,veneto,1.801,,,,,,
-Aprile,,,marche,1.558,,,,,,
-Aprile,,,lazio,1.358,,,,,,
-Aprile,,,toscana,1.190,,,,,,
-Aprile,,,piemonte,825,,,,,,
-Aprile,,,campania,548,,,,,,
-Aprile,,,sicilia,455,,,,,,
-Aprile,,,puglia,417,,,,,,
-Aprile,,,,,paris,541,,,,
-Aprile,,,,,london,407,,,,
-Aprile,,,,,berlin,345,,,,
-Aprile,,,,,madrid,309,,,,
-Aprile,,,,,vienna,293,,,,
-Aprile,,,,,athens,184,,,,
-Aprile,,,,,amsterdam,140,,,,
-Aprile,,,,,copenhagen,108,,,,
-Aprile,,,,,barcelona,104,,,,
-Aprile,,,,,warsaw,99,,,,
-Aprile,,,,,,,bologna,17.799,,
-Aprile,,,,,,,modena,1.452,,
-Aprile,,,,,,,rimini,1.350,,
-Aprile,,,,,,,ravenna,1.257,,
-Aprile,,,,,,,roma,1.127,,
-Aprile,,,,,,,forlì-cesena,932,,
-Aprile,,,,,,,milano,851,,
-Aprile,,,,,,,pesaro e urbino,682,,
-Aprile,,,,,,,reggio nell'emilia,607,,
-Aprile,,,,,,,firenze,598,,
-Aprile,,,,,,,,,bologna,14.541
-Aprile,,,,,,,,,casalecchio di reno,377
-Aprile,,,,,,,,,san lazzaro di savena,267
-Aprile,,,,,,,,,castel san pietro terme,216
-Aprile,,,,,,,,,anzola dell'emilia,176
-Aprile,,,,,,,,,imola,172
-Aprile,,,,,,,,,san giorgio di piano,168
-Aprile,,,,,,,,,san giovanni in persiceto,127
-Aprile,,,,,,,,,marzabotto,125
-Aprile,,,,,,,,,castel maggiore,117
+Gennaio,italia,28.035,emilia-romagna,19.729,madrid,281,bologna,17.386,bologna,13.264
+Gennaio,usa,975,lombardia,1.825,london,235,modena,765,casalecchio di reno,428
+Gennaio,spagna/spain,775,veneto,1.042,paris,191,milano,752,castel maggiore,357
+Gennaio,francia/france,421,toscana,939,barcelona,114,roma,683,zola predosa,300
+Gennaio,germania/germany,398,lazio,883,vienna,111,firenze,592,san giovanni in persiceto,297
+Gennaio,regno unito/united kingdom,396,piemonte,840,berlin,107,ferrara,558,san lazzaro di savena,273
+Gennaio,polonia/poland,336,marche,504,warsaw,102,torino,455,valsamoggia,273
+Gennaio,romania,273,campania,403,bucharest,96,ancona,321,castel san pietro terme,200
+Gennaio,china,209,sicilia,329,athens,89,venezia,290,san giorgio di piano,191
+Gennaio,canada,201,liguria,250,brussels,64,napoli,276,bentivoglio,167
+Gennaio,austria,200,puglia,245,,,verona,258,budrio,118
+Febbraio,italia,54.853,emilia-romagna,42.918,paris,373,bologna,38.178,bologna,31.671
+Febbraio,usa,890,lombardia,2.482,london,361,modena,1.428,san lazzaro di savena,665
+Febbraio,francia/france,803,veneto,1.676,madrid,215,milano,1.362,casalecchio di reno,556
+Febbraio,spagna/spain,710,toscana,1.444,vienna,172,roma,1.177,imola,362
+Febbraio,regno unito/united kingdom,615,lazio,1.356,berlin,159,ravenna,917,valsamoggia,331
+Febbraio,germania/germany,484,marche,989,athens,119,forlì-cesena,741,calderara di reno,293
+Febbraio,polonia/poland,428,piemonte,831,warsaw,106,firenze,740,sasso marconi,253
+Febbraio,austria,384,campania,647,bucharest,95,torino,584,ozzano dell''emilia,239
+Febbraio,romania,353,sicilia,369,barcelona,82,ferrara,578,san giorgio di piano,235
+Febbraio,belgio/belgium,256,puglia,346,amsterdam,72,pesaro e urbino,490,argelato,208
+Febbraio,canada,249,trentino-alto adige/südtirol,229,,,napoli,482,castel maggiore,194
+Marzo,italia,41.216,emilia-romagna,30.446,london,429,bologna,23.129,bologna,16.906
+Marzo,usa,1.381,lombardia,1.993,madrid,376,modena,2.345,casalecchio di reno,688
+Marzo,germania/germany,933,veneto,1.610,paris,286,ravenna,1.034,castel san pietro terme,386
+Marzo,spagna/spain,846,marche,1.154,berlin,231,parma,1.007,san lazzaro di savena,370
+Marzo,francia/france,827,lazio,979,san marino,146,rimini,993,valsamoggia,284
+Marzo,regno unito/united kingdom,798,piemonte,970,vienna,140,roma,877,medicina,246
+Marzo,belgio/belgium,396,toscana,841,athens,124,ferrara,800,granarolo dell''emilia,245
+Marzo,canada,379,campania,507,brussels,86,milano,690,ozzano dell''emilia,239
+Marzo,austria,375,sicilia,419,amsterdam,72,forlì-cesena,684,imola,217
+Marzo,polonia/poland,348,trentino-alto adige/südtirol,369,warsaw,70,torino,646,castel maggiore,201
+Marzo,china,292,friuli-venezia giulia,364,,,ancona,502,alto reno terme,178
+Aprile,italia,36.731,emilia-romagna,24.780,paris,541,bologna,17.799,bologna,14.541
+Aprile,usa,2.378,lombardia,1.814,london,407,modena,1.452,casalecchio di reno,377
+Aprile,francia/france,2.122,veneto,1.801,berlin,345,rimini,1.350,san lazzaro di savena,267
+Aprile,germania/germany,1.526,marche,1.558,madrid,309,ravenna,1.257,castel san pietro terme,216
+Aprile,regno unito/united kingdom,1.166,lazio,1.358,vienna,293,roma,1.127,anzola dell''emilia,176
+Aprile,spagna/spain,1.081,toscana,1.190,athens,184,forlì-cesena,932,imola,172
+Aprile,canada,961,piemonte,825,amsterdam,140,milano,851,san giorgio di piano,168
+Aprile,austria,658,campania,548,copenhagen,108,pesaro e urbino,682,san giovanni in persiceto,127
+Aprile,belgio/belgium,586,sicilia,455,barcelona,104,reggio nell'emilia,607,marzabotto,125
+Aprile,polonia/poland,554,puglia,417,warsaw,99,firenze,598,castel maggiore,117
+Aprile,olanda/netherlands,493,trentino-alto adige/südtirol,375,,,torino,496,medicina,92
+Maggio,italia,35.120,emilia-romagna,25.741,london,574,bologna,18.228,bologna,14.206
+Maggio,usa,2.606,marche,1.873,paris,527,modena,2.224,casalecchio di reno,418
+Maggio,francia/france,1.456,veneto,1.554,berlin,349,forlì-cesena,1.405,san lazzaro di savena,337
+Maggio,germania/germany,1.243,lombardia,1.378,madrid,265,ferrara,1.083,san giovanni in persiceto,278
+Maggio,regno unito/united kingdom,1.224,toscana,923,vienna,221,ravenna,811,castel maggiore,263
+Maggio,spagna/spain,830,lazio,737,warsaw,179,pesaro e urbino,744,zola predosa,247
+Maggio,austria,579,piemonte,589,athens,163,roma,668,granarolo dell''emilia,236
+Maggio,belgio/belgium,563,puglia,334,amsterdam,121,rimini,663,imola,215
+Maggio,canada,563,sicilia,310,barcelona,121,reggio nell''emilia,595,baricella,208
+Maggio,polonia/poland,541,campania,257,brussels,100,milano,583,pianoro,182
+Maggio,olanda/netherlands,471,abruzzo,242,,,firenze,517,castel san pietro terme,173
