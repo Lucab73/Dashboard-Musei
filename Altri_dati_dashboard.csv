@@ -12,7 +12,7 @@ Gennaio,canada,201,liguria,250,brussels,64,napoli,276,bentivoglio,167
 Gennaio,austria,200,puglia,245,copenhagen,53,verona,258,budrio,118
 Gennaio,belgio/belgium,187,friuli-venezia giulia,224,lisbon,48,brescia,253,imola,114
 Gennaio,olanda/netherlands,160,sardegna,147,valencia,46,ravenna,231,granarolo dell''emilia,100
-Gennaio,japan,138,trentino-alto adige/sÃ¼dtirol,132,amsterdam,45,reggio nell'emilia,219,castel guelfo di bologna,92
+Gennaio,japan,138,trentino-alto adige/sudtirol,132,amsterdam,45,reggio nell'emilia,219,castel guelfo di bologna,92
 Gennaio,grecia/greece,129,abruzzo,102,facaeni,37,forlì-cesena,199,calderara di reno,80
 Gennaio,svizzeraswitzerland,122,calabria,71,daganzo de arriba,32,genova,172,sala bolognese,77
 Gennaio,danimarca/denmark,113,umbria,70,dublin,24,bari,167,monzuno,68
@@ -839,7 +839,7 @@ Febbraio,polonia/poland,428,piemonte,831,warsaw,106,firenze,740,sasso marconi,25
 Febbraio,austria,384,campania,647,bucharest,95,torino,584,ozzano dell''emilia,239
 Febbraio,romania,353,sicilia,369,barcelona,82,ferrara,578,san giorgio di piano,235
 Febbraio,belgio/belgium,256,puglia,346,amsterdam,72,pesaro e urbino,490,argelato,208
-Febbraio,canada,249,trentino-alto adige/sÃ¼dtirol,229,brussels,57,napoli,482,castel maggiore,194
+Febbraio,canada,249,trentino-alto adige/sudtirol,229,brussels,57,napoli,482,castel maggiore,194
 Febbraio,grecia/greece,219,sardegna,203,lisbon,51,venezia,446,castenaso,194
 Febbraio,china,200,friuli-venezia giulia,179,mackenbach,50,verona,370,crevalcore,183
 Febbraio,olanda/netherlands,162,calabria,167,copenhagen,49,ancona,323,fontanelice,160
@@ -1880,7 +1880,7 @@ Marzo,regno unito/united kingdom,798,piemonte,970,vienna,140,roma,877,medicina,2
 Marzo,belgio/belgium,396,toscana,841,athens,124,ferrara,800,granarolo dell''emilia,245
 Marzo,canada,379,campania,507,brussels,86,milano,690,ozzano dell''emilia,239
 Marzo,austria,375,sicilia,419,amsterdam,72,forlì-cesena,684,imola,217
-Marzo,polonia/poland,348,trentino-alto adige/sÃ¼dtirol,369,warsaw,70,torino,646,castel maggiore,201
+Marzo,polonia/poland,348,trentino-alto adige/sudtirol,369,warsaw,70,torino,646,castel maggiore,201
 Marzo,china,292,friuli-venezia giulia,364,munich,67,ancona,502,alto reno terme,178
 Marzo,romania,276,puglia,291,bucharest,67,firenze,496,zola predosa,174
 Marzo,olanda/netherlands,210,sardegna,200,copenhagen,58,pesaro e urbino,445,san pietro in casale,142
@@ -3066,7 +3066,7 @@ Aprile,canada,961,piemonte,825,amsterdam,140,milano,851,san giorgio di piano,168
 Aprile,austria,658,campania,548,copenhagen,108,pesaro e urbino,682,san giovanni in persiceto,127
 Aprile,belgio/belgium,586,sicilia,455,barcelona,104,reggio nell'emilia,607,marzabotto,125
 Aprile,polonia/poland,554,puglia,417,warsaw,99,firenze,598,castel maggiore,117
-Aprile,olanda/netherlands,493,trentino-alto adige/sÃ¼dtirol,375,brussels,95,torino,496,medicina,92
+Aprile,olanda/netherlands,493,trentino-alto adige/sudtirol,375,brussels,95,torino,496,medicina,92
 Aprile,svizzeraswitzerland,379,sardegna,366,nantes,74,reggio nell''emilia,490,gaggio montano,85
 Aprile,china,378,abruzzo,276,abbaretz,64,verona,461,zola predosa,85
 Aprile,danimarca/denmark,338,friuli-venezia giulia,233,dublin,62,parma,440,castel di casio,82
@@ -4944,7 +4944,7 @@ Maggio,polonia/poland,541,campania,257,brussels,100,milano,583,pianoro,182
 Maggio,olanda/netherlands,471,abruzzo,242,copenhagen,84,firenze,517,castel san pietro terme,173
 Maggio,svizzeraswitzerland,317,sardegna,201,serravalle,74,ancona,491,crevalcore,72
 Maggio,grecia/greece,272,friuli-venezia giulia,178,dublin,64,fermo,481,borgo tossignano,67
-Maggio,china,269,trentino-alto adige/sÃ¼dtirol,147,rijeka,62,reggio nell'emilia,444,calderara di reno,62
+Maggio,china,269,trentino-alto adige/sudtirol,147,rijeka,62,reggio nell'emilia,444,calderara di reno,62
 Maggio,danimarca/denmark,236,liguria,132,bonn,59,torino,388,medicina,62
 Maggio,romania,230,umbria,93,prague,55,venezia,379,monterenzio,60
 Maggio,brazil,171,calabria,76,sofia,52,verona,370,galliera,52
