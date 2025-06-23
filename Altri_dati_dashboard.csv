@@ -13,7 +13,7 @@ Gennaio,austria,200,puglia,245,copenhagen,53,verona,258,budrio,118
 Gennaio,belgio/belgium,187,friuli-venezia giulia,224,lisbon,48,brescia,253,imola,114
 Gennaio,olanda/netherlands,160,sardegna,147,valencia,46,ravenna,231,granarolo dell''emilia,100
 Gennaio,japan,138,trentino-alto adige/sÃ¼dtirol,132,amsterdam,45,reggio nell'emilia,219,castel guelfo di bologna,92
-Gennaio,grecia/greece,129,abruzzo,102,facaeni,37,forlÃ¬-cesena,199,calderara di reno,80
+Gennaio,grecia/greece,129,abruzzo,102,facaeni,37,forlì-cesena,199,calderara di reno,80
 Gennaio,svizzeraswitzerland,122,calabria,71,daganzo de arriba,32,genova,172,sala bolognese,77
 Gennaio,danimarca/denmark,113,umbria,70,dublin,24,bari,167,monzuno,68
 Gennaio,portogallo/portugal,108,basilicata,41,zurich,24,varese,162,monte san pietro,58
@@ -834,7 +834,7 @@ Febbraio,usa,890,lombardia,2.482,london,361,modena,1.428,san lazzaro di savena,6
 Febbraio,francia/france,803,veneto,1.676,madrid,215,milano,1.362,casalecchio di reno,556
 Febbraio,spagna/spain,710,toscana,1.444,vienna,172,roma,1.177,imola,362
 Febbraio,regno unito/united kingdom,615,lazio,1.356,berlin,159,ravenna,917,valsamoggia,331
-Febbraio,germania/germany,484,marche,989,athens,119,forlÃ¬-cesena,741,calderara di reno,293
+Febbraio,germania/germany,484,marche,989,athens,119,forlì-cesena,741,calderara di reno,293
 Febbraio,polonia/poland,428,piemonte,831,warsaw,106,firenze,740,sasso marconi,253
 Febbraio,austria,384,campania,647,bucharest,95,torino,584,ozzano dell''emilia,239
 Febbraio,romania,353,sicilia,369,barcelona,82,ferrara,578,san giorgio di piano,235
@@ -1879,7 +1879,7 @@ Marzo,francia/france,827,lazio,979,san marino,146,rimini,993,valsamoggia,284
 Marzo,regno unito/united kingdom,798,piemonte,970,vienna,140,roma,877,medicina,246
 Marzo,belgio/belgium,396,toscana,841,athens,124,ferrara,800,granarolo dell''emilia,245
 Marzo,canada,379,campania,507,brussels,86,milano,690,ozzano dell''emilia,239
-Marzo,austria,375,sicilia,419,amsterdam,72,forlÃ¬-cesena,684,imola,217
+Marzo,austria,375,sicilia,419,amsterdam,72,forlì-cesena,684,imola,217
 Marzo,polonia/poland,348,trentino-alto adige/sÃ¼dtirol,369,warsaw,70,torino,646,castel maggiore,201
 Marzo,china,292,friuli-venezia giulia,364,munich,67,ancona,502,alto reno terme,178
 Marzo,romania,276,puglia,291,bucharest,67,firenze,496,zola predosa,174
@@ -3061,7 +3061,7 @@ Aprile,usa,2.378,lombardia,1.814,london,407,modena,1.452,casalecchio di reno,377
 Aprile,francia/france,2.122,veneto,1.801,berlin,345,rimini,1.350,san lazzaro di savena,267
 Aprile,germania/germany,1.526,marche,1.558,madrid,309,ravenna,1.257,castel san pietro terme,216
 Aprile,regno unito/united kingdom,1.166,lazio,1.358,vienna,293,roma,1.127,anzola dell''emilia,176
-Aprile,spagna/spain,1.081,toscana,1.190,athens,184,forlÃ¬-cesena,932,imola,172
+Aprile,spagna/spain,1.081,toscana,1.190,athens,184,forlì-cesena,932,imola,172
 Aprile,canada,961,piemonte,825,amsterdam,140,milano,851,san giorgio di piano,168
 Aprile,austria,658,campania,548,copenhagen,108,pesaro e urbino,682,san giovanni in persiceto,127
 Aprile,belgio/belgium,586,sicilia,455,barcelona,104,reggio nell'emilia,607,marzabotto,125
@@ -4933,7 +4933,7 @@ Aprile,,,,,balsta,1,,,,
 Aprile,,,,,luthern,1,,,,
 Maggio,italia,35.120,emilia-romagna,25.741,london,574,bologna,18.228,bologna,14.206
 Maggio,usa,2.606,marche,1.873,paris,527,modena,2.224,casalecchio di reno,418
-Maggio,francia/france,1.456,veneto,1.554,berlin,349,forlÃ¬-cesena,1.405,san lazzaro di savena,337
+Maggio,francia/france,1.456,veneto,1.554,berlin,349,forlì-cesena,1.405,san lazzaro di savena,337
 Maggio,germania/germany,1.243,lombardia,1.378,madrid,265,ferrara,1.083,san giovanni in persiceto,278
 Maggio,regno unito/united kingdom,1.224,toscana,923,vienna,221,ravenna,811,castel maggiore,263
 Maggio,spagna/spain,830,lazio,737,warsaw,179,pesaro e urbino,744,zola predosa,247
