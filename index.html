@@ -835,9 +835,10 @@ Chart.register(externalLabelsMainChartPlugin)
         };
         // --- CARICAMENTO DATI ALL'AVVIO (VERSIONE SEQUENZIALE) ---
         window.onload = function () {
-            const urlProvenienze = 'https://raw.githubusercontent.com/Lucab73/Dashboard-Musei/refs/heads/main/Provenienze_convertito.csv';
-            const urlAltriDati = 'https://raw.githubusercontent.com/Lucab73/Dashboard-Musei/refs/heads/main/Altri_dati_dashboard.csv'
-
+            //const urlProvenienze = 'https://raw.githubusercontent.com/Lucab73/Dashboard-Musei/refs/heads/main/Provenienze_convertito.csv';
+            //const urlAltriDati = 'https://raw.githubusercontent.com/Lucab73/Dashboard-Musei/refs/heads/main/Altri_dati_dashboard.csv'
+            const urlProvenienze = 'https://raw.githubusercontent.com/Lucab73/Dashboard-Musei/main/Provenienze_convertito.csv';
+            const urlAltriDati = 'https://raw.githubusercontent.com/Lucab73/Dashboard-Musei/main/Altri_dati_dashboard.csv'; 
             document.getElementById('status').textContent = '📥 Caricamento dati principali...';
             // 1. Carica il primo file
             fetch(urlProvenienze)
