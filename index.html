@@ -735,76 +735,96 @@
         Chart.register(ChartDataLabels);
 
        // Plugin per etichette esterne con riquadro e gestione collisione titolo
-        const multiLineExternalLabels = {
-            id: 'multiLineExternalLabels',
-            afterDatasetsDraw: function(chart) {
-                if (chart.canvas.id !== 'foreignersChart') return;
-                
-                const config = chart.options.plugins.multiLineExternalLabels;
-                if (!config || !config.grandTotal) return;
+        // Plugin per etichette esterne con riquadro e gestione collisione titolo E legenda
+const multiLineExternalLabels = {
+    id: 'multiLineExternalLabels',
+    afterDatasetsDraw: function(chart) {
+        if (chart.canvas.id !== 'foreignersChart') return;
+        
+        const config = chart.options.plugins.multiLineExternalLabels;
+        if (!config || !config.grandTotal) return;
 
-                const ctx = chart.ctx;
-                const meta = chart.getDatasetMeta(0);
-                const grandTotal = config.grandTotal;
-                const totalStr = chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+        const ctx = chart.ctx;
+        const meta = chart.getDatasetMeta(0);
+        const grandTotal = config.grandTotal;
+        const totalStr = chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
 
-                // --- LOGICA ANTI-COLLISIONE ---
-                // Ottieni la posizione inferiore del blocco del titolo + un margine
-                const safeZoneBottom = chart.titleBlock ? chart.titleBlock.bottom + 10 : 0;
+        // --- LOGICA ANTI-COLLISIONE MIGLIORATA ---
+        // Zona sicura superiore (sotto il titolo)
+        const safeZoneTop = chart.titleBlock ? chart.titleBlock.bottom + 10 : 0;
+        
+        // Zona sicura inferiore (sopra la legenda)
+        const legendTop = chart.legend?.top ?? (chart.height - 50);
+        const safeZoneBottom = legendTop - 10;
 
-                meta.data.forEach((element, index) => {
-                    const value = chart.data.datasets[0].data[index];
-                    if (value === 0) return;
+        meta.data.forEach((element, index) => {
+            const value = chart.data.datasets[0].data[index];
+            if (value === 0) return;
 
-                    const percStr = (value / totalStr * 100).toFixed(1);
-                    const percTot = (value / grandTotal * 100).toFixed(1);
-                    const line1 = `${percStr}% str.`;
-                    const line2 = `${percTot}% tot.`;
-                    
-                    const angle = element.startAngle + (element.endAngle - element.startAngle) / 2;
-                    const radius = element.outerRadius + 45; 
-                    const x = element.x + Math.cos(angle) * radius;
-                    let y = element.y + Math.sin(angle) * radius;
+            const percStr = (value / totalStr * 100).toFixed(1);
+            const percTot = (value / grandTotal * 100).toFixed(1);
+            const line1 = `${percStr}% str.`;
+            const line2 = `${percTot}% tot.`;
+            
+            const angle = element.startAngle + (element.endAngle - element.startAngle) / 2;
+            const radius = element.outerRadius + 45; 
+            const x = element.x + Math.cos(angle) * radius;
+            let y = element.y + Math.sin(angle) * radius;
 
-                    const fontSize = 13;
-                    const lineHeight = fontSize * 1.2;
-                    const boxHeight = (lineHeight * 2) + 4;
-                    const boxTop = y - boxHeight / 2;
+            const fontSize = 13;
+            const lineHeight = fontSize * 1.2;
+            const boxHeight = (lineHeight * 2) + 4;
+            const boxTop = y - boxHeight / 2;
+            const boxBottom = y + boxHeight / 2;
 
-                    // Se il bordo superiore del box si scontra con la zona del titolo...
-                    if (boxTop < safeZoneBottom) {
-                        // ...sposta l'intera etichetta appena sotto la zona sicura.
-                        y = safeZoneBottom + boxHeight / 2;
-                    }
-                    // --- FINE LOGICA ANTI-COLLISIONE ---
-
-                    ctx.save();
-                    ctx.font = `bold ${fontSize}px Arial`;
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-
-                    const width1 = ctx.measureText(line1).width;
-                    const width2 = ctx.measureText(line2).width;
-                    const boxWidth = Math.max(width1, width2) + 12;
-
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-                    ctx.fillRect(x - boxWidth / 2, y - boxHeight / 2, boxWidth, boxHeight);
-                    ctx.strokeStyle = 'rgba(128, 128, 128, 0.5)';
-                    ctx.lineWidth = 1;
-                    ctx.strokeRect(x - boxWidth / 2, y - boxHeight / 2, boxWidth, boxHeight);
-
-                    ctx.fillStyle = '#2c3e50';
-                    ctx.fillText(line1, x, y - (lineHeight / 2));
-                    ctx.fillText(line2, x, y + (lineHeight / 2));
-
-                    ctx.restore();
-                });
+            // 🔒 PROTEZIONE SUPERIORE (titolo)
+            if (boxTop < safeZoneTop) {
+                y = safeZoneTop + boxHeight / 2;
             }
-        };
+            
+            // 🔒 PROTEZIONE INFERIORE (legenda)
+            if (boxBottom > safeZoneBottom) {
+                y = safeZoneBottom - boxHeight / 2;
+            }
+            
+            // 🔒 VERIFICA FINALE: se dopo gli aggiustamenti l'etichetta è troppo compressa
+            const finalBoxTop = y - boxHeight / 2;
+            const finalBoxBottom = y + boxHeight / 2;
+            const availableSpace = safeZoneBottom - safeZoneTop;
+            
+            if (availableSpace < boxHeight || finalBoxTop < safeZoneTop || finalBoxBottom > safeZoneBottom) {
+                // Se non c'è abbastanza spazio, nascondi questa etichetta specifica
+                return;
+            }
+            // --- FINE LOGICA ANTI-COLLISIONE ---
+
+            ctx.save();
+            ctx.font = `bold ${fontSize}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            const width1 = ctx.measureText(line1).width;
+            const width2 = ctx.measureText(line2).width;
+            const boxWidth = Math.max(width1, width2) + 12;
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fillRect(x - boxWidth / 2, y - boxHeight / 2, boxWidth, boxHeight);
+            ctx.strokeStyle = 'rgba(128, 128, 128, 0.5)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x - boxWidth / 2, y - boxHeight / 2, boxWidth, boxHeight);
+
+            ctx.fillStyle = '#2c3e50';
+            ctx.fillText(line1, x, y - (lineHeight / 2));
+            ctx.fillText(line2, x, y + (lineHeight / 2));
+
+            ctx.restore();
+        });
+    }
+};
         Chart.register(multiLineExternalLabels);
         
-        // Plugin per etichette esterne per il mainChart (percentuale)
-        const externalLabelsMainChartPlugin = {
+        // Plugin per etichette esterne per il mainChart (percentuale) - VERSIONE MIGLIORATA
+const externalLabelsMainChartPlugin = {
     id: 'externalLabelsMainChart',
     afterDatasetsDraw(chart) {
         if (!chart.options.plugins.externalLabelsMainChart?.enabled) return;
@@ -814,10 +834,13 @@
         const meta = chart.getDatasetMeta(0);
         const total = dataset.data.reduce((a, b) => a + b, 0);
 
-        // Calcolo della zona sicura (sopra la legenda)
+        // 🔒 ZONA SICURA SUPERIORE (titolo)
+        const titleBottom = chart.titleBlock ? chart.titleBlock.bottom + 10 : 0;
+
+        // 🔒 ZONA SICURA INFERIORE (legenda)
         const canvasHeight = chart.height;
         const legendTop = chart.legend?.top ?? (canvasHeight - 50);
-        const safeZoneBottom = legendTop - 10;
+        const legendSafeZone = legendTop - 15; // Margine di sicurezza dalla legenda
 
         meta.data.forEach((element, index) => {
             const value = dataset.data[index];
@@ -837,9 +860,25 @@
             const boxWidth = textWidth + padding * 2;
             const boxHeight = fontSize + padding * 2;
 
-            // 🔒 Se il box toccherebbe la zona della legenda, lo risolleviamo
-            if ((y + boxHeight / 2) > safeZoneBottom) {
-                y = safeZoneBottom - boxHeight / 2;
+            // 🔒 ANTI-COLLISIONE SUPERIORE (titolo)
+            const boxTop = y - boxHeight / 2;
+            if (boxTop < titleBottom) {
+                y = titleBottom + boxHeight / 2;
+            }
+
+            // 🔒 ANTI-COLLISIONE INFERIORE (legenda) - NUOVA LOGICA
+            const boxBottom = y + boxHeight / 2;
+            if (boxBottom > legendSafeZone) {
+                y = legendSafeZone - boxHeight / 2;
+            }
+
+            // 🔒 VERIFICA FINALE: se dopo gli aggiustamenti il box è troppo schiacciato
+            const finalBoxTop = y - boxHeight / 2;
+            const finalBoxBottom = y + boxHeight / 2;
+            
+            // Se non c'è spazio sufficiente tra titolo e legenda, nascondi l'etichetta
+            if (finalBoxTop < titleBottom || finalBoxBottom > legendSafeZone) {
+                return; // Salta questa etichetta
             }
 
             // Disegna riquadro
