@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🏛️ Dashboard Settore Musei Civici Bologna</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <style>
+<style>
         * {
             margin: 0;
             padding: 0;
@@ -780,42 +780,54 @@
         const meta = chart.getDatasetMeta(0);
         const total = dataset.data.reduce((a, b) => a + b, 0);
 
+        // Calcolo della zona sicura (sopra la legenda)
+        const canvasHeight = chart.height;
+        const legendTop = chart.legend?.top ?? (canvasHeight - 50);
+        const safeZoneBottom = legendTop - 10;
+
         meta.data.forEach((element, index) => {
             const value = dataset.data[index];
             if (value === 0) return;
 
             const percentage = (value / total * 100).toFixed(1) + '%';
             const angle = element.startAngle + (element.endAngle - element.startAngle) / 2;
-            const radius = element.outerRadius + 30;
-
-            const x = element.x + Math.cos(angle) * radius;
-            const y = element.y + Math.sin(angle) * radius;
+            const radius = element.outerRadius + 35;
 
             const fontSize = 13;
             const padding = 6;
-            ctx.save();
-            ctx.font = `bold ${fontSize}px Arial`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
+
+            let x = element.x + Math.cos(angle) * radius;
+            let y = element.y + Math.sin(angle) * radius;
 
             const textWidth = ctx.measureText(percentage).width;
             const boxWidth = textWidth + padding * 2;
             const boxHeight = fontSize + padding * 2;
 
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+            // 🔒 Se il box toccherebbe la zona della legenda, lo risolleviamo
+            if ((y + boxHeight / 2) > safeZoneBottom) {
+                y = safeZoneBottom - boxHeight / 2;
+            }
+
+            // Disegna riquadro
+            ctx.save();
+            ctx.font = `bold ${fontSize}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
             ctx.fillRect(x - boxWidth / 2, y - boxHeight / 2, boxWidth, boxHeight);
 
             ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.lineWidth = 1;
             ctx.strokeRect(x - boxWidth / 2, y - boxHeight / 2, boxWidth, boxHeight);
 
             ctx.fillStyle = '#2c3e50';
             ctx.fillText(percentage, x, y);
-
             ctx.restore();
         });
     }
 };
-Chart.register(externalLabelsMainChartPlugin)
+Chart.register(externalLabelsMainChartPlugin);
 
         const colorPalette = {
             bologna: '#e74c3c', resto_italia: '#3498db', stranieri: '#2ecc71',
@@ -1379,74 +1391,76 @@ function populateComparisonDropdowns() {
         }
         
         // --- GRAFICI PRINCIPALI ---
-        function updateMainChart() {
-            const filtered = filterData();
-            const bologna = filtered.reduce((sum, row) => sum + (parseInt(row.Bologna) || 0), 0);
-            const restoItalia = filtered.reduce((sum, row) => sum + (parseInt(row.Resto_Italia) || 0), 0);
-            const stranieri = filtered.reduce((sum, row) => sum + (parseInt(row.Stranieri) || 0), 0);
-            const ctx = document.getElementById('mainChart').getContext('2d');
-            if (mainChart) mainChart.destroy();
-            mainChart = new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-        labels: ['Bologna', 'Resto Italia', 'Stranieri'],
-        datasets: [{
-            data: [bologna, restoItalia, stranieri],
-            backgroundColor: [
-                colorPalette.bologna,
-                colorPalette.resto_italia,
-                colorPalette.stranieri
-            ],
-            borderWidth: 3,
-            borderColor: '#fff'
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            title: {
-                display: true,
-                text: generateDynamicTitle('Distribuzione Provenienze Totali'),
-                font: { size: 24, weight: 'bold' },
-                color: 'blue',
-                padding: 40
-            },
-            legend: {
-                position: 'bottom',
-                labels: {
-                    font: { size: 16, weight: 'bold' },
-                    color: 'blue'
-                }
-            },
-            datalabels: {
-                formatter: (value) => value > 0 ? value.toLocaleString('it-IT') : '',
-                color: '#2c3e50',
-                font: {
-                    weight: 'bold',
-                    size: 16
+       function updateMainChart() {
+    const filtered = filterData();
+    const bologna = filtered.reduce((sum, row) => sum + (parseInt(row.Bologna) || 0), 0);
+    const restoItalia = filtered.reduce((sum, row) => sum + (parseInt(row.Resto_Italia) || 0), 0);
+    const stranieri = filtered.reduce((sum, row) => sum + (parseInt(row.Stranieri) || 0), 0);
+    
+    const ctx = document.getElementById('mainChart').getContext('2d');
+    if (mainChart) mainChart.destroy();
+    
+    mainChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Bologna', 'Resto Italia', 'Stranieri'],
+            datasets: [{
+                data: [bologna, restoItalia, stranieri],
+                backgroundColor: [
+                    colorPalette.bologna,
+                    colorPalette.resto_italia,
+                    colorPalette.stranieri
+                ],
+                borderWidth: 3,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: generateDynamicTitle('Distribuzione Provenienze Totali'),
+                    font: { size: 24, weight: 'bold' },
+                    color: 'blue',
+                    padding: 40
                 },
-                anchor: 'center',
-                align: 'center',
-                display: context => context.dataset.data[context.dataIndex] > 0
-            },
-            externalLabelsMainChart: {
-                enabled: true
-            },
-            tooltip: {
-                callbacks: {
-                    label: (c) => {
-                        const total = c.dataset.data.reduce((a, b) => a + b, 0);
-                        const perc = total > 0 ? (c.parsed / total * 100).toFixed(1) : 0;
-                        return `${c.label}: ${c.parsed.toLocaleString('it-IT')} (${perc}%)`;
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        font: { size: 16, weight: 'bold' },
+                        color: 'blue'
                     }
+                },
+                datalabels: {
+                    formatter: (value) => value > 0 ? value.toLocaleString('it-IT') : '',
+                    color: '#2c3e50',
+                    font: {
+                        weight: 'bold',
+                        size: 16
+                    },
+                    anchor: 'center',
+                    align: 'center',
+                    display: context => context.dataset.data[context.dataIndex] > 0
+                },
+                tooltip: {
+                    callbacks: {
+                        label: (c) => {
+                            const total = c.dataset.data.reduce((a, b) => a + b, 0);
+                            const perc = total > 0 ? (c.parsed / total * 100).toFixed(1) : 0;
+                            return `${c.label}: ${c.parsed.toLocaleString('it-IT')} (${perc}%)`;
+                        }
+                    }
+                },
+                externalLabelsMainChart: {
+                      enabled: true
                 }
             }
-        }
-    },
-    plugins: [ChartDataLabels, externalLabelsMainChartPlugin]
-});
-        }
+        },
+        plugins: [ChartDataLabels, externalLabelsMainChartPlugin]
+    });
+}
         function updateForeignersChart() {
             const filtered = filterData();
             const foreignData = {};
