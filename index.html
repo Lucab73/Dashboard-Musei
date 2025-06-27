@@ -526,30 +526,37 @@
   <div id="summaryTableContainer">
     <!-- Tabella generata dinamicamente -->
   </div>
-  <div class="controls" style="margin-top: 30px;">
-            <div class="control-group">
-                <label for="museoSelect">🏛️ Seleziona Museo</label>
-                <select id="museoSelect" onchange="updateCharts(); handleMuseumShowSelection('museo')">
-                    <option value="Tutti">Tutti</option>
-                </select>
-            </div>
-            <div class="control-group">
-                <label for="mostraSelect">🎨 Seleziona Mostra</label>
-                <select id="mostraSelect" onchange="updateCharts(); handleMuseumShowSelection('mostra')">
-                    <option value="Tutti">Tutti</option>
-                </select>
-            </div>
-            <div class="control-group">
-               <label for="annoSelect">📆 Seleziona Anno</label>
-               <select id="annoSelect" onchange="updateCharts();"></select>
-            </div> 
-            <div class="control-group">
-                <label for="meseSelect">📅 Seleziona Mese</label>
-                <select id="meseSelect" onchange="updateCharts()">
-                    <option value="Tutti">Tutti</option>
-                </select>
-            </div>
-        </div>
+  
+
+            <!-- RIGA SUPERIORE: SOLO ANNO -->
+<div class="controls">
+  <div class="control-group">
+    <label for="annoSelect">📆 Seleziona Anno</label>
+    <select id="annoSelect" onchange="onAnnoChange()"></select>
+  </div>
+</div>
+
+<!-- RIGA SOTTOSTANTE: Mese, Museo, Mostra -->
+<div class="controls">
+  <div class="control-group">
+    <label for="meseSelect">📅 Seleziona Mese</label>
+    <select id="meseSelect" onchange="updateCharts()">
+      <option value="Tutti">Tutti</option>
+    </select>
+  </div>
+  <div class="control-group">
+    <label for="museoSelect">🏛️ Seleziona Museo</label>
+    <select id="museoSelect" onchange="updateCharts(); handleMuseumShowSelection('museo')">
+      <option value="Tutti">Tutti</option>
+    </select>
+  </div>
+  <div class="control-group">
+    <label for="mostraSelect">🎨 Seleziona Mostra</label>
+    <select id="mostraSelect" onchange="updateCharts(); handleMuseumShowSelection('mostra')">
+      <option value="Tutti">Tutti</option>
+    </select>
+  </div>
+</div>
 </div>
 
         <div class="chart-container">
@@ -645,6 +652,33 @@
 </div>
     
     <script>
+
+        function onAnnoChange() {
+  const selectedAnno = document.getElementById('annoSelect').value;
+
+  // Filtra solo le mostre presenti per quell’anno
+  const mostreAnno = [...new Set(
+    rawData
+      .filter(row => row.Anno === selectedAnno && row.Museo.includes('"'))
+      .map(row => row.Museo)
+  )].sort();
+
+  // Pulisci e ripopola il menu delle mostre
+  const mostraSelect = document.getElementById('mostraSelect');
+  mostraSelect.innerHTML = '<option value="Tutti">Tutti</option>';
+  mostreAnno.forEach(mostra => {
+    const option = document.createElement('option');
+    option.value = mostra;
+    option.textContent = mostra;
+    mostraSelect.appendChild(option);
+  });
+
+  // Resetta la selezione della mostra
+  mostraSelect.value = 'Tutti';
+
+  // Aggiorna i grafici
+  updateCharts();
+}
         // --- FUNZIONE PER GESTIRE LE SCHEDE (TABS) ---
         function openTab(evt, tabName) {
             let i, tabcontent, tablinks;
@@ -1020,6 +1054,7 @@ function updateDropdowns() {
         annoSelect.value = anniPresenti[0];
         annoTabellaSelect.value = anniPresenti[0];
     }
+onAnnoChange()
 }
 
 function populateComparisonDropdowns() {
@@ -1359,36 +1394,50 @@ function populateComparisonDropdowns() {
         }
 
         function getPeriodText() {
-            const meseSelected = document.getElementById('meseSelect').value;
-            if (meseSelected !== 'Tutti') return meseSelected;
-            const filtered = filterData();
-            const mesiPresenti = [...new Set(filtered.map(row => row.Mese))];
-            if (mesiPresenti.length === 0) return '';
-            const mesiOrdine = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
-            const mesiOrdinati = mesiOrdine.filter(m => mesiPresenti.includes(m));
-            return mesiOrdinati.length === 1 ? mesiOrdinati[0] : `${mesiOrdinati[0]} - ${mesiOrdinati[mesiOrdinati.length - 1]}`;
-        }
+  const mese = document.getElementById('meseTabellaSelect').value;
+  const anno = document.getElementById('annoTabellaSelect').value;
+  if (mese !== 'Tutti') return `${mese} ${anno}`;
+  
+  const filtered = rawData.filter(row => row.Anno === anno);
+  const mesiPresenti = [...new Set(filtered.map(row => row.Mese))];
+  const mesiOrdine = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+  const mesiOrdinati = mesiOrdine.filter(m => mesiPresenti.includes(m));
+  return mesiOrdinati.length === 1
+    ? `${mesiOrdinati[0]} ${anno}`
+    : `${mesiOrdinati[0]} - ${mesiOrdinati[mesiOrdinati.length - 1]} ${anno}`;
+}
 
-        function updateKPIs() {
-            const filtered = filterData();
-            const total = filtered.reduce((sum, row) => sum + (parseInt(row.Totale_Visitatori) || 0), 0);
-            const foreigners = filtered.reduce((sum, row) => sum + (parseInt(row.Stranieri) || 0), 0);
-            const foreignerPercent = total > 0 ? (foreigners / total * 100).toFixed(1) : 0;
-            document.getElementById('totalVisitors').textContent = total.toLocaleString('it-IT');
-            document.getElementById('foreignerPercent').textContent = foreignerPercent + '%';
-            const periodText = getPeriodText();
-            const visitorsLabel = document.querySelector('.kpi-card.visitors .kpi-label');
-            const foreignersLabel = document.querySelector('.kpi-card.foreigners .kpi-label');
-            if (periodText) {
-                visitorsLabel.textContent = `Visitatori Totali Intervistati - ${periodText}`;
-                foreignersLabel.textContent = `% Visitatori Stranieri - ${periodText}`;
-            } else {
-                visitorsLabel.textContent = 'Visitatori Totali';
-                foreignersLabel.textContent = '% Visitatori Stranieri';
-            }
-            const nonSpecificato = filtered.reduce((sum, row) => sum + (parseInt(row.Continente_Non_Specificato) || 0), 0);
-            document.getElementById('note').textContent = `ℹ️ Interviste escluse per continente non specificato: ${nonSpecificato.toLocaleString('it-IT')}`;
-        }
+      function updateKPIs() {
+    // Cambia da filterData() a un filtro basato sui menu della tabella
+    const meseTabella = document.getElementById('meseTabellaSelect').value;
+    const annoTabella = document.getElementById('annoTabellaSelect').value;
+    
+    const filtered = rawData.filter(row => {
+        const matchAnno = row.Anno === annoTabella;
+        const matchMese = meseTabella === 'Tutti' || row.Mese === meseTabella;
+        return matchAnno && matchMese;
+    });
+    
+    const total = filtered.reduce((sum, row) => sum + (parseInt(row.Totale_Visitatori) || 0), 0);
+    const foreigners = filtered.reduce((sum, row) => sum + (parseInt(row.Stranieri) || 0), 0);
+    const foreignerPercent = total > 0 ? (foreigners / total * 100).toFixed(1) : 0;
+    document.getElementById('totalVisitors').textContent = total.toLocaleString('it-IT');
+    document.getElementById('foreignerPercent').textContent = foreignerPercent + '%';
+    
+    const periodText = getPeriodText();
+    const visitorsLabel = document.querySelector('.kpi-card.visitors .kpi-label');
+    const foreignersLabel = document.querySelector('.kpi-card.foreigners .kpi-label');
+    if (periodText) {
+        visitorsLabel.textContent = `Visitatori Totali Intervistati - ${periodText}`;
+        foreignersLabel.textContent = `% Visitatori Stranieri - ${periodText}`;
+    } else {
+        visitorsLabel.textContent = 'Visitatori Totali';
+        foreignersLabel.textContent = '% Visitatori Stranieri';
+    }
+    
+    const nonSpecificato = filtered.reduce((sum, row) => sum + (parseInt(row.Continente_Non_Specificato) || 0), 0);
+    document.getElementById('note').textContent = `ℹ️ Interviste escluse per continente non specificato (${getPeriodText()}): ${nonSpecificato.toLocaleString('it-IT')}`;
+}
         
         // --- GRAFICI PRINCIPALI ---
        function updateMainChart() {
@@ -1687,7 +1736,7 @@ const filtered = rawData.filter(row => {
   } else if (tipo === 'SoloMostre') {
     matchTipo = row.Museo.includes('"');
   }
-
+  updateKPIs();
   return matchAnno && matchMese && matchTipo;
 });
 
