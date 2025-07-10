@@ -24,7 +24,7 @@
 2025,Febbraio,"Mambo Collezione",8047,2288,834,206,1,18,75,0,59,11528,0,11528
 2025,Febbraio,"Museo Musica ""Carboni""",1982,1134,11,12,0,0,2,0,2,3143,0,3143
 2025,Febbraio,"MAMbo ""Facile Ironia""",9503,2524,400,132,1,20,22,0,35,12637,0,12637
-2025,Febbraio,"Villa delle Rose ""Carol Rama""",891,431,25,0,0,3,3,0,0,1353,0,1353
+2025,Febbraio,"Villa delle Rose_Carol Rama",891,431,25,0,0,3,3,0,0,1353,0,1353
 2025,Marzo,"Museo Musica",1745,783,227,133,44,12,23,2,22,2991,129,3120
 2025,Marzo,"Museo Archeologico",6016,8390,1310,295,3,26,144,6,78,16268,0,16268
 2025,Marzo,"Collezioni Comunali",1041,1930,1740,293,8,31,96,7,15,5161,0,5161
@@ -60,6 +60,17 @@
 2025,Maggio,"Casa Morandi",180,51,112,34,16,6,30,0,13,442,0,442
 2025,Maggio,"Mambo Collezione",3709,1275,1740,788,16,111,118,1,141,7899,0,7899
 2025,Maggio,"MAMbo ""Facile Ironia""",3056,968,1002,496,15,40,91,1,110,5779,0,5779
+2025,Giugno,"Museo Musica",516,226,357,303,31,22,13,0,15,1483,0,1483
+2025,Giugno,"Museo Archeologico",826,838,1595,398,3,86,188,35,171,4140,0,4140
+2025,Giugno,"Collezioni Comunali",752,1132,2188,564,26,40,168,0,123,4993,0,4993
+2025,Giugno,"Museo Medievale",551,424,653,433,13,12,69,2,194,2351,0,2351
+2025,Giugno,"Museo Bargellini",594,734,1093,304,45,78,77,0,79,3004,0,3004
+2025,Giugno,"Museo del Risorgimento",140,69,47,11,0,1,5,0,0,273,0,273
+2025,Giugno,"Museo del Patrimonio Industriale",358,65,210,21,0,0,9,0,0,663,0,663
+2025,Giugno,"Museo di Ustica",376,530,131,14,0,6,5,0,5,1067,0,1067
+2025,Giugno,"Casa Morandi",28,38,87,50,0,1,22,1,4,231,0,231
+2025,Giugno,"Mambo Collezione",1916,669,1174,584,7,71,88,2,176,4687,0,4687
+2025,Giugno,"MAMbo ""Facile Ironia""",1564,441,630,364,3,48,57,0,124,3231,0,3231
 2024,Gennaio,"Museo Musica",1361,654,237,85,0,7,32,0,15,2391,0,2391
 2024,Gennaio,"Museo Archeologico",421,368,371,135,2,20,67,0,11,1395,0,1395
 2024,Gennaio,"Collezioni Comunali",745,2456,718,200,11,46,59,0,48,4283,0,4283
