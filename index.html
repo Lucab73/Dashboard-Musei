@@ -1364,13 +1364,41 @@ function populateComparisonDropdowns() {
     };
 
     const config = chartConfigs[typeSelected];
+    
+    // Calcola il denominatore per le percentuali
+    const monthlyFiltered = (meseSelected === 'Tutti') ? altriDati : altriDati.filter(row => row.Mese === meseSelected);
+    
+    let denominator = 0;
+    let subtitleText = '';
+    
+    if (typeSelected === 'nazioni') {
+        // Totale generale (Italia inclusa)
+        denominator = monthlyFiltered.reduce((sum, row) => sum + (parseInt(row[config.valueCol]) || 0), 0);
+        subtitleText = '% sul totale generale (Italia inclusa)';
+    } else if (typeSelected === 'regioni' || typeSelected === 'province') {
+        // Totale italiani
+        denominator = monthlyFiltered
+            .filter(row => row['Nazione'] === 'italia')
+            .reduce((sum, row) => sum + (parseInt(row['Visitatori Nazione']) || 0), 0);
+        subtitleText = '% sul totale italiani';
+    } else if (typeSelected === 'cittaEuropee') {
+        // Totale città europee
+        denominator = monthlyFiltered.reduce((sum, row) => sum + (parseInt(row[config.valueCol]) || 0), 0);
+        subtitleText = '% sul totale visitatori da città europee';
+    } else if (typeSelected === 'comuniCm') {
+        // Totale comuni CM Bologna
+        denominator = monthlyFiltered.reduce((sum, row) => sum + (parseInt(row[config.valueCol]) || 0), 0);
+        subtitleText = '% sul totale comuni CM Bologna';
+    }
 
     // Prepara la configurazione per la funzione di disegno
     const chartConfig = {
         chartInstance: 'top10Chart',
         canvasId: 'top10ChartCanvas',
         meseOverride: meseSelected,
-        barColor: top10ChartColors[typeSelected], // <-- NUOVA RIGA: Aggiungiamo il colore!
+        barColor: top10ChartColors[typeSelected],
+        denominator: denominator,
+        subtitleText: subtitleText,
         ...config 
     };
 
@@ -1378,7 +1406,7 @@ function populateComparisonDropdowns() {
     updateBarChart(chartConfig);
     
     // Aggiorna il riquadro laterale
-    updateTop10SideTile(config, meseSelected);
+    updateTop10SideTile(config, meseSelected, denominator);
 }
 
         function handleMuseumShowSelection(changedSelect) {
@@ -1671,11 +1699,18 @@ function populateComparisonDropdowns() {
     }
 
     const sortedData = Object.entries(aggregatedData)
-        .sort(([, a], [, b]) => b - a)
-        .slice(0, 10);
-    
-    const labels = sortedData.map(item => item[0]);
-    const data = sortedData.map(item => item[1]);
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 10);
+
+const labels = sortedData.map(item => item[0]);
+const data = sortedData.map(item => item[1]);
+
+// Calcola percentuali
+const percentages = config.denominator > 0 
+    ? data.map(value => ((value / config.denominator) * 100).toFixed(1))
+    : data.map(() => '0.0');
+
+config.percentages = percentages;
 
     const baseColor = barColor || "#607d8b"; // <-- MODIFICATO: Usa il colore passato o un default
     const borderColor = darkenColor(baseColor, 40);
@@ -1683,10 +1718,10 @@ function populateComparisonDropdowns() {
     const ctx = document.getElementById(canvasId).getContext('2d');
     
     let chartTitle = `${baseTitle} - ${meseOverride}`;
-    if (excludeValue && excludedValueTotal > 0) {
-        let excludedLabel = excludeValue.charAt(0).toUpperCase() + excludeValue.slice(1);
-        chartTitle += ` (esclusa ${excludedLabel}: ${excludedValueTotal.toLocaleString('it-IT')})`;
-    }
+if (excludeValue && excludedValueTotal > 0) {
+    let excludedLabel = excludeValue.charAt(0).toUpperCase() + excludeValue.slice(1);
+    chartTitle += ` (esclusa ${excludedLabel}: ${excludedValueTotal.toLocaleString('it-IT')})`;
+}
 
     window[config.chartInstance] = new Chart(ctx, {
         type: 'bar',
@@ -1701,18 +1736,64 @@ function populateComparisonDropdowns() {
             }]
         },
         // ... le tue opzioni del grafico rimangono invariate ...
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            indexAxis: 'y',
-            layout: {
-                padding: { right: 50 }
-            },
-            plugins: {
-                title: { display: true, text: chartTitle, font: { size: 20, weight: 'bold' }, color: 'blue', padding: 20 },
-                legend: { display: false },
-                datalabels: { anchor: 'end', align: 'end', formatter: (value) => value.toLocaleString('it-IT'), color: '#333', font: { weight: 'bold' } }
-            },
+       options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    indexAxis: 'y',
+    layout: {
+        padding: { right: 80 }
+    },
+    plugins: {
+    // --- 1. TITOLO (Blu) ---
+    title: {
+        display: true,
+        text: chartTitle,
+        color: 'blue',
+        font: {
+            size: 20,
+            weight: 'bold'
+        },
+        padding: {
+            top: 10,
+            bottom: 5
+        }
+    },
+
+    // --- 2. SOTTOTITOLO (Grigio) ---
+    subtitle: {
+        display: true,
+        text: config.subtitleText || '',
+        color: '#666',
+        font: {
+            size: 16,
+            style: 'italic',
+            weight: 'normal'
+        },
+        padding: {
+            bottom: 20
+        }
+    },
+
+    // --- 3. LEGENDA (Disattivata come nel tuo codice originale) ---
+    legend: { 
+        display: false 
+    },
+
+    // --- 4. ETICHETTE DATI (Il tuo codice complesso) ---
+    datalabels: { 
+        anchor: 'end', 
+        align: 'end', 
+        formatter: (value, context) => {
+            const percentage = config.percentages ? config.percentages[context.dataIndex] : null;
+            if (percentage !== null && percentage !== undefined) {
+                return `${value.toLocaleString('it-IT')} (${percentage}%)`;
+            }
+            return value.toLocaleString('it-IT');
+        }, 
+        color: '#333', 
+        font: { weight: 'bold', size: 12 } 
+    }
+}, // <--- Qui si chiude "plugins"
             scales: {
                 x: {
                     title: { display: true, text: 'Numero di Visitatori', color: 'blue', font: {size: 16} },
@@ -1727,7 +1808,7 @@ function populateComparisonDropdowns() {
 }
         
         // --- FUNZIONE PER I RIQUADRI GEOGRAFICI ---
-       function updateTop10SideTile(config, meseSelected) {
+       function updateTop10SideTile(config, meseSelected, denominator) {
     const tileElement = document.getElementById('top10Tile');
     
     // Se non c'è un valore da escludere, nascondi il riquadro
@@ -1749,10 +1830,13 @@ function populateComparisonDropdowns() {
     };
 
     const tileValue = aggregate(monthlyFiltered, config.categoryCol, config.valueCol, config.excludeValue);
+    
+    // Calcola percentuale
+    const percentage = denominator > 0 ? ((tileValue / denominator) * 100).toFixed(1) : '0.0';
 
     // Aggiorna il contenuto e la classe del riquadro
     document.getElementById('top10TileValue').textContent = tileValue.toLocaleString('it-IT');
-    document.getElementById('top10TileLabel').textContent = config.tileLabel;
+    document.getElementById('top10TileLabel').innerHTML = `${config.tileLabel}<br>${percentage}% del totale`;
     
     // Applica la classe di stile corretta (es. 'italia', 'emilia-romagna', etc.)
     tileElement.className = 'local-tile ' + config.tileClass;
