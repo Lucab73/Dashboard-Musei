@@ -1,0 +1,1957 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏛️ Dashboard Settore Musei Civici Bologna</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+        
+        .header h1 {
+            font-size: 4rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+        
+        .header h2 {
+            font-size: 2.5rem;
+            margin-top: 40px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.6rem;
+            font-style: italic;
+        }
+        .percentage-cell.positive {
+            color: #2c7a7b; /* verde/teal scuro, neutro positivo */
+        }
+
+        .percentage-cell.negative {
+             color: #c53030; /* rosso */
+        }
+        .chart-note {
+            text-align: center;
+            font-style: italic;
+            color: #333;
+            margin-top: 10px; /* Sposta la didascalia 10px sotto il grafico */
+            padding-bottom: 10px;
+            font-size: 1.3rem;
+            background: rgba(255,255,255,0.7);
+            border-radius: 10px; /* Arrotonda tutti gli angoli */
+            padding-top: 10px;
+        }
+
+.summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    border-radius: 12px;
+    overflow: hidden;
+    background: white;
+    margin: 20px 0;
+}
+.summary-table thead {
+    background: #4a3fa5; /* colore piatto, scuro, accessibile */
+    color: white;
+}
+.summary-table thead th {
+    padding: 16px 12px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: none;
+}
+.summary-table thead th:first-child {
+    text-align: left;
+    border-top-left-radius: 12px;
+}
+.summary-table thead th:last-child {
+    border-top-right-radius: 12px;
+}
+.summary-table tbody tr {
+    transition: all 0.2s ease;
+}
+.summary-table tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+.summary-table tbody tr:hover {
+    background: rgba(102, 126, 234, 0.06);
+    transform: none;
+    box-shadow: none;
+}
+.summary-table tbody td {
+    padding: 14px 12px;
+    border: none;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+}
+.summary-table tbody td:first-child {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #1a252f;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    border-radius: 0 8px 8px 0; /* angoli arrotondati (opzionale) */
+}
+.summary-table .numeric-cell {
+    text-align: right;
+    font-family: 'SF Pro Display', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: #1a202c;
+    letter-spacing: 0.3px;
+}
+.summary-table .percentage-cell {
+    text-align: right;
+    font-family: 'SF Pro Display', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: 0.3px;
+}
+/* Righe speciali */
+.summary-table .total-row {
+    background: linear-gradient(135deg, rgba(52, 152, 219, 0.1) 0%, rgba(155, 89, 182, 0.1) 100%) !important;
+    font-weight: bold;
+    border-top: 2px solid #3498db;
+}
+.summary-table .total-row td {
+    padding: 16px 12px;
+    color: #2c3e50;
+    font-size: 1.05rem;
+}
+.summary-table .total-row td:first-child {
+    font-size: 1.15rem;
+    font-weight: 800;
+}
+.summary-table .total-row .numeric-cell,
+.summary-table .total-row .percentage-cell {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+.summary-table .percentage-row {
+    background: linear-gradient(135deg, rgba(46, 204, 113, 0.1) 0%, rgba(52, 152, 219, 0.1) 100%) !important;
+    font-weight: bold;
+    font-style: italic;
+}
+.summary-table .percentage-row td {
+    padding: 12px;
+    color: #27ae60;
+}
+.summary-table .percentage-row td:first-child {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+.summary-table .percentage-row .numeric-cell,
+.summary-table .percentage-row .percentage-cell {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #27ae60;
+}
+/* Contenitore tabella */
+.table-container {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    margin: 20px 0;
+    overflow-x: auto;
+}
+
+.table-title {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #000000 !important;  /* Forza il colore nero */
+    margin-bottom: 20px;
+    text-align: center;
+    background: none !important;  /* Rimuovi qualsiasi background */
+    -webkit-text-fill-color: #000000 !important;  /* Forza il colore anche per webkit */
+    
+}
+       
+        /* === INIZIO BLOCCO STILI TAB AGGIORNATO === */
+        /* Stili per le schede (Tabs) - NUOVA VERSIONE */
+        .tab-buttons {
+    display: flex;
+    justify-content: flex-start;
+    border-bottom: 2px solid #e0e0e0;
+    margin-bottom: 0;
+    padding-left: 15px;
+    background-color: #f8f9fa; /* Sfondo leggermente grigio per l'area delle tab */
+}
+
+.tab-buttons button {
+    border: 2px solid #e0e0e0;
+    border-bottom: none; /* Rimuove il bordo inferiore per l'effetto linguetta */
+    background: #ffffff; /* Sfondo bianco per le tab */
+    color: #666;
+    font-size: 1.4rem;
+    font-weight: 500;
+    padding: 12px 24px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-right: 4px; /* Spazio tra le tab */
+    border-radius: 8px 8px 0 0; /* Angoli arrotondati solo in alto */
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 -2px 4px rgba(0,0,0,0.1); /* Ombra sottile per dare profondità */
+    overflow: hidden;
+}
+.tab-buttons button::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 0%;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(255, 255, 255, 0.3);
+  transition: height 0.3s ease;
+  z-index: 0;
+}
+.tab-buttons button:hover::after {
+  height: 100%;
+}
+.tab-buttons button:hover {
+    background-color: #f0f4ff;
+    color: #667eea;
+    transform: translateY(-2px); /* Leggero sollevamento al hover */
+    box-shadow: 0 -4px 8px rgba(0,0,0,0.15);
+}
+
+.tab-buttons button.active {
+    background-color: #667eea; /* Sfondo colorato per la tab attiva */
+    color: white;
+    font-weight: 600;
+    border-color: #667eea;
+    z-index: 2;
+    transform: translateY(-1px); /* Solleva leggermente la tab attiva */
+    box-shadow: 0 -3px 6px rgba(102, 126, 234, 0.3);
+}
+
+.tab-buttons button.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: #667eea; /* Copre la linea di base sotto la tab attiva */
+}
+                
+        .tab-content {
+            padding: 30px;
+            border: 2px solid #e0e0e0; /* Bordo coerente con la linea delle tab */
+            border-top: none; /* Rimuovi il bordo superiore per un look "connesso" */
+            border-radius: 0 0 15px 15px;
+            background-color: white;
+        }
+        /* === FINE BLOCCO STILI TAB AGGIORNATO === */
+
+        .kpi-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            margin-top: 20px;
+        }
+        
+        .kpi-card {
+            flex: 1;
+            padding: 30px;
+            border-radius: 15px;
+            color: white;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .kpi-card.visitors {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .kpi-card.foreigners {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .kpi-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        .kpi-value {
+            font-size: 2.8rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .kpi-label {
+            font-size: 1.5rem;
+            opacity: 0.8;
+        }
+        
+        .controls {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    padding: 15px;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 20px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 200px;
+}
+        
+        .control-group label {
+            color: white;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .control-group select {
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: none;
+            font-size: 1rem;
+            background: white;
+        }
+        
+        .chart-container {
+            background: linear-gradient(135deg, rgba(236, 240, 241, 0.8) 0%, rgba(195, 207, 226, 0.8) 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 2px solid #ccc;
+        }
+        .chart-with-tile {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+        .chart-section {
+            flex: 1;
+            min-width: 0; 
+        }
+        
+        .local-tile {
+            min-width: 250px;
+            padding: 20px;
+            border-radius: 15px;
+            color: white;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            align-self: flex-start;
+            margin-top: 50px;
+        }
+        
+        .local-tile.italia {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+        }
+        
+        .local-tile.emilia-romagna {
+            background: linear-gradient(135deg, #3498db 0%, #5dade2 100%);
+        }
+        
+        .local-tile.bologna-provincia {
+            background: linear-gradient(135deg, #9b59b6 0%, #bb8fce 100%);
+        }
+        
+        .local-tile.bologna-comune {
+            background: linear-gradient(135deg, #e74c3c 0%, #ec7063 100%);
+        }
+        
+        .local-tile-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .local-tile-value {
+            font-size: 2.2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .local-tile-label {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        .chart-canvas {
+            height: 800px;
+            width: 100%;
+            max-height: 800px;
+        }
+
+        .chart-canvas-bar {
+            height: 500px;
+            width: 100%;
+        }
+        
+        .status {
+            text-align: center;
+            font-style: italic;
+            color: #2c3e50;
+            font-size: 1.4rem;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .note {
+            padding: 15px 20px;
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.1) 0%, rgba(155, 89, 182, 0.1) 100%);
+            border-left: 5px solid #667eea;
+            border-radius: 15px;
+            margin-top: 20px;
+            text-align: center;
+            font-style: italic;
+            font-size: 1.4rem;
+        }
+
+        /* === CONTRASTI DINAMICI TRA SEZIONI === */
+.chart-container:nth-of-type(odd) {
+  background: linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%) !important;
+}
+.chart-container:nth-of-type(even) {
+  background: linear-gradient(135deg, #eef2f7 0%, #dbe9ff 100%) !important;
+}
+
+/* === ANIMAZIONI === */
+.fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s ease;
+}
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* === INDICATORE CARICAMENTO ANIMATO === */
+#status.loading::after {
+  content: ' ⏳';
+  animation: dots 1s steps(3, end) infinite;
+}
+@keyframes dots {
+  0% { content: ' ⏳'; }
+  33% { content: ' ⏳.'; }
+  66% { content: ' ⏳..'; }
+  100% { content: ' ⏳...'; }
+}
+
+    </style>
+</head>
+<body>
+    <div class="header fade-in">
+        <h1>🏛️ Dashboard Settore Musei Civici Bologna</h1>
+        <p>Analisi delle provenienze dei visitatori dei musei bolognesi</p>
+    </div>
+    <div class="status loading" id="status">📡 Caricamento dati</div>
+
+    <!-- BOTTONI TAB AGGIORNATI CON ICONE -->
+    <div class="tab-buttons fade in">
+      <button class="tab-link active" onclick="openTab(event, 'Panoramica')">📊 Panoramica</button>
+      <button class="tab-link" onclick="openTab(event, 'Confronti')">🆚 Confronti</button> 
+      <button class="tab-link" onclick="openTab(event, 'Top10')">🏆 Top 10</button>
+    </div>
+
+    <div id="Panoramica" class="tab-content" style="display:block;">
+        <div class="kpi-container">
+            <div class="kpi-card visitors">
+                <div class="kpi-icon">👥</div>
+                <div class="kpi-value" id="totalVisitors">0</div>
+                <div class="kpi-label">Visitatori Totali intervistati</div>
+            </div>
+            <div class="kpi-card foreigners">
+                <div class="kpi-icon">🌍</div>
+                <div class="kpi-value" id="foreignerPercent">0.0%</div>
+                <div class="kpi-label">% Visitatori Stranieri</div>
+            </div>
+        </div>
+        
+        <div class="chart-container fade in">
+  <div class="controls" style="margin-top: 20px;">
+  <div class="control-group">
+    <label for="annoTabellaSelect" style="color: white; font-weight: bold;">📆 Seleziona Anno</label>
+    <select id="annoTabellaSelect" onchange="updateTable()"></select>
+  </div>
+  <div class="control-group">
+    <label for="meseTabellaSelect" style="color: white; font-weight: bold;">📅 Seleziona Mese</label>
+    <select id="meseTabellaSelect" onchange="updateTable()">
+      <option value="Tutti">Tutti</option>
+    </select>
+  </div>
+  <div class="control-group">
+    <label for="tipoTabellaSelect" style="color: white; font-weight: bold;">🏛️ Tipo</label>
+    <select id="tipoTabellaSelect" onchange="updateTable()">
+      <option value="Tutti">Tutti (Musei + Mostre)</option>
+      <option value="SoloMusei">Collezioni permanenti</option>
+      <option value="SoloMostre">Mostre</option>
+    </select>
+  </div>
+</div>
+  <div id="summaryTableContainer">
+    <!-- Tabella generata dinamicamente -->
+  </div>
+  
+
+            <!-- RIGA SUPERIORE: SOLO ANNO -->
+<div class="controls">
+  <div class="control-group">
+    <label for="annoSelect">📆 Seleziona Anno</label>
+    <select id="annoSelect" onchange="onAnnoChange()"></select>
+  </div>
+</div>
+
+<!-- RIGA SOTTOSTANTE: Mese, Museo, Mostra -->
+<div class="controls">
+  <div class="control-group">
+    <label for="meseSelect">📅 Seleziona Mese</label>
+    <select id="meseSelect" onchange="updateCharts()">
+      <option value="Tutti">Tutti</option>
+    </select>
+  </div>
+  <div class="control-group">
+    <label for="museoSelect">🏛️ Seleziona Museo</label>
+    <select id="museoSelect" onchange="updateCharts(); handleMuseumShowSelection('museo')">
+      <option value="Tutti">Tutti</option>
+    </select>
+  </div>
+  <div class="control-group">
+    <label for="mostraSelect">🎨 Seleziona Mostra</label>
+    <select id="mostraSelect" onchange="updateCharts(); handleMuseumShowSelection('mostra')">
+      <option value="Tutti">Tutti</option>
+    </select>
+  </div>
+</div>
+</div>
+
+        <div class="chart-container">
+            <canvas id="mainChart" class="chart-canvas"></canvas>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="foreignersChart" class="chart-canvas"></canvas>
+            <div id="foreignersChartNote" class="chart-note"></div>
+        </div>
+        
+        <div class="chart-container">
+            <canvas id="timeChart" class="chart-canvas"></canvas>
+        </div>
+        <div class="note fade in" id="note"></div>
+    </div>
+  
+    <div id="Confronti" class="tab-content" style="display:none;">
+  <div class="header">
+    <h2>📈 Confronti Annuali per Museo</h2>
+  </div>
+
+  <!-- 🎛️ FILTRI -->
+  <div class="controls fade in">
+    <div class="control-group">
+      <label for="annoBaseSelect">📆 Anno Base</label>
+      <select id="annoBaseSelect" onchange="syncConfrontoConBase(); updateAnnualComparison()"></select>
+    </div>
+    <div class="control-group">
+      <label for="annoConfrontoSelect">📆 Anno di Confronto</label>
+      <select id="annoConfrontoSelect" onchange="updateAnnualComparison()"></select>
+    </div>
+    <div class="control-group">
+      <label for="meseConfrontoSelect">📅 Mese</label>
+      <select id="meseConfrontoSelect" onchange="updateAnnualComparison()">
+        <option value="Tutti">Tutti</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label for="museoConfrontoSelect">🏛️ Museo</label>
+      <select id="museoConfrontoSelect" onchange="updateAnnualComparison()">
+        <option value="Tutti">Tutti</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- 📋 TABELLA COMPARATIVA -->
+  <div id="comparisonTableContainer"></div>
+
+  <!-- 📊 GRAFICO -->
+  <div class="chart-container">
+    <canvas id="comparisonChart" class="chart-canvas-bar"></canvas>
+  </div>
+</div>
+
+    <div id="Top10" class="tab-content" style="display:none;">
+    <div class="header">
+        <h2>📊 Classifiche TOP 10 mensili</h2>
+    </div>
+
+    <!-- Controlli unificati per questa scheda -->
+    <div class="controls">
+        <div class="control-group">
+            <label for="meseGeoSelect">📅 Seleziona Mese</label>
+            <select id="meseGeoSelect" onchange="updateGeographicCharts()"></select>
+        </div>
+        <div class="control-group">
+            <label for="top10TypeSelect">📈 Seleziona Classifica</label>
+            <select id="top10TypeSelect" onchange="updateGeographicCharts()">
+                <option value="nazioni">Top 10 Nazioni</option>
+                <option value="regioni">Top 10 Regioni Italiane</option>
+                <option value="cittaEuropee">Top 10 Città Europee</option>
+                <option value="province">Top 10 Province Italiane</option>
+                <option value="comuniCm">Top 10 Comuni della Città Metropolitana</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Container unico per il grafico e il riquadro laterale -->
+    <div class="chart-container">
+        <div class="chart-with-tile">
+            <div class="chart-section">
+                 <canvas id="top10ChartCanvas" class="chart-canvas-bar"></canvas>
+            </div>
+            <!-- Questo riquadro è ora dinamico e viene gestito da JavaScript -->
+            <div id="top10Tile" class="local-tile" style="display: none;">
+                <div class="local-tile-icon">🏛️</div>
+                <div class="local-tile-value" id="top10TileValue">0</div>
+                <div class="local-tile-label" id="top10TileLabel"></div>
+            </div>
+         </div>
+    </div>
+</div>
+    
+    <script>
+
+        function onAnnoChange() {
+  const selectedAnno = document.getElementById('annoSelect').value;
+
+  // Filtra solo le mostre presenti per quell’anno
+  const mostreAnno = [...new Set(
+    rawData
+      .filter(row => row.Anno === selectedAnno && row.Museo.includes('"'))
+      .map(row => row.Museo)
+  )].sort();
+
+  // Pulisci e ripopola il menu delle mostre
+  const mostraSelect = document.getElementById('mostraSelect');
+  mostraSelect.innerHTML = '<option value="Tutti">Tutti</option>';
+  mostreAnno.forEach(mostra => {
+    const option = document.createElement('option');
+    option.value = mostra;
+    option.textContent = mostra;
+    mostraSelect.appendChild(option);
+  });
+
+  // Resetta la selezione della mostra
+  mostraSelect.value = 'Tutti';
+
+  // Aggiorna i grafici
+  updateCharts();
+}
+        // --- FUNZIONE PER GESTIRE LE SCHEDE (TABS) ---
+        function openTab(evt, tabName) {
+            let i, tabcontent, tablinks;
+            
+            // Nascondi tutti i contenuti delle schede
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+
+            // Rimuovi la classe "active" da tutti i bottoni
+            tablinks = document.getElementsByClassName("tab-link");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+
+            // Mostra la scheda corrente e aggiungi la classe "active" al bottone
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+
+
+        // --- VARIABILI GLOBALI ---
+        let rawData = [];
+        let altriDati = []; // Nuovi dati
+        let mainChart = null;
+        let foreignersChart = null;
+        let timeChart = null;
+        // Inizializzazione esplicita delle variabili dei grafici geografici
+        window.top10Chart = null; // Una sola variabile per il grafico unificato
+
+        // Funzione per scurire un colore esadecimale
+        function darkenColor(hex, percent) {
+            let num = parseInt(hex.replace("#", ""), 16);
+            let r = (num >> 16) - percent;
+            let g = ((num >> 8) & 0x00FF) - percent;
+            let b = (num & 0x0000FF) - percent;
+            r = Math.max(0, r);
+            g = Math.max(0, g);
+            b = Math.max(0, b);
+            return `rgb(${r},${g},${b})`;
+        }
+
+        // Colori distintivi per ciascun grafico a barre
+        const barChartColors = {
+            nazioniChart: "#4caf50",        // verde
+            regioniChart: "#2196f3",        // blu
+            cittaEuropeeChart: "#ff9800",   // arancione
+            provinceChart: "#9c27b0",       // viola
+            comuniCmChart: "#f44336"        // rosso
+        };
+
+        // --- PLUGIN CHART.JS PERSONALIZZATI ---
+        Chart.register(ChartDataLabels);
+
+       // Plugin per etichette esterne con riquadro e gestione collisione titolo
+        // Plugin per etichette esterne con riquadro e gestione collisione titolo E legenda
+const multiLineExternalLabels = {
+    id: 'multiLineExternalLabels',
+    afterDatasetsDraw: function(chart) {
+        if (chart.canvas.id !== 'foreignersChart') return;
+        
+        const config = chart.options.plugins.multiLineExternalLabels;
+        if (!config || !config.grandTotal) return;
+
+        const ctx = chart.ctx;
+        const meta = chart.getDatasetMeta(0);
+        const grandTotal = config.grandTotal;
+        const totalStr = chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+
+        // --- LOGICA ANTI-COLLISIONE MIGLIORATA ---
+        // Zona sicura superiore (sotto il titolo)
+        const safeZoneTop = chart.titleBlock ? chart.titleBlock.bottom + 10 : 0;
+        
+        // Zona sicura inferiore (sopra la legenda)
+        const legendTop = chart.legend?.top ?? (chart.height - 50);
+        const safeZoneBottom = legendTop - 10;
+
+        meta.data.forEach((element, index) => {
+            const value = chart.data.datasets[0].data[index];
+            if (value === 0) return;
+
+            const percStr = (value / totalStr * 100).toFixed(1);
+            const percTot = (value / grandTotal * 100).toFixed(1);
+            const line1 = `${percStr}% str.`;
+            const line2 = `${percTot}% tot.`;
+            
+            const angle = element.startAngle + (element.endAngle - element.startAngle) / 2;
+            const radius = element.outerRadius + 45; 
+            const x = element.x + Math.cos(angle) * radius;
+            let y = element.y + Math.sin(angle) * radius;
+
+            const fontSize = 13;
+            const lineHeight = fontSize * 1.2;
+            const boxHeight = (lineHeight * 2) + 4;
+            const boxTop = y - boxHeight / 2;
+            const boxBottom = y + boxHeight / 2;
+
+            // 🔒 PROTEZIONE SUPERIORE (titolo)
+            if (boxTop < safeZoneTop) {
+                y = safeZoneTop + boxHeight / 2;
+            }
+            
+            // 🔒 PROTEZIONE INFERIORE (legenda)
+            if (boxBottom > safeZoneBottom) {
+                y = safeZoneBottom - boxHeight / 2;
+            }
+            
+            // 🔒 VERIFICA FINALE: se dopo gli aggiustamenti l'etichetta è troppo compressa
+            const finalBoxTop = y - boxHeight / 2;
+            const finalBoxBottom = y + boxHeight / 2;
+            const availableSpace = safeZoneBottom - safeZoneTop;
+            
+            if (availableSpace < boxHeight || finalBoxTop < safeZoneTop || finalBoxBottom > safeZoneBottom) {
+                // Se non c'è abbastanza spazio, nascondi questa etichetta specifica
+                return;
+            }
+            // --- FINE LOGICA ANTI-COLLISIONE ---
+
+            ctx.save();
+            ctx.font = `bold ${fontSize}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            const width1 = ctx.measureText(line1).width;
+            const width2 = ctx.measureText(line2).width;
+            const boxWidth = Math.max(width1, width2) + 12;
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fillRect(x - boxWidth / 2, y - boxHeight / 2, boxWidth, boxHeight);
+            ctx.strokeStyle = 'rgba(128, 128, 128, 0.5)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x - boxWidth / 2, y - boxHeight / 2, boxWidth, boxHeight);
+
+            ctx.fillStyle = '#2c3e50';
+            ctx.fillText(line1, x, y - (lineHeight / 2));
+            ctx.fillText(line2, x, y + (lineHeight / 2));
+
+            ctx.restore();
+        });
+    }
+};
+        Chart.register(multiLineExternalLabels);
+        
+        // Plugin per etichette esterne per il mainChart (percentuale) - VERSIONE MIGLIORATA
+const externalLabelsMainChartPlugin = {
+    id: 'externalLabelsMainChart',
+    afterDatasetsDraw(chart) {
+        if (!chart.options.plugins.externalLabelsMainChart?.enabled) return;
+
+        const ctx = chart.ctx;
+        const dataset = chart.data.datasets[0];
+        const meta = chart.getDatasetMeta(0);
+        const total = dataset.data.reduce((a, b) => a + b, 0);
+
+        // 🔒 ZONA SICURA SUPERIORE (titolo)
+        const titleBottom = chart.titleBlock ? chart.titleBlock.bottom + 10 : 0;
+
+        // 🔒 ZONA SICURA INFERIORE (legenda)
+        const canvasHeight = chart.height;
+        const legendTop = chart.legend?.top ?? (canvasHeight - 50);
+        const legendSafeZone = legendTop - 15; // Margine di sicurezza dalla legenda
+
+        meta.data.forEach((element, index) => {
+            const value = dataset.data[index];
+            if (value === 0) return;
+
+            const percentage = (value / total * 100).toFixed(1) + '%';
+            const angle = element.startAngle + (element.endAngle - element.startAngle) / 2;
+            const radius = element.outerRadius + 35;
+
+            const fontSize = 13;
+            const padding = 6;
+
+            let x = element.x + Math.cos(angle) * radius;
+            let y = element.y + Math.sin(angle) * radius;
+
+            const textWidth = ctx.measureText(percentage).width;
+            const boxWidth = textWidth + padding * 2;
+            const boxHeight = fontSize + padding * 2;
+
+            // 🔒 ANTI-COLLISIONE SUPERIORE (titolo)
+            const boxTop = y - boxHeight / 2;
+            if (boxTop < titleBottom) {
+                y = titleBottom + boxHeight / 2;
+            }
+
+            // 🔒 ANTI-COLLISIONE INFERIORE (legenda) - NUOVA LOGICA
+            const boxBottom = y + boxHeight / 2;
+            if (boxBottom > legendSafeZone) {
+                y = legendSafeZone - boxHeight / 2;
+            }
+
+            // 🔒 VERIFICA FINALE: se dopo gli aggiustamenti il box è troppo schiacciato
+            const finalBoxTop = y - boxHeight / 2;
+            const finalBoxBottom = y + boxHeight / 2;
+            
+            // Se non c'è spazio sufficiente tra titolo e legenda, nascondi l'etichetta
+            if (finalBoxTop < titleBottom || finalBoxBottom > legendSafeZone) {
+                return; // Salta questa etichetta
+            }
+
+            // Disegna riquadro
+            ctx.save();
+            ctx.font = `bold ${fontSize}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fillRect(x - boxWidth / 2, y - boxHeight / 2, boxWidth, boxHeight);
+
+            ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x - boxWidth / 2, y - boxHeight / 2, boxWidth, boxHeight);
+
+            ctx.fillStyle = '#2c3e50';
+            ctx.fillText(percentage, x, y);
+            ctx.restore();
+        });
+    }
+};
+Chart.register(externalLabelsMainChartPlugin);
+
+        const colorPalette = {
+            bologna: '#e74c3c', resto_italia: '#3498db', stranieri: '#2ecc71',
+            resto_europa: '#9b59b6', nord_america: '#3498db', centro_america: '#f39c12',
+            sud_america: '#27ae60', asia: '#e74c3c', africa: '#a0522d', oceania: '#ff6b81'
+        };
+        const areaLabels = {
+            'Resto_Europa': 'Resto Europa', 'Nord_America': 'Nord America', 'Centro_America': 'Centro America',
+            'Sud_America': 'Sud America', 'Asia': 'Asia', 'Africa': 'Africa', 'Oceania': 'Oceania'
+        };
+        const top10ChartColors = {
+            nazioni: '#2ecc71',         // Verde (come il tile Italia)
+            regioni: '#3498db',         // Blu (come il tile Emilia-Romagna)
+            cittaEuropee: '#f39c12',   // Arancione (colore distintivo)
+            province: '#9b59b6',       // Viola (come il tile Provincia Bologna)
+            comuniCm: '#e74c3c'        // Rosso (come il tile Bologna Comune)
+        };
+        // --- CARICAMENTO DATI ALL'AVVIO (VERSIONE SEQUENZIALE) ---
+        window.onload = function () {
+            //const urlProvenienze = 'https://raw.githubusercontent.com/Lucab73/Dashboard-Musei/refs/heads/main/Provenienze_convertito.csv';
+            //const urlAltriDati = 'https://raw.githubusercontent.com/Lucab73/Dashboard-Musei/refs/heads/main/Altri_dati_dashboard.csv'
+            const urlProvenienze = 'https://raw.githubusercontent.com/Lucab73/Dashboard-Musei/main/Provenienze_convertito.csv';
+            const urlAltriDati = 'https://raw.githubusercontent.com/Lucab73/Dashboard-Musei/main/Altri_dati_dashboard.csv'; 
+            document.getElementById('status').textContent = '📥 Caricamento dati principali...';
+            // 1. Carica il primo file
+            fetch(urlProvenienze)
+                .then(response => {
+                    if (!response.ok) throw new Error(`Errore HTTP nel caricamento del primo file: ${response.status}`);
+                    return response.text();
+                 })
+                .then(csvProvenienze => {
+                    // Esegui il parsing del primo file
+                    Papa.parse(csvProvenienze, {
+                        header: true, skipEmptyLines: true,
+                         complete: function (results) {
+                            rawData = results.data;
+                            rawData.forEach(row => {
+                                 const stranieri = Object.keys(areaLabels).reduce((sum, col) => sum + (parseInt(row[col]) || 0), 0);
+                                row.Stranieri = stranieri;
+                            });
+                             console.log("Dati principali caricati con successo.");
+
+                            // 2. Ora che il primo è completato, carica il secondo file
+                            document.getElementById('status').textContent = '📥 Caricamento dati geografici...';
+                            fetch(urlAltriDati)
+                                .then(response => {
+                                    if (!response.ok) throw new Error(`Errore HTTP nel caricamento del secondo file: ${response.status}`);
+                                     return response.text();
+                                })
+                                .then(csvAltriDati => {
+                                     console.log("CSV secondario scaricato, lunghezza:", csvAltriDati.length);
+                                    console.log("Prime 500 caratteri:", csvAltriDati.substring(0, 500));
+                                    
+                                    Papa.parse(csvAltriDati, {
+                                        encoding: "utf-8", 
+                                        header: true,
+                                        skipEmptyLines: true,
+                                         dynamicTyping: false,
+                                        delimiter: ',',
+                                         quoteChar: '"',
+                                        complete: function(results2) {
+                                            console.log("Risultati parsing secondo file:", results2);
+                                            if (results2.errors && results2.errors.length > 0) {
+                                                console.error("Errori di parsing:", results2.errors);
+                                            }
+                                            altriDati = results2.data;
+                                            // Pulisce i separatori di migliaia (es. 35.120 => 35120)
+                                            altriDati = altriDati.map(row => {
+                                                const cleanedRow = {};
+                                                for (let key in row) {
+                                                    let value = row[key];
+                                                    // Se è una stringa numerica con punto come separatore migliaia
+                                                    if (typeof value === 'string' && /^\d{1,3}(\.\d{3})*$/.test(value)) {
+                                                        cleanedRow[key] = parseInt(value.replace(/\./g, ''), 10);
+                                                    } else {
+                                                        cleanedRow[key] = value;
+                                                    }
+                                                }
+                                                return cleanedRow;
+                                            });
+                                            console.log("Dati geografici caricati con successo:", altriDati.length, "righe");
+                                            console.log("Esempio prima riga:", altriDati[0]);
+                                            // 3. Entrambi i file sono pronti, inizializza l'intera dashboard
+setTimeout(() => {
+  document.querySelectorAll('.fade-in').forEach(el => {
+    el.classList.add('visible');
+  });
+}, 300);
+
+document.getElementById('status').classList.remove('loading');
+document.getElementById('status').textContent = `✅ Dati caricati (${rawData.length} + ${altriDati.length} righe)`;
+
+// Imposta la didascalia statica per il grafico degli stranieri
+document.getElementById('foreignersChartNote').innerHTML = 
+    `* <strong>% str.</strong>: % sul totale stranieri  |  <strong>% tot.</strong>: % sul totale generale`;
+
+// Popola tutti i menu a tendina della dashboard
+updateDropdowns();
+populateComparisonDropdowns();
+
+// Aggiorna tutti i componenti visivi con i dati iniziali
+updateTable();
+updateCharts(); // Aggiorna KPI, grafici a torta e linea
+
+// Esegui il primo aggiornamento per la nuova scheda "Top 10" unificata
+if (document.getElementById('meseGeoSelect').value) {
+    updateGeographicCharts(); 
+}
+
+                                        },
+                                        error: (err) => {
+                                            document.getElementById('status').textContent = '❌ Errore nel parsing del secondo file CSV.';
+                                            console.error("Errore parsing secondo file:", err);
+                                        }
+                                    });
+                                })
+                                .catch(error => {
+                                    document.getElementById('status').textContent = `❌ Errore nel download del secondo file CSV: ${error.message}`;
+                                    console.error("Errore download secondo file:", error);
+                                });
+                        },
+                        error: (err) => {
+                            document.getElementById('status').textContent = '❌ Errore nel parsing del primo file CSV.';
+                            console.error("Errore parsing primo file:", err);
+                        }
+                    });
+                })
+                .catch(error => {
+                    document.getElementById('status').textContent = `❌ Errore nel download del primo file CSV: ${error.message}`;
+                    console.error("Errore download primo file:", error);
+                });
+        }; 
+        
+        // --- FUNZIONI DI AGGIORNAMENTO DINAMICO ---
+        
+function updateDropdowns() {
+    const allMuseumsAndShows = [...new Set(rawData.map(row => row.Museo))].sort();
+    const musei = allMuseumsAndShows.filter(name => (name.match(/"/g) || []).length < 2);
+    const mostre = allMuseumsAndShows.filter(name => (name.match(/"/g) || []).length >= 2);
+
+    const museoSelect = document.getElementById('museoSelect');
+    const mostraSelect = document.getElementById('mostraSelect');
+    const meseSelect = document.getElementById('meseSelect');
+    const meseTabellaSelect = document.getElementById('meseTabellaSelect');
+    const meseGeoSelect = document.getElementById('meseGeoSelect');
+
+    museoSelect.innerHTML = `
+           <option value="Tutti">Tutti</option>
+               <option value="SoloMusei">Tutti (mostre escluse)</option>
+    `;
+    mostraSelect.innerHTML = '<option value="Tutti">Tutti</option>';
+    meseSelect.innerHTML = '<option value="Tutti">Tutti</option>';
+    meseTabellaSelect.innerHTML = '<option value="Tutti">Tutti</option>';
+    meseGeoSelect.innerHTML = '<option value="Tutti">Tutti</option>';
+
+    musei.forEach(museo => { 
+        museoSelect.innerHTML += `<option value="${museo}">${museo}</option>`; 
+    });
+
+    mostre.forEach(mostra => { 
+        const option = document.createElement('option');
+        option.value = mostra;
+        option.textContent = mostra;
+        mostraSelect.appendChild(option);
+    });
+
+    const mesiOrdine = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+    const mesiPresentiNeiDati = [...new Set(rawData.map(row => row.Mese))];
+    const mesi = mesiOrdine.filter(m => mesiPresentiNeiDati.includes(m));
+
+    mesi.forEach(mese => {
+        meseSelect.innerHTML += `<option value="${mese}">${mese}</option>`;
+        meseTabellaSelect.innerHTML += `<option value="${mese}">${mese}</option>`;
+        meseGeoSelect.innerHTML += `<option value="${mese}">${mese}</option>`;
+    });
+
+    // Aggiunta: selezione degli anni
+    const anniPresenti = [...new Set(rawData.map(r => r.Anno))].filter(a => a).sort((a, b) => b - a); // Ordine decrescente
+    const annoSelect = document.getElementById('annoSelect');
+    const annoTabellaSelect = document.getElementById('annoTabellaSelect');
+    annoSelect.innerHTML = '';
+    annoTabellaSelect.innerHTML = '';
+
+    anniPresenti.forEach(anno => {
+        annoSelect.innerHTML += `<option value="${anno}">${anno}</option>`;
+        annoTabellaSelect.innerHTML += `<option value="${anno}">${anno}</option>`;
+    });
+
+    if (anniPresenti.length > 0) {
+        annoSelect.value = anniPresenti[0];
+        annoTabellaSelect.value = anniPresenti[0];
+    }
+onAnnoChange()
+}
+
+function populateComparisonDropdowns() {
+  const anni = [...new Set(rawData.map(r => r.Anno))].sort((a, b) => b - a);
+  const mesiOrdine = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+  const musei = [...new Set(rawData.map(r => r.Museo))].filter(m => !m.includes('"')).sort();
+
+  const baseSel = document.getElementById('annoBaseSelect');
+  const confSel = document.getElementById('annoConfrontoSelect');
+  const meseSel = document.getElementById('meseConfrontoSelect');
+  const museoSel = document.getElementById('museoConfrontoSelect');
+
+  // Pulisce i menu
+  baseSel.innerHTML = '';
+  confSel.innerHTML = '';
+
+  anni.forEach(anno => {
+    baseSel.innerHTML += `<option value="${anno}">${anno}</option>`;
+    confSel.innerHTML += `<option value="${anno}">${anno}</option>`;
+  });
+
+  // Imposta default: anno base = più recente, confronto = anno precedente
+  if (anni.length > 0) {
+    baseSel.value = anni[0]; // es. 2025
+
+    const annoPrecedente = anni.find(a => parseInt(a) === parseInt(anni[0]) - 1);
+    if (annoPrecedente) {
+      confSel.value = annoPrecedente; // es. 2024
+    } else {
+      const alternativo = anni.find(a => a !== anni[0]);
+      if (alternativo) confSel.value = alternativo;
+    }
+    syncConfrontoConBase()
+  }
+
+  // Popola mesi e musei
+  mesiOrdine.forEach(m => meseSel.innerHTML += `<option value="${m}">${m}</option>`);
+  musei.forEach(m => museoSel.innerHTML += `<option value="${m}">${m}</option>`);
+
+  //Chiamata finale: aggiorna tabella e grafico appena i menu sono popolati
+  updateAnnualComparison();
+}
+
+  function updateAnnualComparison() {
+    const annoBase = document.getElementById('annoBaseSelect').value;
+    const annoComp = document.getElementById('annoConfrontoSelect').value;
+    const mese = document.getElementById('meseConfrontoSelect').value;
+    const museo = document.getElementById('museoConfrontoSelect').value;
+    
+
+    if (annoBase === annoComp) return alert("Scegli due anni diversi per il confronto.");
+
+    const filtrati = rawData.filter(r => {
+      if (r.Anno !== annoBase && r.Anno !== annoComp) return false;
+      if (mese !== 'Tutti' && r.Mese !== mese) return false;
+      if (museo !== 'Tutti' && r.Museo !== museo) return false;
+      if (r.Museo.includes('"')) return false; // esclude mostre
+      return true;
+    });
+
+    const aggregati = {};
+    filtrati.forEach(r => {
+      const nome = r.Museo;
+      const anno = r.Anno;
+      const tot = parseInt(r.Totale_Visitatori) || 0;
+      if (!aggregati[nome]) aggregati[nome] = { [annoBase]: 0, [annoComp]: 0 };
+      aggregati[nome][anno] += tot;
+    });
+
+    const finali = [];
+    for (const museo in aggregati) {
+      const valBase = aggregati[museo][annoBase];
+      const valComp = aggregati[museo][annoComp];
+
+      if (valBase === 0 && valComp === 0) continue;
+      
+      const diff = valBase - valComp;
+      const perc = valComp > 0 ? ((diff / valComp) * 100).toFixed(1) : '—';
+      
+      finali.push({ museo, base: valBase, comp: valComp, diff, perc });
+    }
+
+    // Aggiorna tabella
+    let html = `<table class="summary-table"><thead><tr><th>Museo</th><th>${annoBase} (Base)</th><th>${annoComp} (Confronto)</th><th>Δ</th><th>Δ%</th></tr></thead><tbody>`;
+    finali.sort((a, b) => {
+        if (a.perc === '—') return 1;
+        if (b.perc === '—') return -1;
+        return parseFloat(b.perc) - parseFloat(a.perc);
+    });    
+    finali.forEach(r => {
+      html += `<tr>
+  <td>${r.museo}</td>
+  <td class="numeric-cell">${r.base.toLocaleString('it-IT')}</td>
+  <td class="numeric-cell">${r.comp.toLocaleString('it-IT')}</td>
+  <td class="numeric-cell">${(r.diff >= 0 ? '+' : '') + r.diff.toLocaleString('it-IT')}</td>
+  <td class="${r.perc === '—' ? '' : r.perc >= 0 ? 'percentage-cell positive' : 'percentage-cell negative'}">
+    ${r.perc !== '—' ? (r.perc > 0 ? '▲ +' : '▼ ') + r.perc + '%' : '—'}
+  </td>
+</tr>`;
+    });
+    html += '</tbody></table>';
+    document.getElementById('comparisonTableContainer').innerHTML = html;
+
+    // Aggiorna grafico
+    const labels = finali.map(r => r.museo);
+    const dataBase = finali.map(r => r.base);
+    const dataComp = finali.map(r => r.comp);
+
+    if (window.comparisonChart instanceof Chart) {
+      window.comparisonChart.destroy();
+    }
+    const ctx = document.getElementById('comparisonChart').getContext('2d');
+    window.comparisonChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: `Visitatori ${annoBase}`,
+            data: dataBase,
+            backgroundColor: 'rgba(54, 162, 235, 0.7)', // blu vivo
+            borderRadius: 6 
+          },
+          {
+            label: `Visitatori ${annoComp}`,
+            data: dataComp,
+            backgroundColor: 'rgba(255, 99, 132, 0.7)', // rosso chiaro
+            borderRadius: 6
+          }
+        ]
+      },
+       options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    layout: {
+      padding: { top: 30 }
+    },
+    indexAxis: 'y',
+    plugins: {
+      title: {
+        display: true,
+        text: `Confronto ${annoBase} vs ${annoComp} – ${document.getElementById('museoConfrontoSelect').selectedOptions[0].text}`,
+        font: {
+          size: 24,
+          weight: 'bold'
+        },
+        color: 'blue',
+        padding: {
+          top: 10,
+          bottom: 20
+        }
+      },
+      datalabels: {
+  color: '#000', // 🔹 fisso per tutti
+  anchor: 'end',
+  align: ctx => ctx.dataset.data[ctx.dataIndex] > 4000 ? 'center' : 'end',
+  offset: ctx => ctx.dataset.data[ctx.dataIndex] > 4000 ? 0 : 10,
+  clamp: true,
+  clip: false,
+  font: {
+    weight: 'bold',
+    size: 12
+  },
+  formatter: value => value.toLocaleString('it-IT')
+},
+      legend: {
+        position: 'bottom',
+        labels: {
+          color: '#000',
+          font: {
+            size: 14,
+            weight: 'bold'
+          }
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: ctx => `${ctx.dataset.label}: ${ctx.raw.toLocaleString('it-IT')}`
+        }
+      }
+    },
+    scales: {
+      x: {
+        ticks: {
+          color: '#000',
+          font: {
+            size: 13,
+            weight: 'bold'
+          },
+          callback: v => v.toLocaleString('it-IT')
+        }
+      },
+      y: {
+        ticks: {
+          color: '#000',
+          font: {
+            size: 13,
+            weight: 'bold'
+          }
+        }
+      }
+    }
+  },
+  plugins: [ChartDataLabels]
+});
+}
+  function syncConfrontoConBase() {
+  const baseSel = document.getElementById('annoBaseSelect');
+  const confSel = document.getElementById('annoConfrontoSelect');
+  const baseVal = parseInt(baseSel.value);
+
+  // 🔒 Disabilita l'opzione uguale all'anno base nel menu di confronto
+  [...confSel.options].forEach(opt => {
+    if (parseInt(opt.value) === baseVal) {
+      opt.disabled = true;
+    } else {
+      opt.disabled = false;
+    }
+  });
+
+  // 🎯 Cerca l'anno precedente disponibile come confronto
+  const confrontoTarget = baseVal - 1;
+  const match = [...confSel.options].find(opt =>
+    parseInt(opt.value) === confrontoTarget && !opt.disabled
+  );
+
+  if (match) {
+    confSel.value = match.value;
+  } else {
+    // Se non trovato, scegli il primo anno diverso dal base
+    const fallback = [...confSel.options].find(opt => !opt.disabled);
+    if (fallback) confSel.value = fallback.value;
+  }
+}
+        function updateGeographicCharts() {
+    if (!altriDati.length) return;
+
+    const meseSelected = document.getElementById('meseGeoSelect').value;
+    const typeSelected = document.getElementById('top10TypeSelect').value;
+    if (!meseSelected) return;
+
+    const chartConfigs = {
+        'nazioni': {
+            categoryCol: 'Nazione', valueCol: 'Visitatori Nazione',
+            baseTitle: 'Top 10 Nazioni di provenienza',
+            excludeValue: 'italia', tileLabel: 'Italia', tileClass: 'italia'
+        },
+        'regioni': {
+            categoryCol: 'Regione', valueCol: 'Visitatori Regione',
+            baseTitle: 'Top 10 Regioni Italiane di provenienza',
+            excludeValue: 'emilia-romagna', tileLabel: 'Emilia-Romagna', tileClass: 'emilia-romagna'
+        },
+        'cittaEuropee': {
+            categoryCol: 'Città europee', valueCol: 'Visitatori Città europee',
+            baseTitle: 'Top 10 Città Europee di provenienza',
+            excludeValue: null
+        },
+        'province': {
+            categoryCol: 'Province Italiane', valueCol: 'Visitatori Province italiane',
+            baseTitle: 'Top 10 Province Italiane di provenienza',
+            excludeValue: 'bologna', tileLabel: 'Provincia di Bologna', tileClass: 'bologna-provincia'
+        },
+        'comuniCm': {
+            categoryCol: 'Comuni CM di Bologna', valueCol: 'Visitatori CM di Bologna',
+            baseTitle: 'Top 10 Comuni della CM di Bologna',
+            excludeValue: 'bologna', tileLabel: 'Bologna', tileClass: 'bologna-comune'
+        }
+    };
+
+    const config = chartConfigs[typeSelected];
+    
+    // Calcola il denominatore per le percentuali
+    const monthlyFiltered = (meseSelected === 'Tutti') ? altriDati : altriDati.filter(row => row.Mese === meseSelected);
+    
+    let denominator = 0;
+    let subtitleText = '';
+    
+    if (typeSelected === 'nazioni') {
+        // Totale generale (Italia inclusa)
+        denominator = monthlyFiltered.reduce((sum, row) => sum + (parseInt(row[config.valueCol]) || 0), 0);
+        subtitleText = '% sul totale generale (Italia inclusa)';
+    } else if (typeSelected === 'regioni' || typeSelected === 'province') {
+        // Totale italiani
+        denominator = monthlyFiltered
+            .filter(row => row['Nazione'] === 'italia')
+            .reduce((sum, row) => sum + (parseInt(row['Visitatori Nazione']) || 0), 0);
+        subtitleText = '% sul totale italiani';
+    } else if (typeSelected === 'cittaEuropee') {
+        // Totale città europee
+        denominator = monthlyFiltered.reduce((sum, row) => sum + (parseInt(row[config.valueCol]) || 0), 0);
+        subtitleText = '% sul totale visitatori da città europee';
+    } else if (typeSelected === 'comuniCm') {
+        // Totale comuni CM Bologna
+        denominator = monthlyFiltered.reduce((sum, row) => sum + (parseInt(row[config.valueCol]) || 0), 0);
+        subtitleText = '% sul totale comuni CM Bologna';
+    }
+
+    // Prepara la configurazione per la funzione di disegno
+    const chartConfig = {
+        chartInstance: 'top10Chart',
+        canvasId: 'top10ChartCanvas',
+        meseOverride: meseSelected,
+        barColor: top10ChartColors[typeSelected],
+        denominator: denominator,
+        subtitleText: subtitleText,
+        ...config 
+    };
+
+    // Chiama la funzione generica per disegnare il grafico
+    updateBarChart(chartConfig);
+    
+    // Aggiorna il riquadro laterale
+    updateTop10SideTile(config, meseSelected, denominator);
+}
+
+        function handleMuseumShowSelection(changedSelect) {
+            const museoSelect = document.getElementById('museoSelect');
+            const mostraSelect = document.getElementById('mostraSelect');
+            if (changedSelect === 'museo' && museoSelect.value !== 'Tutti') {
+                mostraSelect.value = 'Tutti';
+            } else if (changedSelect === 'mostra' && mostraSelect.value !== 'Tutti') {
+                museoSelect.value = 'Tutti';
+            }
+            setTimeout(() => updateCharts(), 50);
+        }
+
+        function filterData() {
+    const museoSelected = document.getElementById('museoSelect').value;
+    const mostraSelected = document.getElementById('mostraSelect').value;
+    const meseSelected = document.getElementById('meseSelect').value;
+    const annoSelected = document.getElementById('annoSelect').value;
+
+    return rawData.filter(row => {
+        const matchAnno = row.Anno === annoSelected;
+        const matchMese = meseSelected === 'Tutti' || row.Mese === meseSelected;
+
+        let matchMuseoMostra = true;
+
+        if (museoSelected === 'SoloMusei') {
+            // solo musei permanenti: escludi nomi con virgolette (che indicano mostre)
+            matchMuseoMostra = !row.Museo.includes('"');
+        } else if (museoSelected !== 'Tutti') {
+            matchMuseoMostra = row.Museo === museoSelected;
+        } else if (mostraSelected !== 'Tutti') {
+            matchMuseoMostra = row.Museo === mostraSelected;
+        }
+
+        return matchAnno && matchMese && matchMuseoMostra;
+    });
+}
+
+        
+        function generateDynamicTitle(baseTitle) {
+            const museoSelectElement = document.getElementById('museoSelect');
+            const mostraSelectElement = document.getElementById('mostraSelect');
+            let chartTitle = baseTitle + ' - ';
+            if (museoSelectElement.value !== 'Tutti') {
+                chartTitle += museoSelectElement.options[museoSelectElement.selectedIndex].text;
+            } else if (mostraSelectElement.value !== 'Tutti') {
+                chartTitle += mostraSelectElement.options[mostraSelectElement.selectedIndex].text;
+            } else {
+                chartTitle += 'Tutti';
+            }
+            return chartTitle;
+        }
+
+        function getPeriodText() {
+  const mese = document.getElementById('meseTabellaSelect').value;
+  const anno = document.getElementById('annoTabellaSelect').value;
+  if (mese !== 'Tutti') return `${mese} ${anno}`;
+  
+  const filtered = rawData.filter(row => row.Anno === anno);
+  const mesiPresenti = [...new Set(filtered.map(row => row.Mese))];
+  const mesiOrdine = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+  const mesiOrdinati = mesiOrdine.filter(m => mesiPresenti.includes(m));
+  return mesiOrdinati.length === 1
+    ? `${mesiOrdinati[0]} ${anno}`
+    : `${mesiOrdinati[0]} - ${mesiOrdinati[mesiOrdinati.length - 1]} ${anno}`;
+}
+
+      function updateKPIs() {
+    // Cambia da filterData() a un filtro basato sui menu della tabella
+    const meseTabella = document.getElementById('meseTabellaSelect').value;
+    const annoTabella = document.getElementById('annoTabellaSelect').value;
+    
+    const filtered = rawData.filter(row => {
+        const matchAnno = row.Anno === annoTabella;
+        const matchMese = meseTabella === 'Tutti' || row.Mese === meseTabella;
+        return matchAnno && matchMese;
+    });
+    
+    const total = filtered.reduce((sum, row) => sum + (parseInt(row.Totale_Visitatori) || 0), 0);
+    const foreigners = filtered.reduce((sum, row) => sum + (parseInt(row.Stranieri) || 0), 0);
+    const foreignerPercent = total > 0 ? (foreigners / total * 100).toFixed(1) : 0;
+    document.getElementById('totalVisitors').textContent = total.toLocaleString('it-IT');
+    document.getElementById('foreignerPercent').textContent = foreignerPercent + '%';
+    
+    const periodText = getPeriodText();
+    const visitorsLabel = document.querySelector('.kpi-card.visitors .kpi-label');
+    const foreignersLabel = document.querySelector('.kpi-card.foreigners .kpi-label');
+    if (periodText) {
+        visitorsLabel.textContent = `Visitatori Totali Intervistati - ${periodText}`;
+        foreignersLabel.textContent = `% Visitatori Stranieri - ${periodText}`;
+    } else {
+        visitorsLabel.textContent = 'Visitatori Totali';
+        foreignersLabel.textContent = '% Visitatori Stranieri';
+    }
+    
+    const nonSpecificato = filtered.reduce((sum, row) => sum + (parseInt(row.Continente_Non_Specificato) || 0), 0);
+    document.getElementById('note').textContent = `ℹ️ Interviste escluse per continente non specificato (${getPeriodText()}): ${nonSpecificato.toLocaleString('it-IT')}`;
+}
+        
+        // --- GRAFICI PRINCIPALI ---
+       function updateMainChart() {
+    const filtered = filterData();
+    const bologna = filtered.reduce((sum, row) => sum + (parseInt(row.Bologna) || 0), 0);
+    const restoItalia = filtered.reduce((sum, row) => sum + (parseInt(row.Resto_Italia) || 0), 0);
+    const stranieri = filtered.reduce((sum, row) => sum + (parseInt(row.Stranieri) || 0), 0);
+    
+    const ctx = document.getElementById('mainChart').getContext('2d');
+    if (mainChart) mainChart.destroy();
+    
+    mainChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Bologna', 'Resto Italia', 'Stranieri'],
+            datasets: [{
+                data: [bologna, restoItalia, stranieri],
+                backgroundColor: [
+                    colorPalette.bologna,
+                    colorPalette.resto_italia,
+                    colorPalette.stranieri
+                ],
+                borderWidth: 3,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: generateDynamicTitle('Distribuzione Provenienze Totali'),
+                    font: { size: 24, weight: 'bold' },
+                    color: 'blue',
+                    padding: 40
+                },
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        font: { size: 16, weight: 'bold' },
+                        color: 'blue'
+                    }
+                },
+                datalabels: {
+                    formatter: (value) => value > 0 ? value.toLocaleString('it-IT') : '',
+                    color: '#2c3e50',
+                    font: {
+                        weight: 'bold',
+                        size: 16
+                    },
+                    anchor: 'center',
+                    align: 'center',
+                    display: context => context.dataset.data[context.dataIndex] > 0
+                },
+                tooltip: {
+                    callbacks: {
+                        label: (c) => {
+                            const total = c.dataset.data.reduce((a, b) => a + b, 0);
+                            const perc = total > 0 ? (c.parsed / total * 100).toFixed(1) : 0;
+                            return `${c.label}: ${c.parsed.toLocaleString('it-IT')} (${perc}%)`;
+                        }
+                    }
+                },
+                externalLabelsMainChart: {
+                      enabled: true
+                }
+            }
+        },
+        plugins: [ChartDataLabels, externalLabelsMainChartPlugin]
+    });
+}
+        function updateForeignersChart() {
+            const filtered = filterData();
+            const foreignData = {};
+
+            const grandTotal = filtered.reduce((sum, row) => sum + (parseInt(row.Totale_Visitatori) || 0), 0);
+            
+            Object.keys(areaLabels).forEach(col => {
+                foreignData[areaLabels[col]] = filtered.reduce((total, row) => total + (parseInt(row[col]) || 0), 0);
+            });
+            
+            const ctx = document.getElementById('foreignersChart').getContext('2d');
+            if (foreignersChart) foreignersChart.destroy();
+            
+            const labels = Object.keys(foreignData);
+            const values = Object.values(foreignData);
+            const colors = labels.map(label => colorPalette[Object.keys(areaLabels).find(k => areaLabels[k] === label).toLowerCase()]);
+            const chartTitle = generateDynamicTitle('Dettaglio Provenienze Stranieri');
+            
+            foreignersChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: colors,
+                        borderWidth: 3,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: chartTitle,
+                            font: { size: 24, weight: 'bold' },
+                            color: 'blue',
+                            padding: { top: 20, bottom: 5 }
+                        },
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: { size: 16, weight: 'bold' },
+                                color: 'blue'
+                            }
+                        },
+                        datalabels: {
+                            formatter: (value) => value > 0 ? value.toLocaleString('it-IT') : '',
+                            color: 'black', 
+                            font: { size: 14, weight: 'bold' },
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: (c) => {
+                                    const totalStr = c.dataset.data.reduce((a, b) => a + b);
+                                    const percStr = totalStr > 0 ? (c.parsed / totalStr * 100).toFixed(1) : 0;
+                                    const percTot = grandTotal > 0 ? (c.parsed / grandTotal * 100).toFixed(1) : 0;
+                                    return `${c.label}: ${c.parsed.toLocaleString('it-IT')} (${percStr}% str. / ${percTot}% tot.)`;
+                                }
+                            }
+                        },
+                        multiLineExternalLabels: {
+                            grandTotal: grandTotal
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateTimeChart() {
+            const filtered = filterData();
+            const monthlyData = {};
+            filtered.forEach(row => {
+                const mese = row.Mese?.charAt(0).toUpperCase() + row.Mese?.slice(1).toLowerCase();
+                if (!monthlyData[mese]) monthlyData[mese] = { Bologna: 0, Resto_Italia: 0, Stranieri: 0 };
+                monthlyData[mese].Bologna += parseInt(row.Bologna) || 0;
+                monthlyData[mese].Resto_Italia += parseInt(row.Resto_Italia) || 0;
+                monthlyData[mese].Stranieri += parseInt(row.Stranieri) || 0;
+            });
+            const mesiOrdine = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+            const mesi = mesiOrdine.filter(m => Object.keys(monthlyData).includes(m));
+            const bolognaData = mesi.map(m => monthlyData[m].Bologna);
+            const restoItaliaData = mesi.map(m => monthlyData[m].Resto_Italia);
+            const stranieriData = mesi.map(m => monthlyData[m].Stranieri);
+            const ctx = document.getElementById('timeChart').getContext('2d');
+            if (timeChart) timeChart.destroy();
+            timeChart = new Chart(ctx, {
+                type: 'line', data: { labels: mesi, datasets: [{ label: 'Bologna', data: bolognaData, borderColor: colorPalette.bologna, backgroundColor: colorPalette.bologna + '20', borderWidth: 4, tension: 0.3, pointRadius: 6, pointHoverRadius: 8 }, { label: 'Resto Italia', data: restoItaliaData, borderColor: colorPalette.resto_italia, backgroundColor: colorPalette.resto_italia + '20', borderWidth: 4, tension: 0.3, pointRadius: 6, pointHoverRadius: 8 }, { label: 'Stranieri', data: stranieriData, borderColor: colorPalette.stranieri, backgroundColor: colorPalette.stranieri + '20', borderWidth: 4, tension: 0.3, pointRadius: 6, pointHoverRadius: 8 }] },
+                options: { responsive: true, maintainAspectRatio: false, interaction: { intersect: false, mode: 'index' }, plugins: { title: { display: true, text: generateDynamicTitle('Andamento Temporale'), font: { size: 24, weight: 'bold' }, color: 'blue' }, legend: { position: 'top', labels: { font: { size: 16, weight: 'bold' }, color: 'blue' } }, tooltip: { callbacks: { label: c => `${c.dataset.label}: ${c.parsed.y.toLocaleString('it-IT')} visitatori` } }, datalabels: { display: true, align: 'top', color: '#1f3a5a', font: { weight: 'bold' }, backgroundColor: 'rgba(255, 255, 255, 0.7)', borderRadius: 4, padding: 3, formatter: v => v > 0 ? v.toLocaleString('it-IT') : null } }, scales: { x: { title: { display: true, text: 'Mesi', font: { size: 18, weight: 'bold' }, color: 'blue' }, ticks: { font: { size: 14, weight: 'bold' }, color: '#2c3e50' } }, y: { beginAtZero: true, title: { display: true, text: 'Numero Visitatori Intervistati', font: { size: 18, weight: 'bold' }, color: 'blue' }, ticks: { font: { size: 14, weight: 'bold' }, color: '#2c3e50', callback: v => v.toLocaleString('it-IT') } } } }
+            });
+        }
+
+        // --- FUNZIONE PER I GRAFICI A BARRE GEOGRAFICI ---
+       function updateBarChart(config) {
+    if (!altriDati.length) return;
+    
+    // Distruggi grafico precedente se esiste
+    if (window[config.chartInstance] && typeof window[config.chartInstance].destroy === 'function') {
+        window[config.chartInstance].destroy();
+    }
+
+    const { canvasId, categoryCol, valueCol, baseTitle, excludeValue, meseOverride, barColor } = config;
+
+    const monthlyFiltered = (meseOverride === 'Tutti') ? altriDati : altriDati.filter(row => row.Mese === meseOverride);
+    
+    const aggregatedData = monthlyFiltered.reduce((acc, row) => {
+        const category = row[categoryCol];
+        const value = parseInt(row[valueCol]) || 0;
+        if (category && value > 0) {
+            acc[category] = (acc[category] || 0) + value;
+        }
+        return acc;
+    }, {});
+    
+    let excludedValueTotal = 0;
+    if (excludeValue && aggregatedData[excludeValue]) {
+        excludedValueTotal = aggregatedData[excludeValue];
+        delete aggregatedData[excludeValue];
+    }
+
+    const sortedData = Object.entries(aggregatedData)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 10);
+
+const labels = sortedData.map(item => item[0]);
+const data = sortedData.map(item => item[1]);
+
+// Calcola percentuali
+const percentages = config.denominator > 0 
+    ? data.map(value => ((value / config.denominator) * 100).toFixed(1))
+    : data.map(() => '0.0');
+
+config.percentages = percentages;
+
+    const baseColor = barColor || "#607d8b"; // <-- MODIFICATO: Usa il colore passato o un default
+    const borderColor = darkenColor(baseColor, 40);
+
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    
+    let chartTitle = `${baseTitle} - ${meseOverride}`;
+if (excludeValue && excludedValueTotal > 0) {
+    let excludedLabel = excludeValue.charAt(0).toUpperCase() + excludeValue.slice(1);
+    chartTitle += ` (esclusa ${excludedLabel}: ${excludedValueTotal.toLocaleString('it-IT')})`;
+}
+
+    window[config.chartInstance] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Numero di Visitatori',
+                data: data,
+                backgroundColor: baseColor,      // <-- Ora è dinamico
+                borderColor: borderColor,        // <-- Ora è dinamico
+                borderWidth: 2
+            }]
+        },
+        // ... le tue opzioni del grafico rimangono invariate ...
+       options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    indexAxis: 'y',
+    layout: {
+        padding: { right: 80 }
+    },
+    plugins: {
+    // --- 1. TITOLO (Blu) ---
+    title: {
+        display: true,
+        text: chartTitle,
+        color: 'blue',
+        font: {
+            size: 20,
+            weight: 'bold'
+        },
+        padding: {
+            top: 10,
+            bottom: 5
+        }
+    },
+
+    // --- 2. SOTTOTITOLO (Grigio) ---
+    subtitle: {
+        display: true,
+        text: config.subtitleText || '',
+        color: '#666',
+        font: {
+            size: 16,
+            style: 'italic',
+            weight: 'normal'
+        },
+        padding: {
+            bottom: 20
+        }
+    },
+
+    // --- 3. LEGENDA (Disattivata come nel tuo codice originale) ---
+    legend: { 
+        display: false 
+    },
+
+    // --- 4. ETICHETTE DATI (Il tuo codice complesso) ---
+    datalabels: { 
+        anchor: 'end', 
+        align: 'end', 
+        formatter: (value, context) => {
+            const percentage = config.percentages ? config.percentages[context.dataIndex] : null;
+            if (percentage !== null && percentage !== undefined) {
+                return `${value.toLocaleString('it-IT')} (${percentage}%)`;
+            }
+            return value.toLocaleString('it-IT');
+        }, 
+        color: '#333', 
+        font: { weight: 'bold', size: 12 } 
+    }
+}, // <--- Qui si chiude "plugins"
+            scales: {
+                x: {
+                    title: { display: true, text: 'Numero di Visitatori', color: 'blue', font: {size: 16} },
+                    ticks: { color: 'black', beginAtZero: true, callback: (value) => new Intl.NumberFormat('it-IT').format(value) }
+                },
+                y: {
+                   ticks: { color: 'black', beginAtZero: true, font: { size: 14 } }
+                }
+            }
+        }
+    });
+}
+        
+        // --- FUNZIONE PER I RIQUADRI GEOGRAFICI ---
+       function updateTop10SideTile(config, meseSelected, denominator) {
+    const tileElement = document.getElementById('top10Tile');
+    
+    // Se non c'è un valore da escludere, nascondi il riquadro
+    if (!config.excludeValue) {
+        tileElement.style.display = 'none';
+        return;
+    }
+
+    const monthlyFiltered = (meseSelected === 'Tutti') ? altriDati : altriDati.filter(row => row.Mese === meseSelected);
+    
+    // Funzione helper per aggregare i dati
+    const aggregate = (data, keyColumn, valueColumn, targetValue) => {
+         return data.reduce((sum, row) => {
+            if (row[keyColumn] === targetValue) {
+                return sum + (parseInt(row[valueColumn]) || 0);
+            }
+            return sum;
+        }, 0);
+    };
+
+    const tileValue = aggregate(monthlyFiltered, config.categoryCol, config.valueCol, config.excludeValue);
+    
+    // Calcola percentuale
+    const percentage = denominator > 0 ? ((tileValue / denominator) * 100).toFixed(1) : '0.0';
+
+    // Aggiorna il contenuto e la classe del riquadro
+    document.getElementById('top10TileValue').textContent = tileValue.toLocaleString('it-IT');
+    document.getElementById('top10TileLabel').innerHTML = `${config.tileLabel}<br><span style="font-size: 0.9em;">${percentage}% del totale</span>`;
+    
+    // Applica la classe di stile corretta (es. 'italia', 'emilia-romagna', etc.)
+    tileElement.className = 'local-tile ' + config.tileClass;
+    
+    // Mostra il riquadro
+    tileElement.style.display = 'block';
+}
+function updateTable() {
+  const mese = document.getElementById('meseTabellaSelect').value;
+  const anno = document.getElementById('annoTabellaSelect').value;
+  const tipo = document.getElementById('tipoTabellaSelect').value;
+
+const filtered = rawData.filter(row => {
+  const matchAnno = row.Anno === anno;
+  const matchMese = mese === 'Tutti' || row.Mese === mese;
+
+  let matchTipo = true;
+  if (tipo === 'SoloMusei') {
+    matchTipo = !row.Museo.includes('"');
+  } else if (tipo === 'SoloMostre') {
+    matchTipo = row.Museo.includes('"');
+  }
+  updateKPIs();
+  return matchAnno && matchMese && matchTipo;
+});
+
+  const gruppi = [...new Set(filtered.map(r => r.Museo))];
+
+  const aree = [
+  'Bologna', 'Resto_Italia',
+  'Resto_Europa',
+  'Nord_America', 'Sud_America', 'Centro_America',
+  'Asia', 'Africa', 'Oceania'
+];
+
+  const labels = {
+  Bologna: 'Bologna',
+  Resto_Italia: 'Resto Italia',
+  Resto_Europa: 'Resto Europa',
+  Nord_America: 'Nord America',
+  Sud_America: 'Sud America',
+  Centro_America: 'Centro America',
+  Asia: 'Asia',
+  Africa: 'Africa',
+  Oceania: 'Oceania'
+};
+
+  const dati = {};
+  gruppi.forEach(nome => {
+    dati[nome] = { Totale: 0 };
+    aree.forEach(c => {
+      const somma = filtered
+        .filter(r => r.Museo === nome)
+        .reduce((a, r) => a + (parseInt(r[c]) || 0), 0);
+      dati[nome][c] = somma;
+      dati[nome].Totale += somma;
+    });
+  });
+
+  // Totali per colonna
+  const totColonna = { Totale: 0 };
+  aree.forEach(c => {
+    totColonna[c] = Object.values(dati).reduce((sum, d) => sum + d[c], 0);
+    totColonna.Totale += totColonna[c];
+  });
+
+  // Titolo della tabella
+  const titoloMese = mese === 'Tutti' ? 'Tutti i mesi' : mese;
+  let html = `<div class="table-container">
+    <h3 class="table-title">📊 Riepilogo Visitatori per Provenienza - ${titoloMese}</h3>
+    <table class="summary-table">`;
+  
+  // Header
+  html += '<thead><tr><th>Museo/Mostra</th>';
+  aree.forEach(c => html += `<th>${labels[c]}</th>`);
+  html += '<th>Totale</th><th>% sul Totale</th></tr></thead><tbody>';
+
+  // Righe dati
+  gruppi.forEach(nome => {
+    const r = dati[nome];
+    html += `<tr><td>${nome}</td>`;
+    aree.forEach(c => {
+      const valore = r[c];
+      const classe = valore > 0 ? 'numeric-cell' : 'numeric-cell';
+      html += `<td class="${classe}">${valore.toLocaleString('it-IT')}</td>`;
+    });
+    html += `<td class="numeric-cell">${r.Totale.toLocaleString('it-IT')}</td>`;
+    const percRiga = totColonna.Totale > 0 ? (r.Totale / totColonna.Totale * 100).toFixed(1) : '0.0';
+    html += `<td class="percentage-cell">${percRiga}%</td></tr>`;
+  });
+
+  // Riga totali
+  html += '<tr class="total-row"><td>📈 Totale Generale</td>';
+  aree.forEach(c => html += `<td class="numeric-cell">${totColonna[c].toLocaleString('it-IT')}</td>`);
+  html += `<td class="numeric-cell">${totColonna.Totale.toLocaleString('it-IT')}</td><td></td></tr>`;
+
+  // Riga percentuali
+  html += '<tr class="percentage-row"><td>📊 Distribuzione %</td>';
+  aree.forEach(c => {
+    const perc = totColonna.Totale > 0 ? (totColonna[c] / totColonna.Totale * 100).toFixed(1) : '0.0';
+    html += `<td class="percentage-cell">${perc}%</td>`;
+  });
+  html += '<td></td><td></td></tr>';
+
+  html += '</tbody></table></div>';
+  document.getElementById('summaryTableContainer').innerHTML = html;
+}
+        // --- FUNZIONE PRINCIPALE DI AGGIORNAMENTO ---
+        function updateCharts() {
+            if (rawData.length === 0) return;
+            updateKPIs();
+            updateMainChart();
+            updateForeignersChart();
+            updateTimeChart();
+        }
+    </script>
+</body>
+</html>
