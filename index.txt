@@ -1835,7 +1835,11 @@ if (excludeValue && excludedValueTotal > 0) {
     const percentage = denominator > 0 ? ((tileValue / denominator) * 100).toFixed(1) : '0.0';
 
     // Aggiorna il contenuto e la classe del riquadro
-    document.getElementById('top10TileValue').textContent = tileValue.toLocaleString('it-IT');
+    document.getElementById('top10TileValue').textContent = tileValue.toLocaleString('it-IT', {
+    useGrouping: true,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+});
     document.getElementById('top10TileLabel').innerHTML = `${config.tileLabel}<br><span style="font-size: 0.9em;">${percentage}% del totale</span>`;
     
     // Applica la classe di stile corretta (es. 'italia', 'emilia-romagna', etc.)
