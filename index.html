@@ -620,6 +620,10 @@
     <!-- Controlli unificati per questa scheda -->
     <div class="controls">
         <div class="control-group">
+            <label for="annoGeoSelect">📆 Seleziona Anno</label>
+            <select id="annoGeoSelect" onchange="updateMeseGeoDropdown()"></select>
+        </div>
+        <div class="control-group">
             <label for="meseGeoSelect">📅 Seleziona Mese</label>
             <select id="meseGeoSelect" onchange="updateGeographicCharts()"></select>
         </div>
@@ -961,6 +965,9 @@ Chart.register(externalLabelsMainChartPlugin);
                                          dynamicTyping: false,
                                         delimiter: ',',
                                          quoteChar: '"',
+                                        transformHeader: function(header) {
+                                            return header.replace(/^\uFEFF/, '').trim();
+                                        },  
                                         complete: function(results2) {
                                             console.log("Risultati parsing secondo file:", results2);
                                             if (results2.errors && results2.errors.length > 0) {
@@ -1074,7 +1081,6 @@ function updateDropdowns() {
     mesi.forEach(mese => {
         meseSelect.innerHTML += `<option value="${mese}">${mese}</option>`;
         meseTabellaSelect.innerHTML += `<option value="${mese}">${mese}</option>`;
-        meseGeoSelect.innerHTML += `<option value="${mese}">${mese}</option>`;
     });
 
     // Aggiunta: selezione degli anni
@@ -1093,6 +1099,21 @@ function updateDropdowns() {
         annoSelect.value = anniPresenti[0];
         annoTabellaSelect.value = anniPresenti[0];
     }
+
+    // NUOVO: Popola gli anni per il tab Top 10 (leggendo da altriDati)
+    const anniGeoPresenti = [...new Set(altriDati.map(r => r.Anno))].filter(a => a).sort((a, b) => b - a);
+    const annoGeoSelect = document.getElementById('annoGeoSelect');
+    annoGeoSelect.innerHTML = '';
+    anniGeoPresenti.forEach(anno => {
+        annoGeoSelect.innerHTML += `<option value="${anno}">${anno}</option>`;
+    });
+   if (anniGeoPresenti.length > 0) {
+        annoGeoSelect.value = anniGeoPresenti[0]; // Imposta l'anno più recente di default
+    }
+    
+    // Inizializza i mesi corretti per l'anno di default appena caricato
+    updateMeseGeoDropdown();
+
 onAnnoChange()
 }
 
@@ -1328,12 +1349,47 @@ function populateComparisonDropdowns() {
     if (fallback) confSel.value = fallback.value;
   }
 }
+// NUOVA FUNZIONE: Aggiorna i mesi in base all'anno selezionato nel tab Top 10
+function updateMeseGeoDropdown() {
+    if (!altriDati.length) return;
+
+    const annoSelezionato = document.getElementById('annoGeoSelect').value;
+    const meseGeoSelect = document.getElementById('meseGeoSelect');
+    const meseCorrente = meseGeoSelect.value; // Salva la selezione attuale
+
+    // 1. Trova solo le righe corrispondenti all'anno selezionato
+    const datiAnno = altriDati.filter(r => String(r.Anno) === String(annoSelezionato));
+    
+    // 2. Estrai i mesi presenti e ordinali
+    const mesiPresenti = [...new Set(datiAnno.map(r => r.Mese))].filter(m => m);
+    const mesiOrdine = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+    const mesiOrdinati = mesiOrdine.filter(m => mesiPresenti.includes(m));
+
+    // 3. Ripopola il menu dei mesi
+    meseGeoSelect.innerHTML = '<option value="Tutti">Tutti</option>';
+    mesiOrdinati.forEach(mese => {
+        meseGeoSelect.innerHTML += `<option value="${mese}">${mese}</option>`;
+    });
+
+    // 4. Ripristina il mese se esiste ancora, altrimenti seleziona "Tutti"
+    if (mesiOrdinati.includes(meseCorrente)) {
+        meseGeoSelect.value = meseCorrente;
+    } else {
+        meseGeoSelect.value = mesiOrdinati.length > 0 ? mesiOrdinati[0] : 'Tutti'; 
+    }
+
+    // 5. Infine, aggiorna i grafici con i dati corretti
+    updateGeographicCharts();
+}
+
+
         function updateGeographicCharts() {
     if (!altriDati.length) return;
 
+    const annoSelected = document.getElementById('annoGeoSelect').value;
     const meseSelected = document.getElementById('meseGeoSelect').value;
     const typeSelected = document.getElementById('top10TypeSelect').value;
-    if (!meseSelected) return;
+    if (!meseSelected || !annoSelected) return;
 
     const chartConfigs = {
         'nazioni': {
@@ -1365,8 +1421,12 @@ function populateComparisonDropdowns() {
 
     const config = chartConfigs[typeSelected];
     
-    // Calcola il denominatore per le percentuali
-    const monthlyFiltered = (meseSelected === 'Tutti') ? altriDati : altriDati.filter(row => row.Mese === meseSelected);
+    // Calcola il denominatore per le percentuali filtrando per Anno e Mese
+    const monthlyFiltered = altriDati.filter(row => {
+        const matchAnno = String(row.Anno) === String(annoSelected);
+        const matchMese = meseSelected === 'Tutti' || row.Mese === meseSelected;
+        return matchAnno && matchMese;
+    });
     
     let denominator = 0;
     let subtitleText = '';
@@ -1396,6 +1456,7 @@ function populateComparisonDropdowns() {
         chartInstance: 'top10Chart',
         canvasId: 'top10ChartCanvas',
         meseOverride: meseSelected,
+        annoOverride: annoSelected, 
         barColor: top10ChartColors[typeSelected],
         denominator: denominator,
         subtitleText: subtitleText,
@@ -1406,7 +1467,7 @@ function populateComparisonDropdowns() {
     updateBarChart(chartConfig);
     
     // Aggiorna il riquadro laterale
-    updateTop10SideTile(config, meseSelected, denominator);
+    updateTop10SideTile(config, annoSelected, meseSelected, denominator);
 }
 
         function handleMuseumShowSelection(changedSelect) {
@@ -1679,9 +1740,15 @@ function populateComparisonDropdowns() {
         window[config.chartInstance].destroy();
     }
 
-    const { canvasId, categoryCol, valueCol, baseTitle, excludeValue, meseOverride, barColor } = config;
+    // Aggiunto annoOverride nell'estrazione delle variabili
+    const { canvasId, categoryCol, valueCol, baseTitle, excludeValue, meseOverride, annoOverride, barColor } = config;
 
-    const monthlyFiltered = (meseOverride === 'Tutti') ? altriDati : altriDati.filter(row => row.Mese === meseOverride);
+    // NUOVO FILTRO: Ora calcola il totale escluso incrociando sia Anno che Mese
+    const monthlyFiltered = altriDati.filter(row => {
+        const matchAnno = String(row.Anno) === String(annoOverride);
+        const matchMese = meseOverride === 'Tutti' || row.Mese === meseOverride;
+        return matchAnno && matchMese;
+    });
     
     const aggregatedData = monthlyFiltered.reduce((acc, row) => {
         const category = row[categoryCol];
@@ -1808,7 +1875,7 @@ if (excludeValue && excludedValueTotal > 0) {
 }
         
         // --- FUNZIONE PER I RIQUADRI GEOGRAFICI ---
-       function updateTop10SideTile(config, meseSelected, denominator) {
+      function updateTop10SideTile(config, annoSelected, meseSelected, denominator) {
     const tileElement = document.getElementById('top10Tile');
     
     // Se non c'è un valore da escludere, nascondi il riquadro
@@ -1817,7 +1884,12 @@ if (excludeValue && excludedValueTotal > 0) {
         return;
     }
 
-    const monthlyFiltered = (meseSelected === 'Tutti') ? altriDati : altriDati.filter(row => row.Mese === meseSelected);
+    // Filtra sia per Anno che per Mese
+    const monthlyFiltered = altriDati.filter(row => {
+        const matchAnno = String(row.Anno) === String(annoSelected);
+        const matchMese = meseSelected === 'Tutti' || row.Mese === meseSelected;
+        return matchAnno && matchMese;
+    });
     
     // Funzione helper per aggregare i dati
     const aggregate = (data, keyColumn, valueColumn, targetValue) => {
