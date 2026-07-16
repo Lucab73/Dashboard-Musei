@@ -1204,7 +1204,16 @@ function populateComparisonDropdowns() {
         if (b.perc === '—') return -1;
         return parseFloat(b.perc) - parseFloat(a.perc);
     });    
+
+    // 1. INIZIALIZZA LE VARIABILI PER IL CALCOLO DEI TOTALI
+    let totaleBase = 0;
+    let totaleComp = 0;
+
     finali.forEach(r => {
+      // 2. SOMMA I VALORI PER OGNI RIGA
+      totaleBase += r.base;
+      totaleComp += r.comp;
+
       html += `<tr>
   <td>${r.museo}</td>
   <td class="numeric-cell">${r.base.toLocaleString('it-IT')}</td>
@@ -1215,6 +1224,22 @@ function populateComparisonDropdowns() {
   </td>
 </tr>`;
     });
+
+    // 3. CALCOLA LA DIFFERENZA E LA PERCENTUALE TOTALI
+    let totaleDiff = totaleBase - totaleComp;
+    let totalePerc = totaleComp > 0 ? ((totaleDiff / totaleComp) * 100).toFixed(1) : '—';
+
+    // 4. AGGIUNGI LA RIGA DEL TOTALE GENERALE ALLA FINE DELLA TABELLA
+    html += `<tr class="total-row">
+  <td>📈 Totale Generale</td>
+  <td class="numeric-cell">${totaleBase.toLocaleString('it-IT')}</td>
+  <td class="numeric-cell">${totaleComp.toLocaleString('it-IT')}</td>
+  <td class="numeric-cell">${(totaleDiff >= 0 ? '+' : '') + totaleDiff.toLocaleString('it-IT')}</td>
+  <td class="${totalePerc === '—' ? '' : totalePerc >= 0 ? 'percentage-cell positive' : 'percentage-cell negative'}">
+    ${totalePerc !== '—' ? (totalePerc > 0 ? '▲ +' : '▼ ') + totalePerc + '%' : '—'}
+  </td>
+</tr>`;
+
     html += '</tbody></table>';
     document.getElementById('comparisonTableContainer').innerHTML = html;
 
