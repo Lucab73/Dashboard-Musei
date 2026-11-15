@@ -210,7 +210,6 @@
     -webkit-text-fill-color: #000000 !important;
 }
 
-/* Badge distinzione Museo vs Mostra in tabella */
 .type-pill {
     display: inline-block;
     font-size: 0.78rem;
@@ -232,7 +231,6 @@
     border: 1px solid #f8bbd0;
 }
 
-/* Intestazioni blocchi filtri Panoramica + pulsante sincronizza */
 .filter-section-wrapper {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-radius: 15px;
@@ -283,7 +281,6 @@
     margin-bottom: 0;
 }
 
-/* Switcher modalità Assoluti / % per TimeChart */
 .chart-mode-bar {
     display: flex;
     justify-content: flex-end;
@@ -319,6 +316,112 @@
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     box-shadow: 0 3px 8px rgba(102, 126, 234, 0.35);
+}
+
+/* === STILI RICERCA LOCALITÀ TAB TOP 10 === */
+.geo-search-card {
+    background: white;
+    border-radius: 15px;
+    padding: 18px 22px;
+    margin-bottom: 20px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    border: 1px solid #e2e8f0;
+}
+.geo-search-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.geo-search-bar label {
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 1.05rem;
+}
+.geo-search-input-wrap {
+    flex: 1 1 260px;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.geo-search-input {
+    width: 100%;
+    padding: 10px 36px 10px 14px;
+    border: 2px solid #cbd5e1;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.geo-search-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.18);
+}
+.geo-search-clear {
+    position: absolute;
+    right: 10px;
+    background: none;
+    border: none;
+    color: #64748b;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: none;
+}
+.geo-search-hint {
+    color: #64748b;
+    font-size: 0.92rem;
+    font-style: italic;
+    margin-top: 8px;
+}
+.geo-search-results {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+    margin-top: 14px;
+}
+.geo-result-item {
+    background: linear-gradient(135deg, #f8faff 0%, #eef2ff 100%);
+    border: 1px solid #c7d2fe;
+    border-left: 5px solid #667eea;
+    border-radius: 12px;
+    padding: 12px 14px;
+}
+.geo-result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+}
+.geo-result-name {
+    font-weight: 800;
+    font-size: 1.08rem;
+    color: #1e293b;
+}
+.geo-result-rank {
+    background: #4a3fa5;
+    color: white;
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 12px;
+    white-space: nowrap;
+}
+.geo-result-rank.excluded-rank {
+    background: #475569;
+}
+.geo-result-stats {
+    font-size: 0.96rem;
+    color: #334155;
+    line-height: 1.45;
+}
+.geo-yoy-pos {
+    color: #2c7a7b;
+    font-weight: 700;
+}
+.geo-yoy-neg {
+    color: #c53030;
+    font-weight: 700;
 }
        
         /* === INIZIO BLOCCO STILI TAB AGGIORNATO === */
@@ -628,9 +731,10 @@
             display: flex;
             gap: 20px;
             align-items: flex-start;
+            flex-wrap: wrap;
         }
         .chart-section {
-            flex: 1;
+            flex: 1 1 600px;
             min-width: 0; 
         }
         
@@ -675,6 +779,14 @@
         .local-tile-label {
             font-size: 1.1rem;
             opacity: 0.9;
+            line-height: 1.4;
+        }
+        .local-tile-yoy {
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255,255,255,0.3);
+            font-size: 0.98rem;
+            font-weight: 700;
         }
         .chart-canvas {
             height: 800px;
@@ -997,42 +1109,77 @@
 
     <div id="Top10" class="tab-content" style="display:none;">
     <div class="header">
-        <h2>📊 Classifiche TOP 10 mensili</h2>
+        <h2>🏆 Classifiche Geografiche (Top 10 / Top 20)</h2>
     </div>
 
-    <!-- Controlli unificati per questa scheda -->
+    <!-- Controlli avanzati per Top 10/20 con intervallo mesi e confronto YoY -->
     <div class="controls">
         <div class="control-group">
-            <label for="annoGeoSelect">📆 Seleziona Anno</label>
+            <label for="annoGeoSelect">📆 Anno</label>
             <select id="annoGeoSelect" onchange="updateMeseGeoDropdown()"></select>
         </div>
         <div class="control-group">
-            <label for="meseGeoSelect">📅 Seleziona Mese</label>
-            <select id="meseGeoSelect" onchange="updateGeographicCharts()"></select>
+            <label for="meseGeoStartSelect">📅 Da Mese</label>
+            <select id="meseGeoStartSelect" onchange="onMeseGeoRangeChange()"></select>
         </div>
         <div class="control-group">
-            <label for="top10TypeSelect">📈 Seleziona Classifica</label>
-            <select id="top10TypeSelect" onchange="updateGeographicCharts()">
-                <option value="nazioni">Top 10 Nazioni</option>
-                <option value="regioni">Top 10 Regioni Italiane</option>
-                <option value="cittaEuropee">Top 10 Città Europee</option>
-                <option value="province">Top 10 Province Italiane</option>
-                <option value="comuniCm">Top 10 Comuni della Città Metropolitana</option>
+            <label for="meseGeoEndSelect">📅 A Mese</label>
+            <select id="meseGeoEndSelect" onchange="onMeseGeoRangeChange()"></select>
+        </div>
+        <div class="control-group">
+            <label for="top10TypeSelect">📈 Classifica</label>
+            <select id="top10TypeSelect" onchange="onTop10TypeOrLimitChange()">
+                <option value="nazioni">Top Nazioni</option>
+                <option value="regioni">Top Regioni Italiane</option>
+                <option value="cittaEuropee">Top Città Europee</option>
+                <option value="province">Top Province Italiane</option>
+                <option value="comuniCm">Top Comuni della Città Metropolitana</option>
+            </select>
+        </div>
+        <div class="control-group" style="flex: 0 1 140px;">
+            <label for="topNSelect">🔢 Mostra</label>
+            <select id="topNSelect" onchange="onTop10TypeOrLimitChange()">
+                <option value="10">Top 10</option>
+                <option value="20">Top 20</option>
             </select>
         </div>
     </div>
 
-    <!-- Container unico per il grafico e il riquadro laterale -->
+    <!-- Barra di ricerca per qualsiasi località della classifica -->
+    <div class="geo-search-card">
+        <div class="geo-search-bar">
+            <label for="geoSearchInput">🔍 Cerca località:</label>
+            <div class="geo-search-input-wrap">
+                <input type="text" id="geoSearchInput" class="geo-search-input" placeholder="Es. Giappone, Modena, Imola, Madrid..." oninput="onGeoSearchInput()">
+                <button type="button" id="geoSearchClearBtn" class="geo-search-clear" onclick="clearGeoSearch()" title="Pulisci ricerca">✕</button>
+            </div>
+        </div>
+        <div id="geoSearchHint" class="geo-search-hint">Scrivi almeno 2 lettere per cercare qualsiasi località presente nel periodo selezionato (anche oltre la Top 10/20).</div>
+        <div id="geoSearchResults" class="geo-search-results"></div>
+    </div>
+
+    <!-- Container unico per il grafico, toggle % (per Nazioni) e riquadro laterale -->
     <div class="chart-container">
+        <div class="chart-mode-bar" id="nazioniBaseToggleBar">
+            <span class="chart-mode-label">Base calcolo % Nazioni:</span>
+            <div class="mode-toggle-group">
+                <button type="button" id="nazioniBaseAllBtn" class="mode-toggle-btn active" onclick="setNazioniBaseMode('all')">🌍 Totale generale (Italia incl.)</button>
+                <button type="button" id="nazioniBaseForeignBtn" class="mode-toggle-btn" onclick="setNazioniBaseMode('foreign')">✈️ Solo Stranieri</button>
+            </div>
+        </div>
+
         <div class="chart-with-tile">
             <div class="chart-section">
-                 <canvas id="top10ChartCanvas" class="chart-canvas-bar"></canvas>
+                 <div id="top10CanvasWrapper" style="height: 500px; position: relative;">
+                     <canvas id="top10ChartCanvas"></canvas>
+                 </div>
             </div>
-            <!-- Questo riquadro è ora dinamico e viene gestito da JavaScript -->
+            <!-- Questo riquadro è dinamico e mostra anche il confronto YoY -->
             <div id="top10Tile" class="local-tile" style="display: none;">
                 <div class="local-tile-icon">🏛️</div>
                 <div class="local-tile-value" id="top10TileValue">0</div>
                 <div class="local-tile-label" id="top10TileLabel"></div>
+                <div class="local-tile-yoy" id="top10TileYoy" style="display: none;"></div>
             </div>
          </div>
     </div>
@@ -1116,6 +1263,10 @@
                     if (window.comparisonChart instanceof Chart) window.comparisonChart.resize();
                     if (window.comparisonLineChart instanceof Chart) window.comparisonLineChart.resize();
                 }, 50);
+            } else if (tabName === 'Top10') {
+                setTimeout(() => {
+                    if (window.top10Chart instanceof Chart) window.top10Chart.resize();
+                }, 50);
             }
         }
 
@@ -1126,11 +1277,13 @@
         let mainChart = null;
         let foreignersChart = null;
         let timeChart = null;
-        let timeChartMode = 'absolute'; // 'absolute' | 'percent'
+        let timeChartMode = 'absolute';
         let summaryTableSort = { key: 'Totale', dir: 'desc' };
         let availableComparisonPeriods = [];
         let comparisonSyncWarning = '';
         let comparisonSort = { key: 'perc', dir: 'desc' };
+        let nazioniBaseMode = 'all'; // 'all' | 'foreign'
+        let currentGeoRankingState = null; // Stato completo della classifica corrente per ricerca istantanea
         window.top10Chart = null;
 
         function darkenColor(hex, percent) {
@@ -1392,10 +1545,7 @@ Chart.register(externalLabelsMainChartPlugin);
 
                                             updateTable();
                                             updateCharts();
-
-                                            if (document.getElementById('meseGeoSelect').value) {
-                                                updateGeographicCharts(); 
-                                            }
+                                            updateGeographicCharts();
                                         },
                                         error: (err) => {
                                             document.getElementById('status').textContent = '❌ Errore nel parsing del secondo file CSV.';
@@ -1430,7 +1580,6 @@ function updateDropdowns() {
     const mostraSelect = document.getElementById('mostraSelect');
     const meseSelect = document.getElementById('meseSelect');
     const meseTabellaSelect = document.getElementById('meseTabellaSelect');
-    const meseGeoSelect = document.getElementById('meseGeoSelect');
 
     museoSelect.innerHTML = `
            <option value="Tutti">Tutti</option>
@@ -1439,7 +1588,6 @@ function updateDropdowns() {
     mostraSelect.innerHTML = '<option value="Tutti">Tutti</option><option value="SoloMostre">Tutte le mostre</option>';
     meseSelect.innerHTML = '<option value="Tutti">Tutti</option>';
     meseTabellaSelect.innerHTML = '<option value="Tutti">Tutti</option>';
-    meseGeoSelect.innerHTML = '<option value="Tutti">Tutti</option>';
 
     musei.forEach(museo => { 
         museoSelect.innerHTML += `<option value="${museo}">${museo}</option>`; 
@@ -1484,7 +1632,7 @@ function updateDropdowns() {
     onAnnoChange();
 }
 
-// === FUNZIONI PER IL NUOVO TAB CONFRONTI ===
+// === FUNZIONI PER IL TAB CONFRONTI ===
 
 const MESI_ORDINE_CONFRONTI = [
     'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
@@ -2382,109 +2530,591 @@ function renderComparisonLineChart(seqA, seqB, righeA, righeB, labelA, labelB, s
     });
 }
 
+// === FUNZIONI AVANZATE PER IL TAB TOP 10 / TOP 20 ===
+
+const GEO_NAME_OVERRIDES = {
+    'usa': 'USA',
+    'uae': 'Emirati Arabi Uniti',
+    'uk': 'Regno Unito',
+    'korea, republic of': 'Corea del Sud',
+    'korea, democratic people\'s republic of': 'Corea del Nord',
+    'iran, islamic republic of': 'Iran',
+    'moldova, republic of': 'Moldavia',
+    'taiwan, province of china': 'Taiwan',
+    'macedonia, the former yugoslav republic of': 'Macedonia del Nord',
+    'tanzania, united republic of': 'Tanzania',
+    'bolivia, plurinational state of': 'Bolivia',
+    'venezuela, bolivarian republic of': 'Venezuela',
+    'russian federation': 'Federazione Russa',
+    'hong kong': 'Hong Kong'
+};
+
+const LOWERCASE_GEO_WORDS = new Set(['di', 'da', 'in', 'su', 'per', 'con', 'tra', 'fra', 'e', 'ed', 'a', 'al', 'alla', 'alle', 'ai', 'agli', 'del', 'della', 'delle', 'dei', 'degli', 'nel', 'nella', 'nelle', 'nei', 'negli', 'sul', 'sulla', 'sulle', 'sui', 'sugli']);
+const LOWERCASE_APOSTROPHE_PREFIXES = new Set(['d', 'l', 'nell', 'dell', 'all', 'sull', 'un']);
+
+function titleCaseItalianSegment(seg) {
+    return seg.split('-').map(part => {
+        if (!part) return part;
+        if (part.includes("'")) {
+            const pieces = part.split("'");
+            return pieces.map((piece, idx) => {
+                if (!piece) return piece;
+                const low = piece.toLowerCase();
+                if (idx === 0 && LOWERCASE_APOSTROPHE_PREFIXES.has(low)) return low;
+                return low.charAt(0).toUpperCase() + low.slice(1);
+            }).join("'");
+        }
+        const low = part.toLowerCase();
+        if (LOWERCASE_GEO_WORDS.has(low)) return low;
+        return low.charAt(0).toUpperCase() + low.slice(1);
+    }).join('-');
+}
+
+function formatGeoName(rawName) {
+    if (!rawName) return '';
+    let cleaned = String(rawName).trim().replace(/^"+|"+$/g, '').replace(/''/g, "'");
+    if (cleaned.includes('/')) {
+        cleaned = cleaned.split('/')[0].trim();
+    }
+    const lower = cleaned.toLowerCase();
+    if (GEO_NAME_OVERRIDES[lower]) return GEO_NAME_OVERRIDES[lower];
+
+    const formatted = cleaned
+        .split(/\s+/)
+        .map((word, idx) => {
+            const res = titleCaseItalianSegment(word);
+            if (idx === 0 && res.length > 0) {
+                return res.charAt(0).toUpperCase() + res.slice(1);
+            }
+            return res;
+        })
+        .join(' ');
+    return formatted;
+}
+
+function getGeoMonthIndex(meseStr) {
+    if (!meseStr) return -1;
+    const low = String(meseStr).trim().toLowerCase();
+    return MESI_ORDINE_CONFRONTI.findIndex(m => m.toLowerCase() === low);
+}
+
 function updateMeseGeoDropdown() {
     if (!altriDati.length) return;
 
     const annoSelezionato = document.getElementById('annoGeoSelect').value;
-    const meseGeoSelect = document.getElementById('meseGeoSelect');
-    const meseCorrente = meseGeoSelect.value;
+    const startSel = document.getElementById('meseGeoStartSelect');
+    const endSel = document.getElementById('meseGeoEndSelect');
+
+    const prevStart = startSel.value;
+    const prevEnd = endSel.value;
 
     const datiAnno = altriDati.filter(r => String(r.Anno) === String(annoSelezionato));
     const mesiPresenti = [...new Set(datiAnno.map(r => r.Mese))].filter(m => m);
-    const mesiOrdine = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
-    const mesiOrdinati = mesiOrdine.filter(m => mesiPresenti.includes(m));
+    const mesiOrdinati = MESI_ORDINE_CONFRONTI.filter(m => mesiPresenti.includes(m));
 
-    meseGeoSelect.innerHTML = '<option value="Tutti">Tutti</option>';
+    startSel.innerHTML = '';
+    endSel.innerHTML = '';
     mesiOrdinati.forEach(mese => {
-        meseGeoSelect.innerHTML += `<option value="${mese}">${mese}</option>`;
+        const opt1 = document.createElement('option');
+        opt1.value = mese;
+        opt1.textContent = mese;
+        startSel.appendChild(opt1);
+
+        const opt2 = document.createElement('option');
+        opt2.value = mese;
+        opt2.textContent = mese;
+        endSel.appendChild(opt2);
     });
 
-    if (mesiOrdinati.includes(meseCorrente)) {
-        meseGeoSelect.value = meseCorrente;
-    } else {
-        meseGeoSelect.value = mesiOrdinati.length > 0 ? mesiOrdinati[0] : 'Tutti'; 
+    if (mesiOrdinati.length > 0) {
+        startSel.value = mesiOrdinati.includes(prevStart) ? prevStart : mesiOrdinati[0];
+        endSel.value = mesiOrdinati.includes(prevEnd) ? prevEnd : mesiOrdinati[mesiOrdinati.length - 1];
     }
 
+    enforceGeoMonthOrder();
     updateGeographicCharts();
 }
 
+function enforceGeoMonthOrder() {
+    const startSel = document.getElementById('meseGeoStartSelect');
+    const endSel = document.getElementById('meseGeoEndSelect');
+    const startIdx = getGeoMonthIndex(startSel.value);
+    const endIdx = getGeoMonthIndex(endSel.value);
 
-        function updateGeographicCharts() {
+    [...endSel.options].forEach(opt => {
+        const idx = getGeoMonthIndex(opt.value);
+        opt.disabled = idx < startIdx;
+    });
+
+    if (endIdx < startIdx && startSel.value) {
+        endSel.value = startSel.value;
+    }
+}
+
+function onMeseGeoRangeChange() {
+    enforceGeoMonthOrder();
+    updateGeographicCharts();
+}
+
+function onTop10TypeOrLimitChange() {
+    updateGeographicCharts();
+}
+
+function setNazioniBaseMode(mode) {
+    nazioniBaseMode = mode;
+    document.getElementById('nazioniBaseAllBtn').classList.toggle('active', mode === 'all');
+    document.getElementById('nazioniBaseForeignBtn').classList.toggle('active', mode === 'foreign');
+    updateGeographicCharts();
+}
+
+function formatGeoPeriodLabel(meseStart, meseEnd) {
+    if (!meseStart || !meseEnd) return '';
+    return meseStart === meseEnd ? meseStart : `${meseStart} – ${meseEnd}`;
+}
+
+function aggregateGeoCategory(rows, categoryCol, valueCol) {
+    const map = {};
+    rows.forEach(row => {
+        const rawCat = row[categoryCol];
+        const val = parseInt(row[valueCol], 10) || 0;
+        if (rawCat && val > 0) {
+            map[rawCat] = (map[rawCat] || 0) + val;
+        }
+    });
+    return map;
+}
+
+function updateGeographicCharts() {
     if (!altriDati.length) return;
 
     const annoSelected = document.getElementById('annoGeoSelect').value;
-    const meseSelected = document.getElementById('meseGeoSelect').value;
+    const meseStart = document.getElementById('meseGeoStartSelect').value;
+    const meseEnd = document.getElementById('meseGeoEndSelect').value;
     const typeSelected = document.getElementById('top10TypeSelect').value;
-    if (!meseSelected || !annoSelected) return;
+    const topN = parseInt(document.getElementById('topNSelect').value, 10) || 10;
+
+    if (!annoSelected || !meseStart || !meseEnd) return;
+
+    const startIdx = getGeoMonthIndex(meseStart);
+    const endIdx = getGeoMonthIndex(meseEnd);
+    const prevAnno = String(parseInt(annoSelected, 10) - 1);
+
+    // Mostra toggle base % solo per Nazioni
+    document.getElementById('nazioniBaseToggleBar').style.display =
+        typeSelected === 'nazioni' ? 'flex' : 'none';
 
     const chartConfigs = {
-        'nazioni': {
-            categoryCol: 'Nazione', valueCol: 'Visitatori Nazione',
-            baseTitle: 'Top 10 Nazioni di provenienza',
-            excludeValue: 'italia', tileLabel: 'Italia', tileClass: 'italia'
+        nazioni: {
+            categoryCol: 'Nazione',
+            valueCol: 'Visitatori Nazione',
+            baseTitle: `Top ${topN} Nazioni di provenienza`,
+            excludeValue: 'italia',
+            tileLabel: 'Italia',
+            tileClass: 'italia'
         },
-        'regioni': {
-            categoryCol: 'Regione', valueCol: 'Visitatori Regione',
-            baseTitle: 'Top 10 Regioni Italiane di provenienza',
-            excludeValue: 'emilia-romagna', tileLabel: 'Emilia-Romagna', tileClass: 'emilia-romagna'
+        regioni: {
+            categoryCol: 'Regione',
+            valueCol: 'Visitatori Regione',
+            baseTitle: `Top ${topN} Regioni Italiane di provenienza`,
+            excludeValue: 'emilia-romagna',
+            tileLabel: 'Emilia-Romagna',
+            tileClass: 'emilia-romagna'
         },
-        'cittaEuropee': {
-            categoryCol: 'Città europee', valueCol: 'Visitatori Città europee',
-            baseTitle: 'Top 10 Città Europee di provenienza',
+        cittaEuropee: {
+            categoryCol: 'Città europee',
+            valueCol: 'Visitatori Città europee',
+            baseTitle: `Top ${topN} Città Europee di provenienza`,
             excludeValue: null
         },
-        'province': {
-            categoryCol: 'Province Italiane', valueCol: 'Visitatori Province italiane',
-            baseTitle: 'Top 10 Province Italiane di provenienza',
-            excludeValue: 'bologna', tileLabel: 'Provincia di Bologna', tileClass: 'bologna-provincia'
+        province: {
+            categoryCol: 'Province Italiane',
+            valueCol: 'Visitatori Province italiane',
+            baseTitle: `Top ${topN} Province Italiane di provenienza`,
+            excludeValue: 'bologna',
+            tileLabel: 'Provincia di Bologna',
+            tileClass: 'bologna-provincia'
         },
-        'comuniCm': {
-            categoryCol: 'Comuni CM di Bologna', valueCol: 'Visitatori CM di Bologna',
-            baseTitle: 'Top 10 Comuni della CM di Bologna',
-            excludeValue: 'bologna', tileLabel: 'Bologna', tileClass: 'bologna-comune'
+        comuniCm: {
+            categoryCol: 'Comuni CM di Bologna',
+            valueCol: 'Visitatori CM di Bologna',
+            baseTitle: `Top ${topN} Comuni della CM di Bologna`,
+            excludeValue: 'bologna',
+            tileLabel: 'Bologna',
+            tileClass: 'bologna-comune'
         }
     };
 
     const config = chartConfigs[typeSelected];
-    
-    const monthlyFiltered = altriDati.filter(row => {
-        const matchAnno = String(row.Anno) === String(annoSelected);
-        const matchMese = meseSelected === 'Tutti' || row.Mese === meseSelected;
-        return matchAnno && matchMese;
-    });
-    
-    let denominator = 0;
-    let subtitleText = '';
-    
-    if (typeSelected === 'nazioni') {
-        denominator = monthlyFiltered.reduce((sum, row) => sum + (parseInt(row[config.valueCol]) || 0), 0);
-        subtitleText = '% sul totale generale (Italia inclusa)';
-    } else if (typeSelected === 'regioni' || typeSelected === 'province') {
-        denominator = monthlyFiltered
-            .filter(row => row['Nazione'] === 'italia')
-            .reduce((sum, row) => sum + (parseInt(row['Visitatori Nazione']) || 0), 0);
-        subtitleText = '% sul totale italiani';
-    } else if (typeSelected === 'cittaEuropee') {
-        denominator = monthlyFiltered.reduce((sum, row) => sum + (parseInt(row[config.valueCol]) || 0), 0);
-        subtitleText = '% sul totale visitatori da città europee';
-    } else if (typeSelected === 'comuniCm') {
-        denominator = monthlyFiltered.reduce((sum, row) => sum + (parseInt(row[config.valueCol]) || 0), 0);
-        subtitleText = '% sul totale comuni CM Bologna';
-    }
 
-    const chartConfig = {
-        chartInstance: 'top10Chart',
-        canvasId: 'top10ChartCanvas',
-        meseOverride: meseSelected,
-        annoOverride: annoSelected, 
-        barColor: top10ChartColors[typeSelected],
-        denominator: denominator,
-        subtitleText: subtitleText,
-        ...config 
+    const filterByYearAndRange = (targetAnno) => altriDati.filter(row => {
+        if (String(row.Anno) !== String(targetAnno)) return false;
+        const mIdx = getGeoMonthIndex(row.Mese);
+        return mIdx >= startIdx && mIdx <= endIdx;
+    });
+
+    const currRows = filterByYearAndRange(annoSelected);
+    const prevRows = filterByYearAndRange(prevAnno);
+    const hasPrevYear = prevRows.length > 0;
+
+    // Aggregazioni complete (prima dell'esclusione per avere anche il riferimento locale)
+    const currMapAll = aggregateGeoCategory(currRows, config.categoryCol, config.valueCol);
+    const prevMapAll = aggregateGeoCategory(prevRows, config.categoryCol, config.valueCol);
+
+    // Calcolo denominatore corrente e precedente
+    const calcDenominator = (rows, mapAll) => {
+        if (typeSelected === 'nazioni') {
+            if (nazioniBaseMode === 'foreign') {
+                return Object.entries(mapAll)
+                    .filter(([k]) => k !== 'italia')
+                    .reduce((s, [, v]) => s + v, 0);
+            }
+            return rows.reduce((sum, row) => sum + (parseInt(row[config.valueCol], 10) || 0), 0);
+        }
+        if (typeSelected === 'regioni' || typeSelected === 'province') {
+            return rows
+                .filter(row => row['Nazione'] === 'italia')
+                .reduce((sum, row) => sum + (parseInt(row['Visitatori Nazione'], 10) || 0), 0);
+        }
+        return rows.reduce((sum, row) => sum + (parseInt(row[config.valueCol], 10) || 0), 0);
     };
 
-    updateBarChart(chartConfig);
-    updateTop10SideTile(config, annoSelected, meseSelected, denominator);
+    const denominatorCurr = calcDenominator(currRows, currMapAll);
+    const denominatorPrev = calcDenominator(prevRows, prevMapAll);
+
+    // Estrai l'eventuale valore escluso (es. italia, emilia-romagna, bologna)
+    const excludedCurr = config.excludeValue ? (currMapAll[config.excludeValue] || 0) : 0;
+    const excludedPrev = config.excludeValue ? (prevMapAll[config.excludeValue] || 0) : 0;
+
+    // Costruisci classifica completa (escluso riferimento locale) per Top N, Rank YoY e Ricerca
+    const buildSortedRanking = (mapObj) => Object.entries(mapObj)
+        .filter(([k]) => !config.excludeValue || k !== config.excludeValue)
+        .sort(([, a], [, b]) => b - a);
+
+    const currRanking = buildSortedRanking(currMapAll);
+    const prevRanking = buildSortedRanking(prevMapAll);
+
+    const prevRankLookup = {};
+    prevRanking.forEach(([key, val], idx) => {
+        prevRankLookup[key] = { rank: idx + 1, value: val };
+    });
+
+    const fullRankingEntries = currRanking.map(([key, val], idx) => {
+        const rank = idx + 1;
+        const prevInfo = prevRankLookup[key];
+        const prevVal = prevInfo ? prevInfo.value : 0;
+        const prevRank = prevInfo ? prevInfo.rank : null;
+        const yoyPerc = (hasPrevYear && prevVal > 0) ? ((val - prevVal) / prevVal) * 100 : null;
+        const yoyDiff = hasPrevYear ? (val - prevVal) : null;
+        const rankDelta = (hasPrevYear && prevRank !== null) ? (prevRank - rank) : null; // positivo = salito in classifica
+        const sharePerc = denominatorCurr > 0 ? (val / denominatorCurr) * 100 : 0;
+
+        return {
+            rawKey: key,
+            displayName: formatGeoName(key),
+            value: val,
+            sharePerc,
+            rank,
+            prevVal,
+            prevRank,
+            yoyDiff,
+            yoyPerc,
+            rankDelta,
+            isExcluded: false
+        };
+    });
+
+    // Salva stato per ricerca istantanea (includendo anche l'eventuale voce locale esclusa)
+    let excludedSearchEntry = null;
+    if (config.excludeValue && excludedCurr > 0) {
+        const excShare = denominatorCurr > 0 ? (excludedCurr / denominatorCurr) * 100 : 0;
+        const excYoyDiff = hasPrevYear ? (excludedCurr - excludedPrev) : null;
+        const excYoyPerc = (hasPrevYear && excludedPrev > 0) ? ((excludedCurr - excludedPrev) / excludedPrev) * 100 : null;
+        excludedSearchEntry = {
+            rawKey: config.excludeValue,
+            displayName: config.tileLabel || formatGeoName(config.excludeValue),
+            value: excludedCurr,
+            sharePerc: excShare,
+            rank: null,
+            prevVal: excludedPrev,
+            prevRank: null,
+            yoyDiff: excYoyDiff,
+            yoyPerc: excYoyPerc,
+            rankDelta: null,
+            isExcluded: true
+        };
+    }
+
+    currentGeoRankingState = {
+        annoSelected,
+        prevAnno,
+        hasPrevYear,
+        periodLabel: formatGeoPeriodLabel(meseStart, meseEnd),
+        entries: fullRankingEntries,
+        excludedEntry: excludedSearchEntry
+    };
+
+    // Sottotitolo descrittivo
+    let subtitleText = '';
+    if (typeSelected === 'nazioni') {
+        subtitleText = nazioniBaseMode === 'foreign'
+            ? '% sul totale stranieri (Italia esclusa)'
+            : '% sul totale generale (Italia inclusa)';
+    } else if (typeSelected === 'regioni' || typeSelected === 'province') {
+        subtitleText = '% sul totale italiani';
+    } else if (typeSelected === 'cittaEuropee') {
+        subtitleText = '% sul totale visitatori da città europee';
+    } else if (typeSelected === 'comuniCm') {
+        subtitleText = '% sul totale comuni CM Bologna';
+    }
+    if (hasPrevYear) {
+        subtitleText += `  •  Confronto anno su anno vs ${prevAnno}`;
+    } else {
+        subtitleText += `  •  Nessun dato disponibile per il ${prevAnno}`;
+    }
+
+    const topEntries = fullRankingEntries.slice(0, topN);
+    renderTop10BarChart({
+        entries: topEntries,
+        baseTitle: config.baseTitle,
+        annoSelected,
+        prevAnno,
+        hasPrevYear,
+        periodLabel: formatGeoPeriodLabel(meseStart, meseEnd),
+        excludeLabel: config.excludeValue ? formatGeoName(config.excludeValue) : null,
+        excludedCurr,
+        subtitleText,
+        barColor: top10ChartColors[typeSelected],
+        topN
+    });
+
+    updateTop10SideTile(config, excludedCurr, excludedPrev, denominatorCurr, hasPrevYear, prevAnno);
+    onGeoSearchInput(); // Aggiorna eventuali risultati ricerca al cambio filtri
+}
+
+function renderTop10BarChart(opts) {
+    const {
+        entries, baseTitle, annoSelected, prevAnno, hasPrevYear,
+        periodLabel, excludeLabel, excludedCurr, subtitleText, barColor, topN
+    } = opts;
+
+    if (window.top10Chart && typeof window.top10Chart.destroy === 'function') {
+        window.top10Chart.destroy();
+    }
+
+    // Ridimensiona dinamicamente il contenitore per Top 10 vs Top 20
+    const wrapper = document.getElementById('top10CanvasWrapper');
+    wrapper.style.height = topN > 10 ? '780px' : '500px';
+
+    const labels = entries.map(e => e.displayName);
+    const data = entries.map(e => e.value);
+
+    const baseColor = barColor || '#607d8b';
+    const borderColor = darkenColor(baseColor, 40);
+
+    let chartTitle = `${baseTitle} – ${periodLabel} ${annoSelected}`;
+    if (excludeLabel && excludedCurr > 0) {
+        chartTitle += ` (esclusa ${excludeLabel}: ${excludedCurr.toLocaleString('it-IT')})`;
+    }
+
+    const ctx = document.getElementById('top10ChartCanvas').getContext('2d');
+    window.top10Chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Numero di Visitatori',
+                data,
+                backgroundColor: baseColor,
+                borderColor: borderColor,
+                borderWidth: 2,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            layout: {
+                padding: { right: hasPrevYear ? 175 : 95 }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: chartTitle,
+                    color: 'blue',
+                    font: { size: 20, weight: 'bold' },
+                    padding: { top: 10, bottom: 5 }
+                },
+                subtitle: {
+                    display: true,
+                    text: subtitleText,
+                    color: '#666',
+                    font: { size: 15, style: 'italic', weight: 'normal' },
+                    padding: { bottom: 18 }
+                },
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: (context) => {
+                            const item = entries[context.dataIndex];
+                            const lines = [
+                                `${annoSelected}: ${item.value.toLocaleString('it-IT')} visitatori (${item.sharePerc.toFixed(1).replace('.', ',')}%)`
+                            ];
+                            if (hasPrevYear) {
+                                if (item.prevVal > 0) {
+                                    const sign = item.yoyDiff > 0 ? '+' : '';
+                                    const pSign = item.yoyPerc > 0 ? '+' : '';
+                                    lines.push(`${prevAnno}: ${item.prevVal.toLocaleString('it-IT')} (${sign}${item.yoyDiff.toLocaleString('it-IT')} | ${pSign}${item.yoyPerc.toFixed(1).replace('.', ',')}%)`);
+                                } else {
+                                    lines.push(`${prevAnno}: 0 visitatori (nuovo ingresso)`);
+                                }
+                                if (item.rankDelta !== null) {
+                                    const posTxt = item.rankDelta > 0
+                                        ? `▲ +${item.rankDelta} pos.`
+                                        : item.rankDelta < 0
+                                            ? `▼ ${item.rankDelta} pos.`
+                                            : `= stessa pos.`;
+                                    lines.push(`Posizione: #${item.rank} (${posTxt} vs #${item.prevRank})`);
+                                } else {
+                                    lines.push(`Posizione: #${item.rank}`);
+                                }
+                            }
+                            return lines;
+                        }
+                    }
+                },
+                datalabels: {
+                    anchor: 'end',
+                    align: 'end',
+                    clamp: true,
+                    clip: false,
+                    formatter: (value, context) => {
+                        const item = entries[context.dataIndex];
+                        const pctTxt = `${item.sharePerc.toFixed(1).replace('.', ',')}%`;
+                        if (hasPrevYear && item.yoyPerc !== null) {
+                            const sign = item.yoyPerc > 0 ? '+' : '';
+                            return `${value.toLocaleString('it-IT')} (${pctTxt} | ${sign}${item.yoyPerc.toFixed(1).replace('.', ',')}% vs ${prevAnno.slice(-2)})`;
+                        }
+                        return `${value.toLocaleString('it-IT')} (${pctTxt})`;
+                    },
+                    color: '#222',
+                    font: { weight: 'bold', size: 12 }
+                }
+            },
+            scales: {
+                x: {
+                    title: { display: true, text: 'Numero di Visitatori', color: 'blue', font: { size: 16, weight: 'bold' } },
+                    ticks: { color: 'black', beginAtZero: true, callback: v => new Intl.NumberFormat('it-IT').format(v) }
+                },
+                y: {
+                    ticks: { color: 'black', beginAtZero: true, font: { size: 13, weight: '600' } }
+                }
+            }
+        }
+    });
+}
+
+function updateTop10SideTile(config, tileValue, prevTileValue, denominator, hasPrevYear, prevAnno) {
+    const tileElement = document.getElementById('top10Tile');
+    const yoyElement = document.getElementById('top10TileYoy');
+
+    if (!config.excludeValue) {
+        tileElement.style.display = 'none';
+        return;
+    }
+
+    const percentage = denominator > 0 ? ((tileValue / denominator) * 100).toFixed(1).replace('.', ',') : '0,0';
+
+    document.getElementById('top10TileValue').textContent = tileValue.toLocaleString('it-IT');
+    document.getElementById('top10TileLabel').innerHTML = `${config.tileLabel}<br>${percentage}% del totale`;
+    tileElement.className = 'local-tile ' + config.tileClass;
+
+    if (hasPrevYear && prevTileValue > 0) {
+        const diff = tileValue - prevTileValue;
+        const perc = (diff / prevTileValue) * 100;
+        const arrow = diff > 0 ? '▲ +' : diff < 0 ? '▼ ' : '= ';
+        const dSign = diff > 0 ? '+' : '';
+        yoyElement.innerHTML = `${arrow}${perc.toFixed(1).replace('.', ',')}% vs ${prevAnno}<br>(${dSign}${diff.toLocaleString('it-IT')})`;
+        yoyElement.style.display = 'block';
+    } else {
+        yoyElement.style.display = 'none';
+    }
+
+    tileElement.style.display = 'block';
+}
+
+function onGeoSearchInput() {
+    const input = document.getElementById('geoSearchInput');
+    const clearBtn = document.getElementById('geoSearchClearBtn');
+    const hintEl = document.getElementById('geoSearchHint');
+    const resultsEl = document.getElementById('geoSearchResults');
+
+    const query = (input.value || '').trim().toLowerCase();
+    clearBtn.style.display = query.length > 0 ? 'block' : 'none';
+
+    if (!currentGeoRankingState) {
+        resultsEl.innerHTML = '';
+        return;
+    }
+
+    const totalVoices = currentGeoRankingState.entries.length;
+    if (query.length < 2) {
+        hintEl.textContent = `Scrivi almeno 2 lettere per cercare tra tutte le ${totalVoices} località presenti in "${currentGeoRankingState.periodLabel} ${currentGeoRankingState.annoSelected}" (anche oltre la Top 10/20).`;
+        resultsEl.innerHTML = '';
+        return;
+    }
+
+    const pool = currentGeoRankingState.excludedEntry
+        ? [currentGeoRankingState.excludedEntry, ...currentGeoRankingState.entries]
+        : currentGeoRankingState.entries;
+
+    const matches = pool
+        .filter(e => e.displayName.toLowerCase().includes(query) || e.rawKey.toLowerCase().includes(query))
+        .slice(0, 6);
+
+    if (matches.length === 0) {
+        hintEl.textContent = `Nessuna località trovata per "${input.value.trim()}" nel periodo ${currentGeoRankingState.periodLabel} ${currentGeoRankingState.annoSelected}.`;
+        resultsEl.innerHTML = '';
+        return;
+    }
+
+    hintEl.textContent = `Risultati trovati (${matches.length}${matches.length === 6 ? '+' : ''}) su ${totalVoices} località in classifica:`;
+
+    resultsEl.innerHTML = matches.map(item => {
+        const rankBadge = item.isExcluded
+            ? `<span class="geo-result-rank excluded-rank">Riferimento locale</span>`
+            : `<span class="geo-result-rank">#${item.rank} su ${totalVoices}</span>`;
+
+        let yoyHtml = '';
+        if (currentGeoRankingState.hasPrevYear) {
+            if (item.prevVal > 0) {
+                const sign = item.yoyDiff > 0 ? '+' : '';
+                const cls = item.yoyDiff >= 0 ? 'geo-yoy-pos' : 'geo-yoy-neg';
+                const posInfo = item.rankDelta !== null
+                    ? (item.rankDelta > 0 ? ` • ▲ +${item.rankDelta} pos.` : item.rankDelta < 0 ? ` • ▼ ${item.rankDelta} pos.` : ` • = pos.`)
+                    : '';
+                yoyHtml = `<br><span class="${cls}">${sign}${item.yoyPerc.toFixed(1).replace('.', ',')}% vs ${currentGeoRankingState.prevAnno} (${sign}${item.yoyDiff.toLocaleString('it-IT')})</span>${posInfo}`;
+            } else {
+                yoyHtml = `<br><span class="geo-yoy-pos">Nuovo rispetto al ${currentGeoRankingState.prevAnno}</span>`;
+            }
+        }
+
+        return `<div class="geo-result-item">
+            <div class="geo-result-header">
+                <span class="geo-result-name">${item.displayName}</span>
+                ${rankBadge}
+            </div>
+            <div class="geo-result-stats">
+                <strong>${item.value.toLocaleString('it-IT')}</strong> visitatori (<strong>${item.sharePerc.toFixed(1).replace('.', ',')}%</strong>)
+                ${yoyHtml}
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function clearGeoSearch() {
+    document.getElementById('geoSearchInput').value = '';
+    onGeoSearchInput();
 }
 
         function handleMuseumShowSelection(changedSelect) {
@@ -2864,170 +3494,6 @@ function updateMeseGeoDropdown() {
             });
         }
 
-        // --- FUNZIONE PER I GRAFICI A BARRE GEOGRAFICI ---
-       function updateBarChart(config) {
-    if (!altriDati.length) return;
-    
-    if (window[config.chartInstance] && typeof window[config.chartInstance].destroy === 'function') {
-        window[config.chartInstance].destroy();
-    }
-
-    const { canvasId, categoryCol, valueCol, baseTitle, excludeValue, meseOverride, annoOverride, barColor } = config;
-
-    const monthlyFiltered = altriDati.filter(row => {
-        const matchAnno = String(row.Anno) === String(annoOverride);
-        const matchMese = meseOverride === 'Tutti' || row.Mese === meseOverride;
-        return matchAnno && matchMese;
-    });
-    
-    const aggregatedData = monthlyFiltered.reduce((acc, row) => {
-        const category = row[categoryCol];
-        const value = parseInt(row[valueCol]) || 0;
-        if (category && value > 0) {
-            acc[category] = (acc[category] || 0) + value;
-        }
-        return acc;
-    }, {});
-    
-    let excludedValueTotal = 0;
-    if (excludeValue && aggregatedData[excludeValue]) {
-        excludedValueTotal = aggregatedData[excludeValue];
-        delete aggregatedData[excludeValue];
-    }
-
-    const sortedData = Object.entries(aggregatedData)
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 10);
-
-const labels = sortedData.map(item => item[0]);
-const data = sortedData.map(item => item[1]);
-
-const percentages = config.denominator > 0 
-    ? data.map(value => ((value / config.denominator) * 100).toFixed(1))
-    : data.map(() => '0.0');
-
-config.percentages = percentages;
-
-    const baseColor = barColor || "#607d8b";
-    const borderColor = darkenColor(baseColor, 40);
-
-    const ctx = document.getElementById(canvasId).getContext('2d');
-    
-    let chartTitle = `${baseTitle} - ${meseOverride}`;
-if (excludeValue && excludedValueTotal > 0) {
-    let excludedLabel = excludeValue.charAt(0).toUpperCase() + excludeValue.slice(1);
-    chartTitle += ` (esclusa ${excludedLabel}: ${excludedValueTotal.toLocaleString('it-IT')})`;
-}
-
-    window[config.chartInstance] = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Numero di Visitatori',
-                data: data,
-                backgroundColor: baseColor,
-                borderColor: borderColor,
-                borderWidth: 2
-            }]
-        },
-       options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    indexAxis: 'y',
-    layout: {
-        padding: { right: 80 }
-    },
-    plugins: {
-    title: {
-        display: true,
-        text: chartTitle,
-        color: 'blue',
-        font: {
-            size: 20,
-            weight: 'bold'
-        },
-        padding: {
-            top: 10,
-            bottom: 5
-        }
-    },
-    subtitle: {
-        display: true,
-        text: config.subtitleText || '',
-        color: '#666',
-        font: {
-            size: 16,
-            style: 'italic',
-            weight: 'normal'
-        },
-        padding: {
-            bottom: 20
-        }
-    },
-    legend: { 
-        display: false 
-    },
-    datalabels: { 
-        anchor: 'end', 
-        align: 'end', 
-        formatter: (value, context) => {
-            const percentage = config.percentages ? config.percentages[context.dataIndex] : null;
-            if (percentage !== null && percentage !== undefined) {
-                return `${value.toLocaleString('it-IT')} (${percentage}%)`;
-            }
-            return value.toLocaleString('it-IT');
-        }, 
-        color: '#333', 
-        font: { weight: 'bold', size: 12 } 
-    }
-},
-            scales: {
-                x: {
-                    title: { display: true, text: 'Numero di Visitatori', color: 'blue', font: {size: 16} },
-                    ticks: { color: 'black', beginAtZero: true, callback: (value) => new Intl.NumberFormat('it-IT').format(value) }
-                },
-                y: {
-                   ticks: { color: 'black', beginAtZero: true, font: { size: 14 } }
-                }
-            }
-        }
-    });
-}
-        
-        // --- FUNZIONE PER I RIQUADRI GEOGRAFICI ---
-      function updateTop10SideTile(config, annoSelected, meseSelected, denominator) {
-    const tileElement = document.getElementById('top10Tile');
-    
-    if (!config.excludeValue) {
-        tileElement.style.display = 'none';
-        return;
-    }
-
-    const monthlyFiltered = altriDati.filter(row => {
-        const matchAnno = String(row.Anno) === String(annoSelected);
-        const matchMese = meseSelected === 'Tutti' || row.Mese === meseSelected;
-        return matchAnno && matchMese;
-    });
-    
-    const aggregate = (data, keyColumn, valueColumn, targetValue) => {
-         return data.reduce((sum, row) => {
-            if (row[keyColumn] === targetValue) {
-                return sum + (parseInt(row[valueColumn]) || 0);
-            }
-            return sum;
-        }, 0);
-    };
-
-    const tileValue = aggregate(monthlyFiltered, config.categoryCol, config.valueCol, config.excludeValue);
-    const percentage = denominator > 0 ? ((tileValue / denominator) * 100).toFixed(1) : '0.0';
-
-    document.getElementById('top10TileValue').textContent = tileValue.toLocaleString('it-IT');
-    document.getElementById('top10TileLabel').innerHTML = `${config.tileLabel}<br>${percentage}% del totale`;
-    tileElement.className = 'local-tile ' + config.tileClass;
-    tileElement.style.display = 'block';
-}
-
 function setSummaryTableSort(key) {
     if (summaryTableSort.key === key) {
         summaryTableSort.dir = summaryTableSort.dir === 'desc' ? 'asc' : 'desc';
@@ -3103,7 +3569,6 @@ function updateTable() {
     return r;
   });
 
-  // Ordinamento tabella riepilogativa (default: Totale decrescente)
   const sortFactor = summaryTableSort.dir === 'asc' ? 1 : -1;
   righeTabella.sort((a, b) => {
     if (summaryTableSort.key === 'Museo') {
