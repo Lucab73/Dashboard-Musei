@@ -209,6 +209,117 @@
     background: none !important;
     -webkit-text-fill-color: #000000 !important;
 }
+
+/* Badge distinzione Museo vs Mostra in tabella */
+.type-pill {
+    display: inline-block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 10px;
+    margin-right: 8px;
+    vertical-align: middle;
+    letter-spacing: 0.2px;
+}
+.type-pill.pill-museo {
+    background: #e8eefc;
+    color: #3949ab;
+    border: 1px solid #c5cae9;
+}
+.type-pill.pill-mostra {
+    background: #fde8ef;
+    color: #ad1457;
+    border: 1px solid #f8bbd0;
+}
+
+/* Intestazioni blocchi filtri Panoramica + pulsante sincronizza */
+.filter-section-wrapper {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    padding: 16px 18px;
+    margin-bottom: 20px;
+    box-shadow: 0 6px 18px rgba(102, 126, 234, 0.22);
+}
+.filter-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+}
+.filter-section-title {
+    color: white;
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+.filter-section-subtitle {
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 0.92rem;
+    font-style: italic;
+}
+.sync-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    border-radius: 20px;
+    padding: 7px 15px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.sync-btn:hover {
+    background: white;
+    color: #4a3fa5;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+.filter-section-wrapper .controls {
+    background: transparent;
+    padding: 0;
+    margin-bottom: 0;
+}
+
+/* Switcher modalità Assoluti / % per TimeChart */
+.chart-mode-bar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+.chart-mode-label {
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 1rem;
+}
+.mode-toggle-group {
+    display: inline-flex;
+    background: #e2e8f0;
+    border-radius: 22px;
+    padding: 4px;
+    gap: 4px;
+}
+.mode-toggle-btn {
+    border: none;
+    background: transparent;
+    color: #4a5568;
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 7px 16px;
+    border-radius: 18px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.mode-toggle-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 3px 8px rgba(102, 126, 234, 0.35);
+}
        
         /* === INIZIO BLOCCO STILI TAB AGGIORNATO === */
         .tab-buttons {
@@ -658,61 +769,77 @@
         </div>
         
         <div class="chart-container fade-in">
-  <div class="controls" style="margin-top: 20px;">
-  <div class="control-group">
-    <label for="annoTabellaSelect" style="color: white; font-weight: bold;">📆 Seleziona Anno</label>
-    <select id="annoTabellaSelect" onchange="updateTable()"></select>
-  </div>
-  <div class="control-group">
-    <label for="meseTabellaSelect" style="color: white; font-weight: bold;">📅 Seleziona Mese</label>
-    <select id="meseTabellaSelect" onchange="updateTable()">
-      <option value="Tutti">Tutti</option>
-    </select>
-  </div>
-  <div class="control-group">
-    <label for="tipoTabellaSelect" style="color: white; font-weight: bold;">🏛️ Tipo</label>
-    <select id="tipoTabellaSelect" onchange="updateTable()">
-      <option value="Tutti">Tutti (Musei + Mostre)</option>
-      <option value="SoloMusei">Collezioni permanenti</option>
-      <option value="SoloMostre">Mostre</option>
-    </select>
-  </div>
-</div>
-  <div id="summaryTableContainer">
-    <!-- Tabella generata dinamicamente -->
-  </div>
-  
+            <!-- FILTRI BLOCCO 1: KPI & TABELLA -->
+            <div class="filter-section-wrapper">
+                <div class="filter-section-header">
+                    <div>
+                        <div class="filter-section-title">📋 Filtri per KPI in alto & Tabella Riepilogativa</div>
+                        <div class="filter-section-subtitle">Modifica anno, mese e tipo (Musei/Mostre) per aggiornare le card KPI e la tabella sotto</div>
+                    </div>
+                    <button type="button" class="sync-btn" onclick="syncTableFiltersToCharts()">🔄 Applica anche ai grafici</button>
+                </div>
+                <div class="controls">
+                    <div class="control-group">
+                        <label for="annoTabellaSelect">📆 Seleziona Anno</label>
+                        <select id="annoTabellaSelect" onchange="updateTable()"></select>
+                    </div>
+                    <div class="control-group">
+                        <label for="meseTabellaSelect">📅 Seleziona Mese</label>
+                        <select id="meseTabellaSelect" onchange="updateTable()">
+                            <option value="Tutti">Tutti</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label for="tipoTabellaSelect">🏛️ Tipo</label>
+                        <select id="tipoTabellaSelect" onchange="updateTable()">
+                            <option value="Tutti">Tutti (Musei + Mostre)</option>
+                            <option value="SoloMusei">Collezioni permanenti</option>
+                            <option value="SoloMostre">Mostre</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
 
-            <!-- RIGA SUPERIORE: SOLO ANNO -->
-<div class="controls">
-  <div class="control-group">
-    <label for="annoSelect">📆 Seleziona Anno</label>
-    <select id="annoSelect" onchange="onAnnoChange()"></select>
-  </div>
-</div>
+            <div id="summaryTableContainer">
+                <!-- Tabella generata dinamicamente -->
+            </div>
 
-<!-- RIGA SOTTOSTANTE: Mese, Museo, Mostra -->
-<div class="controls">
-  <div class="control-group">
-    <label for="meseSelect">📅 Seleziona Mese</label>
-    <select id="meseSelect" onchange="updateCharts()">
-      <option value="Tutti">Tutti</option>
-    </select>
-  </div>
-  <div class="control-group">
-    <label for="museoSelect">🏛️ Seleziona Museo</label>
-    <select id="museoSelect" onchange="updateCharts(); handleMuseumShowSelection('museo')">
-      <option value="Tutti">Tutti</option>
-    </select>
-  </div>
-  <div class="control-group">
-    <label for="mostraSelect">🎨 Seleziona Mostra</label>
-    <select id="mostraSelect" onchange="updateCharts(); handleMuseumShowSelection('mostra')">
-      <option value="Tutti">Tutti</option>
-    </select>
-  </div>
-</div>
-</div>
+            <!-- FILTRI BLOCCO 2: GRAFICI DI DETTAGLIO -->
+            <div class="filter-section-wrapper" style="margin-top: 25px; margin-bottom: 0;">
+                <div class="filter-section-header">
+                    <div>
+                        <div class="filter-section-title">📈 Filtri per i 3 Grafici di Dettaglio (Torte & Andamento)</div>
+                        <div class="filter-section-subtitle">Scegli un singolo museo o una mostra specifica per esplorare i grafici sottostanti</div>
+                    </div>
+                </div>
+                <div class="controls" style="margin-bottom: 12px;">
+                    <div class="control-group">
+                        <label for="annoSelect">📆 Seleziona Anno</label>
+                        <select id="annoSelect" onchange="onAnnoChange()"></select>
+                    </div>
+                </div>
+                <div class="controls">
+                    <div class="control-group">
+                        <label for="meseSelect">📅 Seleziona Mese</label>
+                        <select id="meseSelect" onchange="updateCharts()">
+                            <option value="Tutti">Tutti</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label for="museoSelect">🏛️ Seleziona Museo</label>
+                        <select id="museoSelect" onchange="handleMuseumShowSelection('museo')">
+                            <option value="Tutti">Tutti</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label for="mostraSelect">🎨 Seleziona Mostra</label>
+                        <select id="mostraSelect" onchange="handleMuseumShowSelection('mostra')">
+                            <option value="Tutti">Tutti</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <div class="chart-container">
             <canvas id="mainChart" class="chart-canvas"></canvas>
@@ -724,6 +851,13 @@
         </div>
         
         <div class="chart-container">
+            <div class="chart-mode-bar">
+                <span class="chart-mode-label">Visualizzazione grafico temporale:</span>
+                <div class="mode-toggle-group">
+                    <button type="button" id="timeModeAbsBtn" class="mode-toggle-btn active" onclick="setTimeChartMode('absolute')">📊 Valori assoluti</button>
+                    <button type="button" id="timeModePctBtn" class="mode-toggle-btn" onclick="setTimeChartMode('percent')">📈 % sul totale mensile</button>
+                </div>
+            </div>
             <canvas id="timeChart" class="chart-canvas"></canvas>
         </div>
         <div class="note fade-in" id="note"></div>
@@ -906,32 +1040,60 @@
     
     <script>
 
+        function populateMostreForAnno(selectedAnno) {
+            const mostreAnno = [...new Set(
+                rawData
+                    .filter(row => row.Anno === selectedAnno && row.Museo && row.Museo.includes('"'))
+                    .map(row => row.Museo)
+            )].sort();
+
+            const mostraSelect = document.getElementById('mostraSelect');
+            mostraSelect.innerHTML = '<option value="Tutti">Tutti</option><option value="SoloMostre">Tutte le mostre</option>';
+            mostreAnno.forEach(mostra => {
+                const option = document.createElement('option');
+                option.value = mostra;
+                option.textContent = mostra;
+                mostraSelect.appendChild(option);
+            });
+        }
+
         function onAnnoChange() {
-  const selectedAnno = document.getElementById('annoSelect').value;
+            const selectedAnno = document.getElementById('annoSelect').value;
+            populateMostreForAnno(selectedAnno);
+            document.getElementById('mostraSelect').value = 'Tutti';
+            updateCharts();
+        }
 
-  // Filtra solo le mostre presenti per quell’anno
-  const mostreAnno = [...new Set(
-    rawData
-      .filter(row => row.Anno === selectedAnno && row.Museo.includes('"'))
-      .map(row => row.Museo)
-  )].sort();
+        function syncTableFiltersToCharts() {
+            const annoTab = document.getElementById('annoTabellaSelect').value;
+            const meseTab = document.getElementById('meseTabellaSelect').value;
+            const tipoTab = document.getElementById('tipoTabellaSelect').value;
 
-  // Pulisci e ripopola il menu delle mostre
-  const mostraSelect = document.getElementById('mostraSelect');
-  mostraSelect.innerHTML = '<option value="Tutti">Tutti</option>';
-  mostreAnno.forEach(mostra => {
-    const option = document.createElement('option');
-    option.value = mostra;
-    option.textContent = mostra;
-    mostraSelect.appendChild(option);
-  });
+            const annoSelect = document.getElementById('annoSelect');
+            const meseSelect = document.getElementById('meseSelect');
+            const museoSelect = document.getElementById('museoSelect');
+            const mostraSelect = document.getElementById('mostraSelect');
 
-  // Resetta la selezione della mostra
-  mostraSelect.value = 'Tutti';
+            annoSelect.value = annoTab;
+            populateMostreForAnno(annoTab);
 
-  // Aggiorna i grafici
-  updateCharts();
-}
+            const hasMeseOption = [...meseSelect.options].some(opt => opt.value === meseTab);
+            meseSelect.value = hasMeseOption ? meseTab : 'Tutti';
+
+            if (tipoTab === 'SoloMusei') {
+                museoSelect.value = 'SoloMusei';
+                mostraSelect.value = 'Tutti';
+            } else if (tipoTab === 'SoloMostre') {
+                museoSelect.value = 'Tutti';
+                mostraSelect.value = 'SoloMostre';
+            } else {
+                museoSelect.value = 'Tutti';
+                mostraSelect.value = 'Tutti';
+            }
+
+            updateCharts();
+        }
+
         // --- FUNZIONE PER GESTIRE LE SCHEDE (TABS) ---
         function openTab(evt, tabName) {
             let i, tabcontent, tablinks;
@@ -964,12 +1126,13 @@
         let mainChart = null;
         let foreignersChart = null;
         let timeChart = null;
+        let timeChartMode = 'absolute'; // 'absolute' | 'percent'
+        let summaryTableSort = { key: 'Totale', dir: 'desc' };
         let availableComparisonPeriods = [];
         let comparisonSyncWarning = '';
         let comparisonSort = { key: 'perc', dir: 'desc' };
         window.top10Chart = null;
 
-        // Funzione per scurire un colore esadecimale
         function darkenColor(hex, percent) {
             let num = parseInt(hex.replace("#", ""), 16);
             let r = (num >> 16) - percent;
@@ -1262,7 +1425,6 @@ Chart.register(externalLabelsMainChartPlugin);
 function updateDropdowns() {
     const allMuseumsAndShows = [...new Set(rawData.map(row => row.Museo))].sort();
     const musei = allMuseumsAndShows.filter(name => (name.match(/"/g) || []).length < 2);
-    const mostre = allMuseumsAndShows.filter(name => (name.match(/"/g) || []).length >= 2);
 
     const museoSelect = document.getElementById('museoSelect');
     const mostraSelect = document.getElementById('mostraSelect');
@@ -1274,20 +1436,13 @@ function updateDropdowns() {
            <option value="Tutti">Tutti</option>
                <option value="SoloMusei">Tutti (mostre escluse)</option>
     `;
-    mostraSelect.innerHTML = '<option value="Tutti">Tutti</option>';
+    mostraSelect.innerHTML = '<option value="Tutti">Tutti</option><option value="SoloMostre">Tutte le mostre</option>';
     meseSelect.innerHTML = '<option value="Tutti">Tutti</option>';
     meseTabellaSelect.innerHTML = '<option value="Tutti">Tutti</option>';
     meseGeoSelect.innerHTML = '<option value="Tutti">Tutti</option>';
 
     musei.forEach(museo => { 
         museoSelect.innerHTML += `<option value="${museo}">${museo}</option>`; 
-    });
-
-    mostre.forEach(mostra => { 
-        const option = document.createElement('option');
-        option.value = mostra;
-        option.textContent = mostra;
-        mostraSelect.appendChild(option);
     });
 
     const mesiOrdine = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
@@ -1329,7 +1484,7 @@ function updateDropdowns() {
     onAnnoChange();
 }
 
-// === FUNZIONI PER IL NUOVO TAB CONFRONTI (INTERVALLI MESE + ANNO, METRICHE, KPI, MOSTRE, ORDINAMENTO) ===
+// === FUNZIONI PER IL NUOVO TAB CONFRONTI ===
 
 const MESI_ORDINE_CONFRONTI = [
     'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
@@ -1669,7 +1824,6 @@ function updateComparisonKPIs(totBucketA, totBucketB, rows, metrica, isSingleMus
     const totalA = extractMetricValue(totBucketA, metrica);
     const totalB = extractMetricValue(totBucketB, metrica);
 
-    // 1. Variazione totale
     let totalDiff = null;
     let totalPerc = null;
     if (isPercent) {
@@ -1688,7 +1842,6 @@ function updateComparisonKPIs(totBucketA, totBucketB, rows, metrica, isSingleMus
     document.getElementById('compKpiTotalSub').textContent =
         `${formatMetricValue(totalA, isPercent)} vs ${formatMetricValue(totalB, isPercent)} (${formatMetricDiff(totalDiff, isPercent)})`;
 
-    // 2 & 3. Maggior Crescita / Maggior Calo
     const entityWord = isSingleMuseumMultiMonth ? 'Mese' : 'Museo';
     document.getElementById('compKpiBestLabel').textContent = `${entityWord} con Maggior Crescita`;
     document.getElementById('compKpiWorstLabel').textContent = `${entityWord} con Maggior Calo`;
@@ -1727,7 +1880,6 @@ function updateComparisonKPIs(totBucketA, totBucketB, rows, metrica, isSingleMus
             (museo !== 'Tutti' && !isSingleMuseumMultiMonth) ? 'Singolo mese selezionato' : 'Nessuna variazione negativa';
     }
 
-    // 4. Variazione % Stranieri globale del filtro corrente
     const percStrA = totBucketA.Totale_Visitatori > 0 ? (totBucketA.Stranieri / totBucketA.Totale_Visitatori) * 100 : null;
     const percStrB = totBucketB.Totale_Visitatori > 0 ? (totBucketB.Stranieri / totBucketB.Totale_Visitatori) * 100 : null;
     if (percStrA !== null && percStrB !== null) {
@@ -1766,7 +1918,6 @@ function updateAnnualComparison() {
     const shortA = formatRangeLabel(startA, endA, true);
     const shortB = formatRangeLabel(startB, endB, true);
 
-    // Banner di avviso non bloccanti
     const alertBox = document.getElementById('comparisonDurationAlert');
     const alerts = [];
 
@@ -1861,10 +2012,8 @@ function updateAnnualComparison() {
         });
     }
 
-    // Aggiorna KPI
     updateComparisonKPIs(totBucketA, totBucketB, rawRows, metrica, isSingleMuseumMultiMonth, museo);
 
-    // Ordina tabella secondo selezione utente
     const sortedRows = sortComparisonRows(rawRows, isPercent);
 
     const sortArrow = (key) => {
@@ -1904,7 +2053,6 @@ function updateAnnualComparison() {
         </tr>`;
     });
 
-    // Riga Totale Generale (per % Stranieri è ponderata sui totali effettivi!)
     const totRow = buildComparisonRowObj('📈 Totale Generale', totBucketA, totBucketB, metrica);
     const totDiffClass = totRow.diff === null ? '' : (totRow.diff >= 0 ? 'percentage-cell positive' : 'percentage-cell negative');
     const totPercClass = totRow.perc === null ? '' : (totRow.perc >= 0 ? 'percentage-cell positive' : 'percentage-cell negative');
@@ -1920,7 +2068,6 @@ function updateAnnualComparison() {
     html += '</tbody></table></div>';
     document.getElementById('comparisonTableContainer').innerHTML = html;
 
-    // Gestione grafici
     const barContainer = document.getElementById('comparisonBarContainer');
     const lineContainer = document.getElementById('comparisonLineContainer');
 
@@ -2235,7 +2382,6 @@ function renderComparisonLineChart(seqA, seqB, righeA, righeB, labelA, labelB, s
     });
 }
 
-// Aggiorna i mesi in base all'anno selezionato nel tab Top 10
 function updateMeseGeoDropdown() {
     if (!altriDati.length) return;
 
@@ -2349,7 +2495,7 @@ function updateMeseGeoDropdown() {
             } else if (changedSelect === 'mostra' && mostraSelect.value !== 'Tutti') {
                 museoSelect.value = 'Tutti';
             }
-            setTimeout(() => updateCharts(), 50);
+            updateCharts();
         }
 
         function filterData() {
@@ -2365,9 +2511,11 @@ function updateMeseGeoDropdown() {
         let matchMuseoMostra = true;
 
         if (museoSelected === 'SoloMusei') {
-            matchMuseoMostra = !row.Museo.includes('"');
+            matchMuseoMostra = row.Museo && !row.Museo.includes('"');
         } else if (museoSelected !== 'Tutti') {
             matchMuseoMostra = row.Museo === museoSelected;
+        } else if (mostraSelected === 'SoloMostre') {
+            matchMuseoMostra = row.Museo && row.Museo.includes('"');
         } else if (mostraSelected !== 'Tutti') {
             matchMuseoMostra = row.Museo === mostraSelected;
         }
@@ -2400,6 +2548,7 @@ function updateMeseGeoDropdown() {
   const mesiPresenti = [...new Set(filtered.map(row => row.Mese))];
   const mesiOrdine = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
   const mesiOrdinati = mesiOrdine.filter(m => mesiPresenti.includes(m));
+  if (!mesiOrdinati.length) return anno;
   return mesiOrdinati.length === 1
     ? `${mesiOrdinati[0]} ${anno}`
     : `${mesiOrdinati[0]} - ${mesiOrdinati[mesiOrdinati.length - 1]} ${anno}`;
@@ -2408,32 +2557,44 @@ function updateMeseGeoDropdown() {
       function updateKPIs() {
     const meseTabella = document.getElementById('meseTabellaSelect').value;
     const annoTabella = document.getElementById('annoTabellaSelect').value;
+    const tipoTabella = document.getElementById('tipoTabellaSelect').value;
     
     const filtered = rawData.filter(row => {
         const matchAnno = row.Anno === annoTabella;
         const matchMese = meseTabella === 'Tutti' || row.Mese === meseTabella;
-        return matchAnno && matchMese;
+        let matchTipo = true;
+        if (tipoTabella === 'SoloMusei') {
+            matchTipo = row.Museo && !row.Museo.includes('"');
+        } else if (tipoTabella === 'SoloMostre') {
+            matchTipo = row.Museo && row.Museo.includes('"');
+        }
+        return matchAnno && matchMese && matchTipo;
     });
     
     const total = filtered.reduce((sum, row) => sum + (parseInt(row.Totale_Visitatori) || 0), 0);
     const foreigners = filtered.reduce((sum, row) => sum + (parseInt(row.Stranieri) || 0), 0);
-    const foreignerPercent = total > 0 ? (foreigners / total * 100).toFixed(1) : 0;
+    const foreignerPercent = total > 0 ? (foreigners / total * 100).toFixed(1) : '0.0';
     document.getElementById('totalVisitors').textContent = total.toLocaleString('it-IT');
     document.getElementById('foreignerPercent').textContent = foreignerPercent + '%';
     
     const periodText = getPeriodText();
+    const tipoSuffix = tipoTabella === 'SoloMusei'
+        ? ' • Collezioni permanenti'
+        : tipoTabella === 'SoloMostre'
+            ? ' • Solo Mostre'
+            : '';
     const visitorsLabel = document.querySelector('.kpi-card.visitors .kpi-label');
     const foreignersLabel = document.querySelector('.kpi-card.foreigners .kpi-label');
     if (periodText) {
-        visitorsLabel.textContent = `Visitatori Totali Intervistati - ${periodText}`;
-        foreignersLabel.textContent = `% Visitatori Stranieri - ${periodText}`;
+        visitorsLabel.textContent = `Visitatori Totali Intervistati - ${periodText}${tipoSuffix}`;
+        foreignersLabel.textContent = `% Visitatori Stranieri - ${periodText}${tipoSuffix}`;
     } else {
         visitorsLabel.textContent = 'Visitatori Totali';
         foreignersLabel.textContent = '% Visitatori Stranieri';
     }
     
     const nonSpecificato = filtered.reduce((sum, row) => sum + (parseInt(row.Continente_Non_Specificato) || 0), 0);
-    document.getElementById('note').textContent = `ℹ️ Interviste escluse per continente non specificato (${getPeriodText()}): ${nonSpecificato.toLocaleString('it-IT')}`;
+    document.getElementById('note').textContent = `ℹ️ Interviste escluse per continente non specificato (${periodText}${tipoSuffix}): ${nonSpecificato.toLocaleString('it-IT')}`;
 }
         
         // --- GRAFICI PRINCIPALI ---
@@ -2577,6 +2738,13 @@ function updateMeseGeoDropdown() {
             });
         }
         
+        function setTimeChartMode(mode) {
+            timeChartMode = mode;
+            document.getElementById('timeModeAbsBtn').classList.toggle('active', mode === 'absolute');
+            document.getElementById('timeModePctBtn').classList.toggle('active', mode === 'percent');
+            updateTimeChart();
+        }
+
         function updateTimeChart() {
             const filtered = filterData();
             const monthlyData = {};
@@ -2589,14 +2757,110 @@ function updateMeseGeoDropdown() {
             });
             const mesiOrdine = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
             const mesi = mesiOrdine.filter(m => Object.keys(monthlyData).includes(m));
-            const bolognaData = mesi.map(m => monthlyData[m].Bologna);
-            const restoItaliaData = mesi.map(m => monthlyData[m].Resto_Italia);
-            const stranieriData = mesi.map(m => monthlyData[m].Stranieri);
+            const rawBologna = mesi.map(m => monthlyData[m].Bologna);
+            const rawResto = mesi.map(m => monthlyData[m].Resto_Italia);
+            const rawStranieri = mesi.map(m => monthlyData[m].Stranieri);
+            const rawTotals = mesi.map((m, idx) => rawBologna[idx] + rawResto[idx] + rawStranieri[idx]);
+
+            const isPercent = timeChartMode === 'percent';
+            const bolognaData = isPercent
+                ? rawBologna.map((v, i) => rawTotals[i] > 0 ? Number(((v / rawTotals[i]) * 100).toFixed(1)) : 0)
+                : rawBologna;
+            const restoItaliaData = isPercent
+                ? rawResto.map((v, i) => rawTotals[i] > 0 ? Number(((v / rawTotals[i]) * 100).toFixed(1)) : 0)
+                : rawResto;
+            const stranieriData = isPercent
+                ? rawStranieri.map((v, i) => rawTotals[i] > 0 ? Number(((v / rawTotals[i]) * 100).toFixed(1)) : 0)
+                : rawStranieri;
+            const rawMatrix = [rawBologna, rawResto, rawStranieri];
+
             const ctx = document.getElementById('timeChart').getContext('2d');
             if (timeChart) timeChart.destroy();
             timeChart = new Chart(ctx, {
-                type: 'line', data: { labels: mesi, datasets: [{ label: 'Bologna', data: bolognaData, borderColor: colorPalette.bologna, backgroundColor: colorPalette.bologna + '20', borderWidth: 4, tension: 0.3, pointRadius: 6, pointHoverRadius: 8 }, { label: 'Resto Italia', data: restoItaliaData, borderColor: colorPalette.resto_italia, backgroundColor: colorPalette.resto_italia + '20', borderWidth: 4, tension: 0.3, pointRadius: 6, pointHoverRadius: 8 }, { label: 'Stranieri', data: stranieriData, borderColor: colorPalette.stranieri, backgroundColor: colorPalette.stranieri + '20', borderWidth: 4, tension: 0.3, pointRadius: 6, pointHoverRadius: 8 }] },
-                options: { responsive: true, maintainAspectRatio: false, interaction: { intersect: false, mode: 'index' }, plugins: { title: { display: true, text: generateDynamicTitle('Andamento Temporale'), font: { size: 24, weight: 'bold' }, color: 'blue' }, legend: { position: 'top', labels: { font: { size: 16, weight: 'bold' }, color: 'blue' } }, tooltip: { callbacks: { label: c => `${c.dataset.label}: ${c.parsed.y.toLocaleString('it-IT')} visitatori` } }, datalabels: { display: true, align: 'top', color: '#1f3a5a', font: { weight: 'bold' }, backgroundColor: 'rgba(255, 255, 255, 0.7)', borderRadius: 4, padding: 3, formatter: v => v > 0 ? v.toLocaleString('it-IT') : null } }, scales: { x: { title: { display: true, text: 'Mesi', font: { size: 18, weight: 'bold' }, color: 'blue' }, ticks: { font: { size: 14, weight: 'bold' }, color: '#2c3e50' } }, y: { beginAtZero: true, title: { display: true, text: 'Numero Visitatori Intervistati', font: { size: 18, weight: 'bold' }, color: 'blue' }, ticks: { font: { size: 14, weight: 'bold' }, color: '#2c3e50', callback: v => v.toLocaleString('it-IT') } } } }
+                type: 'line',
+                data: {
+                    labels: mesi,
+                    datasets: [
+                        { label: 'Bologna', data: bolognaData, borderColor: colorPalette.bologna, backgroundColor: colorPalette.bologna + '20', borderWidth: 4, tension: 0.3, pointRadius: 6, pointHoverRadius: 8 },
+                        { label: 'Resto Italia', data: restoItaliaData, borderColor: colorPalette.resto_italia, backgroundColor: colorPalette.resto_italia + '20', borderWidth: 4, tension: 0.3, pointRadius: 6, pointHoverRadius: 8 },
+                        { label: 'Stranieri', data: stranieriData, borderColor: colorPalette.stranieri, backgroundColor: colorPalette.stranieri + '20', borderWidth: 4, tension: 0.3, pointRadius: 6, pointHoverRadius: 8 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { intersect: false, mode: 'index' },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: generateDynamicTitle(isPercent ? 'Andamento Temporale (% sul totale)' : 'Andamento Temporale'),
+                            font: { size: 24, weight: 'bold' },
+                            color: 'blue'
+                        },
+                        legend: {
+                            position: 'top',
+                            labels: { font: { size: 16, weight: 'bold' }, color: 'blue' }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: c => {
+                                    const absVal = rawMatrix[c.datasetIndex][c.dataIndex] || 0;
+                                    if (isPercent) {
+                                        return `${c.dataset.label}: ${c.parsed.y.toFixed(1).replace('.', ',')}% (${absVal.toLocaleString('it-IT')} visitatori)`;
+                                    }
+                                    return `${c.dataset.label}: ${c.parsed.y.toLocaleString('it-IT')} visitatori`;
+                                }
+                            }
+                        },
+                        datalabels: {
+                            display: true,
+                            align: (ctx) => {
+                                if (!isPercent) return 'top';
+                                const vals = ctx.chart.data.datasets.map(ds => ds.data[ctx.dataIndex]);
+                                const maxVal = Math.max(...vals);
+                                const minVal = Math.min(...vals);
+                                const curr = vals[ctx.datasetIndex];
+                                if (curr === maxVal) return 'top';
+                                if (curr === minVal) return 'bottom';
+                                return 'right';
+                            },
+                            offset: 6,
+                            clamp: true,
+                            clip: false,
+                            color: '#1f3a5a',
+                            font: { weight: 'bold' },
+                            backgroundColor: 'rgba(255, 255, 255, 0.78)',
+                            borderRadius: 4,
+                            padding: 3,
+                            formatter: v => {
+                                if (isPercent) return v > 0 ? `${v.toFixed(1).replace('.', ',')}%` : null;
+                                return v > 0 ? v.toLocaleString('it-IT') : null;
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Mesi', font: { size: 18, weight: 'bold' }, color: 'blue' },
+                            ticks: { font: { size: 14, weight: 'bold' }, color: '#2c3e50' }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            suggestedMax: isPercent ? 100 : undefined,
+                            grace: isPercent ? '10%' : undefined,
+                            title: {
+                                display: true,
+                                text: isPercent ? '% Visitatori sul Totale Mensile' : 'Numero Visitatori Intervistati',
+                                font: { size: 18, weight: 'bold' },
+                                color: 'blue'
+                            },
+                            ticks: {
+                                font: { size: 14, weight: 'bold' },
+                                color: '#2c3e50',
+                                callback: v => isPercent ? `${v}%` : v.toLocaleString('it-IT')
+                            }
+                        }
+                    }
+                }
             });
         }
 
@@ -2763,49 +3027,61 @@ if (excludeValue && excludedValueTotal > 0) {
     tileElement.className = 'local-tile ' + config.tileClass;
     tileElement.style.display = 'block';
 }
+
+function setSummaryTableSort(key) {
+    if (summaryTableSort.key === key) {
+        summaryTableSort.dir = summaryTableSort.dir === 'desc' ? 'asc' : 'desc';
+    } else {
+        summaryTableSort.key = key;
+        summaryTableSort.dir = key === 'Museo' ? 'asc' : 'desc';
+    }
+    updateTable();
+}
+
 function updateTable() {
   const mese = document.getElementById('meseTabellaSelect').value;
   const anno = document.getElementById('annoTabellaSelect').value;
   const tipo = document.getElementById('tipoTabellaSelect').value;
 
-const filtered = rawData.filter(row => {
-  const matchAnno = row.Anno === anno;
-  const matchMese = mese === 'Tutti' || row.Mese === mese;
-
-  let matchTipo = true;
-  if (tipo === 'SoloMusei') {
-    matchTipo = !row.Museo.includes('"');
-  } else if (tipo === 'SoloMostre') {
-    matchTipo = row.Museo.includes('"');
-  }
   updateKPIs();
-  return matchAnno && matchMese && matchTipo;
-});
+
+  const filtered = rawData.filter(row => {
+    const matchAnno = row.Anno === anno;
+    const matchMese = mese === 'Tutti' || row.Mese === mese;
+
+    let matchTipo = true;
+    if (tipo === 'SoloMusei') {
+      matchTipo = row.Museo && !row.Museo.includes('"');
+    } else if (tipo === 'SoloMostre') {
+      matchTipo = row.Museo && row.Museo.includes('"');
+    }
+    return matchAnno && matchMese && matchTipo;
+  });
 
   const gruppi = [...new Set(filtered.map(r => r.Museo))];
 
   const aree = [
-  'Bologna', 'Resto_Italia',
-  'Resto_Europa',
-  'Nord_America', 'Sud_America', 'Centro_America',
-  'Asia', 'Africa', 'Oceania'
-];
+    'Bologna', 'Resto_Italia',
+    'Resto_Europa',
+    'Nord_America', 'Sud_America', 'Centro_America',
+    'Asia', 'Africa', 'Oceania'
+  ];
 
   const labels = {
-  Bologna: 'Bologna',
-  Resto_Italia: 'Resto Italia',
-  Resto_Europa: 'Resto Europa',
-  Nord_America: 'Nord America',
-  Sud_America: 'Sud America',
-  Centro_America: 'Centro America',
-  Asia: 'Asia',
-  Africa: 'Africa',
-  Oceania: 'Oceania'
-};
+    Bologna: 'Bologna',
+    Resto_Italia: 'Resto Italia',
+    Resto_Europa: 'Resto Europa',
+    Nord_America: 'Nord America',
+    Sud_America: 'Sud America',
+    Centro_America: 'Centro America',
+    Asia: 'Asia',
+    Africa: 'Africa',
+    Oceania: 'Oceania'
+  };
 
   const dati = {};
   gruppi.forEach(nome => {
-    dati[nome] = { Totale: 0 };
+    dati[nome] = { Museo: nome, Totale: 0, isMostra: nome.includes('"') };
     aree.forEach(c => {
       const somma = filtered
         .filter(r => r.Museo === nome)
@@ -2821,26 +3097,51 @@ const filtered = rawData.filter(row => {
     totColonna.Totale += totColonna[c];
   });
 
+  const righeTabella = gruppi.map(nome => {
+    const r = dati[nome];
+    r.PercTotale = totColonna.Totale > 0 ? (r.Totale / totColonna.Totale) * 100 : 0;
+    return r;
+  });
+
+  // Ordinamento tabella riepilogativa (default: Totale decrescente)
+  const sortFactor = summaryTableSort.dir === 'asc' ? 1 : -1;
+  righeTabella.sort((a, b) => {
+    if (summaryTableSort.key === 'Museo') {
+      return a.Museo.localeCompare(b.Museo, 'it') * sortFactor;
+    }
+    return ((a[summaryTableSort.key] || 0) - (b[summaryTableSort.key] || 0)) * sortFactor;
+  });
+
+  const sortArrow = (key) => {
+    if (summaryTableSort.key !== key) return '<span class="sort-indicator">⇅</span>';
+    return `<span class="sort-indicator">${summaryTableSort.dir === 'desc' ? '▼' : '▲'}</span>`;
+  };
+
   const titoloMese = mese === 'Tutti' ? 'Tutti i mesi' : mese;
+  const titoloTipo = tipo === 'SoloMusei' ? 'Collezioni permanenti' : tipo === 'SoloMostre' ? 'Solo Mostre' : 'Musei + Mostre';
+
   let html = `<div class="table-container">
-    <h3 class="table-title">📊 Riepilogo Visitatori per Provenienza - ${titoloMese}</h3>
+    <h3 class="table-title">📊 Riepilogo Visitatori per Provenienza - ${titoloMese} ${anno} (${titoloTipo})</h3>
     <table class="summary-table">`;
   
-  html += '<thead><tr><th>Museo/Mostra</th>';
-  aree.forEach(c => html += `<th>${labels[c]}</th>`);
-  html += '<th>Totale</th><th>% sul Totale</th></tr></thead><tbody>';
+  html += `<thead><tr><th class="sortable-th" onclick="setSummaryTableSort('Museo')">Museo / Mostra ${sortArrow('Museo')}</th>`;
+  aree.forEach(c => {
+    html += `<th class="sortable-th" onclick="setSummaryTableSort('${c}')">${labels[c]} ${sortArrow(c)}</th>`;
+  });
+  html += `<th class="sortable-th" onclick="setSummaryTableSort('Totale')">Totale ${sortArrow('Totale')}</th>`;
+  html += `<th class="sortable-th" onclick="setSummaryTableSort('PercTotale')">% sul Totale ${sortArrow('PercTotale')}</th></tr></thead><tbody>`;
 
-  gruppi.forEach(nome => {
-    const r = dati[nome];
-    html += `<tr><td>${nome}</td>`;
+  righeTabella.forEach(r => {
+    const badge = r.isMostra
+      ? '<span class="type-pill pill-mostra">🎨 Mostra</span>'
+      : '<span class="type-pill pill-museo">🏛️ Museo</span>';
+    html += `<tr><td>${badge}${r.Museo}</td>`;
     aree.forEach(c => {
       const valore = r[c];
-      const classe = valore > 0 ? 'numeric-cell' : 'numeric-cell';
-      html += `<td class="${classe}">${valore.toLocaleString('it-IT')}</td>`;
+      html += `<td class="numeric-cell">${valore.toLocaleString('it-IT')}</td>`;
     });
     html += `<td class="numeric-cell">${r.Totale.toLocaleString('it-IT')}</td>`;
-    const percRiga = totColonna.Totale > 0 ? (r.Totale / totColonna.Totale * 100).toFixed(1) : '0.0';
-    html += `<td class="percentage-cell">${percRiga}%</td></tr>`;
+    html += `<td class="percentage-cell">${r.PercTotale.toFixed(1)}%</td></tr>`;
   });
 
   html += '<tr class="total-row"><td>📈 Totale Generale</td>';
