@@ -884,7 +884,6 @@
         let foreignersChart = null;
         let timeChart = null;
         let availableComparisonPeriods = []; // Periodi disponibili ordinati cronologicamente
-        let comparisonSyncWarning = '';
         window.top10Chart = null; // Una sola variabile per il grafico unificato
 
         // Funzione per scurire un colore esadecimale
@@ -1290,6 +1289,22 @@ function buildAvailableComparisonPeriods() {
     availableComparisonPeriods = Array.from(map.values()).sort((a, b) => a.value - b.value);
 }
 
+function findClosestPeriodValue(targetValue, fallbackMaxValue = null) {
+    if (!availableComparisonPeriods.length) return null;
+    const exact = availableComparisonPeriods.find(p => p.value === targetValue);
+    if (exact) return exact.value;
+
+    let candidates = availableComparisonPeriods;
+    if (fallbackMaxValue !== null) {
+        const earlier = availableComparisonPeriods.filter(p => p.value < fallbackMaxValue);
+        if (earlier.length) candidates = earlier;
+    }
+
+    return candidates.reduce((best, curr) => {
+        return Math.abs(curr.value - targetValue) < Math.abs(best.value - targetValue) ? curr : best;
+    }, candidates[0]).value;
+}
+
 function enforceEndNotBeforeStart(startSelectId, endSelectId) {
     const startSel = document.getElementById(startSelectId);
     const endSel = document.getElementById(endSelectId);
@@ -1303,16 +1318,6 @@ function enforceEndNotBeforeStart(startSelectId, endSelectId) {
         endSel.value = String(startVal);
     }
 }
-function formatVirtualPeriod(periodValue) {
-    const anno = Math.floor(periodValue / 12);
-    const monthIdx = ((periodValue % 12) + 12) % 12;
-    return `${MESI_ORDINE_CONFRONTI[monthIdx]} ${anno}`;
-}
-
-function formatVirtualRange(startVal, endVal) {
-    if (startVal === endVal) return formatVirtualPeriod(startVal);
-    return `${formatVirtualPeriod(startVal)} – ${formatVirtualPeriod(endVal)}`;
-}
 
 function autoSyncPeriodoBFromA() {
     if (!availableComparisonPeriods.length) return;
@@ -1322,33 +1327,16 @@ function autoSyncPeriodoBFromA() {
     const targetBStart = startA - 12;
     const targetBEnd = endA - 12;
 
-    const hasExactStart = availableComparisonPeriods.some(p => p.value === targetBStart);
-    const hasExactEnd = availableComparisonPeriods.some(p => p.value === targetBEnd);
+    const bStartVal = findClosestPeriodValue(targetBStart, startA);
+    let bEndVal = findClosestPeriodValue(targetBEnd, endA);
 
-    if (hasExactStart && hasExactEnd) {
-        document.getElementById('periodoBStartSelect').value = String(targetBStart);
-        document.getElementById('periodoBEndSelect').value = String(targetBEnd);
-        enforceEndNotBeforeStart('periodoBStartSelect', 'periodoBEndSelect');
-        comparisonSyncWarning = '';
-        return;
+    if (bEndVal < bStartVal) {
+        bEndVal = bStartVal;
     }
 
-    // Verifica se esiste almeno una porzione del periodo target dell'anno precedente
-    const partialMatches = availableComparisonPeriods.filter(
-        p => p.value >= targetBStart && p.value <= targetBEnd
-    );
-
-    if (partialMatches.length > 0) {
-        const bStartVal = partialMatches[0].value;
-        const bEndVal = partialMatches[partialMatches.length - 1].value;
-        document.getElementById('periodoBStartSelect').value = String(bStartVal);
-        document.getElementById('periodoBEndSelect').value = String(bEndVal);
-        enforceEndNotBeforeStart('periodoBStartSelect', 'periodoBEndSelect');
-        comparisonSyncWarning = `⚠️ Dati parziali per l'anno precedente (${formatVirtualRange(targetBStart, targetBEnd)}): il Periodo B è stato allineato ai soli mesi disponibili (${formatRangeLabel(bStartVal, bEndVal)}).`;
-    } else {
-        // Nessun dato disponibile per l'anno precedente: non sovrascrive il Periodo B
-        comparisonSyncWarning = `⚠️ Nessun dato disponibile per l'anno precedente (${formatVirtualRange(targetBStart, targetBEnd)}). Il Periodo B non è stato aggiornato automaticamente: puoi selezionarlo manualmente.`;
-    }
+    document.getElementById('periodoBStartSelect').value = String(bStartVal);
+    document.getElementById('periodoBEndSelect').value = String(bEndVal);
+    enforceEndNotBeforeStart('periodoBStartSelect', 'periodoBEndSelect');
 }
 
 function onPeriodoAChange() {
@@ -1359,10 +1347,8 @@ function onPeriodoAChange() {
 
 function onPeriodoBChange() {
     enforceEndNotBeforeStart('periodoBStartSelect', 'periodoBEndSelect');
-    comparisonSyncWarning = '';
     updateAnnualComparison();
 }
-
 
 function applyComparisonPreset(preset) {
     if (!availableComparisonPeriods.length) return;
@@ -1483,22 +1469,12 @@ function updateAnnualComparison() {
 
     // Gestione banner di avviso non bloccanti
     const alertBox = document.getElementById('comparisonDurationAlert');
-    const alerts = [];
-
-    if (comparisonSyncWarning) {
-        alerts.push(comparisonSyncWarning);
-    }
     if (monthsA !== monthsB) {
-        alerts.push(`⚠️ Attenzione: stai confrontando un periodo di <strong>${monthsA} ${monthsA === 1 ? 'mese' : 'mesi'}</strong> (${labelA}) con uno di <strong>${monthsB} ${monthsB === 1 ? 'mese' : 'mesi'}</strong> (${labelB}).`);
+        alertBox.className = 'comparison-alert warning';
+        alertBox.innerHTML = `⚠️ Attenzione: stai confrontando un periodo di <strong>${monthsA} ${monthsA === 1 ? 'mese' : 'mesi'}</strong> (${labelA}) con uno di <strong>${monthsB} ${monthsB === 1 ? 'mese' : 'mesi'}</strong> (${labelB}).`;
     } else if (startA === startB && endA === endB) {
-        alerts.push(`ℹ️ Periodo A e Periodo B coincidono (${labelA}). Modifica uno dei due intervalli per confrontare periodi diversi.`);
-    }
-
-    if (alerts.length > 0) {
-        alertBox.className = (comparisonSyncWarning || monthsA !== monthsB)
-            ? 'comparison-alert warning'
-            : 'comparison-alert info';
-        alertBox.innerHTML = `<div>${alerts.join('<br>')}</div>`;
+        alertBox.className = 'comparison-alert info';
+        alertBox.innerHTML = `ℹ️ Periodo A e Periodo B coincidono (${labelA}). Modifica uno dei due intervalli per confrontare periodi diversi.`;
     } else {
         alertBox.className = 'comparison-alert';
         alertBox.innerHTML = '';
