@@ -53,11 +53,11 @@
             font-style: italic;
         }
         .percentage-cell.positive {
-            color: #2c7a7b; /* verde/teal scuro, neutro positivo */
+            color: #2c7a7b;
         }
 
         .percentage-cell.negative {
-             color: #c53030; /* rosso */
+             color: #c53030;
         }
         .chart-note {
             text-align: center;
@@ -100,6 +100,19 @@
 }
 .summary-table thead th:last-child {
     border-top-right-radius: 12px;
+}
+.summary-table thead th.sortable-th {
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s ease;
+}
+.summary-table thead th.sortable-th:hover {
+    background-color: #5b4fc4;
+}
+.sort-indicator {
+    font-size: 0.85rem;
+    margin-left: 6px;
+    opacity: 0.85;
 }
 .summary-table tbody tr {
     transition: all 0.2s ease;
@@ -279,11 +292,12 @@
             gap: 20px;
             margin-bottom: 30px;
             margin-top: 20px;
+            flex-wrap: wrap;
         }
         
         .kpi-card {
-            flex: 1;
-            padding: 30px;
+            flex: 1 1 220px;
+            padding: 26px 20px;
             border-radius: 15px;
             color: white;
             text-align: center;
@@ -297,21 +311,44 @@
         .kpi-card.foreigners {
             background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
         }
+
+        .kpi-card.comp-total {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .kpi-card.comp-best {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .kpi-card.comp-worst {
+            background: linear-gradient(135deg, #cb2d3e 0%, #ef473a 100%);
+        }
+
+        .kpi-card.comp-foreign {
+            background: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%);
+        }
         
         .kpi-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
+            font-size: 2.6rem;
+            margin-bottom: 10px;
         }
         
         .kpi-value {
-            font-size: 2.8rem;
+            font-size: 2.3rem;
             font-weight: bold;
-            margin-bottom: 5px;
+            margin-bottom: 6px;
         }
         
         .kpi-label {
-            font-size: 1.5rem;
-            opacity: 0.8;
+            font-size: 1.25rem;
+            opacity: 0.92;
+            font-weight: 600;
+        }
+
+        .kpi-sublabel {
+            font-size: 0.98rem;
+            opacity: 0.88;
+            margin-top: 6px;
         }
         
         .controls {
@@ -393,7 +430,7 @@
 
         .periods-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
             gap: 16px;
             align-items: stretch;
         }
@@ -448,6 +485,7 @@
             display: none;
             align-items: center;
             gap: 10px;
+            line-height: 1.5;
         }
 
         .comparison-alert.warning {
@@ -743,16 +781,34 @@
         </div>
       </div>
 
-      <!-- Museo -->
+      <!-- Tipo, Museo e Metrica -->
       <div class="period-box">
         <div class="period-box-title">
-          <span>🏛️ Filtro Museo</span>
+          <span>🎯 Ambito e Metrica</span>
         </div>
         <div class="period-selectors">
           <div class="control-group">
-            <label for="museoConfrontoSelect">Museo (collezioni permanenti)</label>
+            <label for="tipoConfrontoSelect">🏛️ Tipo</label>
+            <select id="tipoConfrontoSelect" onchange="onTipoConfrontoChange()">
+              <option value="SoloMusei">Collezioni permanenti</option>
+              <option value="Tutti">Includi Mostre (Musei + Mostre)</option>
+              <option value="SoloMostre">Solo Mostre</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label for="museoConfrontoSelect">Museo / Mostra</label>
             <select id="museoConfrontoSelect" onchange="updateAnnualComparison()">
               <option value="Tutti">Tutti</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label for="metricaConfrontoSelect">📊 Metrica</label>
+            <select id="metricaConfrontoSelect" onchange="onMetricaConfrontoChange()">
+              <option value="Totale_Visitatori">Visitatori Totali</option>
+              <option value="Bologna">Solo Bologna</option>
+              <option value="Resto_Italia">Resto Italia</option>
+              <option value="Stranieri">Stranieri</option>
+              <option value="Perc_Stranieri">% Stranieri sul Totale</option>
             </select>
           </div>
         </div>
@@ -760,8 +816,36 @@
     </div>
   </div>
 
-  <!-- ⚠️ AVVISO DURATE DIVERSE / COINCIDENTI -->
+  <!-- ⚠️ AVVISO DURATE DIVERSE / ANNO PRECEDENTE MANCANTE -->
   <div id="comparisonDurationAlert" class="comparison-alert"></div>
+
+  <!-- 📊 4 CARD KPI DI SINTESI CONFRONTI -->
+  <div class="kpi-container" id="comparisonKpiContainer">
+    <div class="kpi-card comp-total">
+      <div class="kpi-icon">📊</div>
+      <div class="kpi-value" id="compKpiTotalValue">—</div>
+      <div class="kpi-label" id="compKpiTotalLabel">Variazione Totale</div>
+      <div class="kpi-sublabel" id="compKpiTotalSub">—</div>
+    </div>
+    <div class="kpi-card comp-best">
+      <div class="kpi-icon">🚀</div>
+      <div class="kpi-value" id="compKpiBestValue">—</div>
+      <div class="kpi-label" id="compKpiBestLabel">Maggior Crescita</div>
+      <div class="kpi-sublabel" id="compKpiBestSub">—</div>
+    </div>
+    <div class="kpi-card comp-worst">
+      <div class="kpi-icon">📉</div>
+      <div class="kpi-value" id="compKpiWorstValue">—</div>
+      <div class="kpi-label" id="compKpiWorstLabel">Maggior Calo</div>
+      <div class="kpi-sublabel" id="compKpiWorstSub">—</div>
+    </div>
+    <div class="kpi-card comp-foreign">
+      <div class="kpi-icon">🌍</div>
+      <div class="kpi-value" id="compKpiForeignValue">—</div>
+      <div class="kpi-label">Variazione % Stranieri</div>
+      <div class="kpi-sublabel" id="compKpiForeignSub">—</div>
+    </div>
+  </div>
 
   <!-- 📋 TABELLA COMPARATIVA -->
   <div id="comparisonTableContainer"></div>
@@ -852,19 +936,16 @@
         function openTab(evt, tabName) {
             let i, tabcontent, tablinks;
             
-            // Nascondi tutti i contenuti delle schede
             tabcontent = document.getElementsByClassName("tab-content");
             for (i = 0; i < tabcontent.length; i++) {
                 tabcontent[i].style.display = "none";
             }
 
-            // Rimuovi la classe "active" da tutti i bottoni
             tablinks = document.getElementsByClassName("tab-link");
             for (i = 0; i < tablinks.length; i++) {
                 tablinks[i].className = tablinks[i].className.replace(" active", "");
             }
 
-            // Mostra la scheda corrente e aggiungi la classe "active" al bottone
             document.getElementById(tabName).style.display = "block";
             evt.currentTarget.className += " active";
 
@@ -879,12 +960,14 @@
 
         // --- VARIABILI GLOBALI ---
         let rawData = [];
-        let altriDati = []; // Nuovi dati
+        let altriDati = [];
         let mainChart = null;
         let foreignersChart = null;
         let timeChart = null;
-        let availableComparisonPeriods = []; // Periodi disponibili ordinati cronologicamente
-        window.top10Chart = null; // Una sola variabile per il grafico unificato
+        let availableComparisonPeriods = [];
+        let comparisonSyncWarning = '';
+        let comparisonSort = { key: 'perc', dir: 'desc' };
+        window.top10Chart = null;
 
         // Funzione per scurire un colore esadecimale
         function darkenColor(hex, percent) {
@@ -898,19 +981,17 @@
             return `rgb(${r},${g},${b})`;
         }
 
-        // Colori distintivi per ciascun grafico a barre
         const barChartColors = {
-            nazioniChart: "#4caf50",        // verde
-            regioniChart: "#2196f3",        // blu
-            cittaEuropeeChart: "#ff9800",   // arancione
-            provinceChart: "#9c27b0",       // viola
-            comuniCmChart: "#f44336"        // rosso
+            nazioniChart: "#4caf50",
+            regioniChart: "#2196f3",
+            cittaEuropeeChart: "#ff9800",
+            provinceChart: "#9c27b0",
+            comuniCmChart: "#f44336"
         };
 
         // --- PLUGIN CHART.JS PERSONALIZZATI ---
         Chart.register(ChartDataLabels);
 
-       // Plugin per etichette esterne con riquadro e gestione collisione titolo E legenda
 const multiLineExternalLabels = {
     id: 'multiLineExternalLabels',
     afterDatasetsDraw: function(chart) {
@@ -988,7 +1069,6 @@ const multiLineExternalLabels = {
 };
         Chart.register(multiLineExternalLabels);
         
-        // Plugin per etichette esterne per il mainChart (percentuale)
 const externalLabelsMainChartPlugin = {
     id: 'externalLabelsMainChart',
     afterDatasetsDraw(chart) {
@@ -1080,14 +1160,12 @@ Chart.register(externalLabelsMainChartPlugin);
             const urlProvenienze = 'https://raw.githubusercontent.com/Lucab73/Dashboard-Musei/main/Provenienze_convertito.csv';
             const urlAltriDati = 'https://raw.githubusercontent.com/Lucab73/Dashboard-Musei/main/Altri_dati_dashboard.csv'; 
             document.getElementById('status').textContent = '📥 Caricamento dati principali...';
-            // 1. Carica il primo file
             fetch(urlProvenienze)
                 .then(response => {
                     if (!response.ok) throw new Error(`Errore HTTP nel caricamento del primo file: ${response.status}`);
                     return response.text();
                  })
                 .then(csvProvenienze => {
-                    // Esegui il parsing del primo file
                     Papa.parse(csvProvenienze, {
                         header: true, skipEmptyLines: true,
                          complete: function (results) {
@@ -1098,7 +1176,6 @@ Chart.register(externalLabelsMainChartPlugin);
                             });
                              console.log("Dati principali caricati con successo.");
 
-                            // 2. Ora che il primo è completato, carica il secondo file
                             document.getElementById('status').textContent = '📥 Caricamento dati geografici...';
                             fetch(urlAltriDati)
                                 .then(response => {
@@ -1121,7 +1198,6 @@ Chart.register(externalLabelsMainChartPlugin);
                                                 console.error("Errori di parsing:", results2.errors);
                                             }
                                             altriDati = results2.data;
-                                            // Pulisce i separatori di migliaia (es. 35.120 => 35120)
                                             altriDati = altriDati.map(row => {
                                                 const cleanedRow = {};
                                                 for (let key in row) {
@@ -1136,7 +1212,6 @@ Chart.register(externalLabelsMainChartPlugin);
                                             });
                                             console.log("Dati geografici caricati con successo:", altriDati.length, "righe");
 
-                                            // 3. Entrambi i file sono pronti, inizializza l'intera dashboard
                                             setTimeout(() => {
                                                 document.querySelectorAll('.fade-in').forEach(el => {
                                                     el.classList.add('visible');
@@ -1254,12 +1329,20 @@ function updateDropdowns() {
     onAnnoChange();
 }
 
-// === FUNZIONI PER IL NUOVO TAB CONFRONTI (INTERVALLI MESE + ANNO) ===
+// === FUNZIONI PER IL NUOVO TAB CONFRONTI (INTERVALLI MESE + ANNO, METRICHE, KPI, MOSTRE, ORDINAMENTO) ===
 
 const MESI_ORDINE_CONFRONTI = [
     'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
     'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'
 ];
+
+const METRICHE_CONFRONTI = {
+    Totale_Visitatori: { label: 'Visitatori Totali', isPercent: false, unit: 'visitatori' },
+    Bologna: { label: 'Solo Bologna', isPercent: false, unit: 'visitatori' },
+    Resto_Italia: { label: 'Resto Italia', isPercent: false, unit: 'visitatori' },
+    Stranieri: { label: 'Stranieri', isPercent: false, unit: 'visitatori' },
+    Perc_Stranieri: { label: '% Stranieri sul Totale', isPercent: true, unit: '%' }
+};
 
 function getRowPeriodInfo(row) {
     const annoNum = parseInt(String(row.Anno || '').trim(), 10);
@@ -1289,20 +1372,15 @@ function buildAvailableComparisonPeriods() {
     availableComparisonPeriods = Array.from(map.values()).sort((a, b) => a.value - b.value);
 }
 
-function findClosestPeriodValue(targetValue, fallbackMaxValue = null) {
-    if (!availableComparisonPeriods.length) return null;
-    const exact = availableComparisonPeriods.find(p => p.value === targetValue);
-    if (exact) return exact.value;
+function formatVirtualPeriod(periodValue) {
+    const anno = Math.floor(periodValue / 12);
+    const monthIdx = ((periodValue % 12) + 12) % 12;
+    return `${MESI_ORDINE_CONFRONTI[monthIdx]} ${anno}`;
+}
 
-    let candidates = availableComparisonPeriods;
-    if (fallbackMaxValue !== null) {
-        const earlier = availableComparisonPeriods.filter(p => p.value < fallbackMaxValue);
-        if (earlier.length) candidates = earlier;
-    }
-
-    return candidates.reduce((best, curr) => {
-        return Math.abs(curr.value - targetValue) < Math.abs(best.value - targetValue) ? curr : best;
-    }, candidates[0]).value;
+function formatVirtualRange(startVal, endVal) {
+    if (startVal === endVal) return formatVirtualPeriod(startVal);
+    return `${formatVirtualPeriod(startVal)} – ${formatVirtualPeriod(endVal)}`;
 }
 
 function enforceEndNotBeforeStart(startSelectId, endSelectId) {
@@ -1327,16 +1405,31 @@ function autoSyncPeriodoBFromA() {
     const targetBStart = startA - 12;
     const targetBEnd = endA - 12;
 
-    const bStartVal = findClosestPeriodValue(targetBStart, startA);
-    let bEndVal = findClosestPeriodValue(targetBEnd, endA);
+    const hasExactStart = availableComparisonPeriods.some(p => p.value === targetBStart);
+    const hasExactEnd = availableComparisonPeriods.some(p => p.value === targetBEnd);
 
-    if (bEndVal < bStartVal) {
-        bEndVal = bStartVal;
+    if (hasExactStart && hasExactEnd) {
+        document.getElementById('periodoBStartSelect').value = String(targetBStart);
+        document.getElementById('periodoBEndSelect').value = String(targetBEnd);
+        enforceEndNotBeforeStart('periodoBStartSelect', 'periodoBEndSelect');
+        comparisonSyncWarning = '';
+        return;
     }
 
-    document.getElementById('periodoBStartSelect').value = String(bStartVal);
-    document.getElementById('periodoBEndSelect').value = String(bEndVal);
-    enforceEndNotBeforeStart('periodoBStartSelect', 'periodoBEndSelect');
+    const partialMatches = availableComparisonPeriods.filter(
+        p => p.value >= targetBStart && p.value <= targetBEnd
+    );
+
+    if (partialMatches.length > 0) {
+        const bStartVal = partialMatches[0].value;
+        const bEndVal = partialMatches[partialMatches.length - 1].value;
+        document.getElementById('periodoBStartSelect').value = String(bStartVal);
+        document.getElementById('periodoBEndSelect').value = String(bEndVal);
+        enforceEndNotBeforeStart('periodoBStartSelect', 'periodoBEndSelect');
+        comparisonSyncWarning = `⚠️ Dati parziali per l'anno precedente (${formatVirtualRange(targetBStart, targetBEnd)}): il Periodo B è stato allineato ai soli mesi disponibili (${formatRangeLabel(bStartVal, bEndVal)}).`;
+    } else {
+        comparisonSyncWarning = `⚠️ Nessun dato disponibile per l'anno precedente (${formatVirtualRange(targetBStart, targetBEnd)}). Il Periodo B non è stato aggiornato automaticamente: puoi selezionarlo manualmente.`;
+    }
 }
 
 function onPeriodoAChange() {
@@ -1347,6 +1440,58 @@ function onPeriodoAChange() {
 
 function onPeriodoBChange() {
     enforceEndNotBeforeStart('periodoBStartSelect', 'periodoBEndSelect');
+    comparisonSyncWarning = '';
+    updateAnnualComparison();
+}
+
+function updateMuseoConfrontoDropdown() {
+    const tipo = document.getElementById('tipoConfrontoSelect').value;
+    const museoSel = document.getElementById('museoConfrontoSelect');
+    const prevValue = museoSel.value;
+
+    const allNames = [...new Set(rawData.map(r => r.Museo))].filter(Boolean).sort();
+    let filteredNames = allNames;
+    if (tipo === 'SoloMusei') {
+        filteredNames = allNames.filter(m => !m.includes('"'));
+    } else if (tipo === 'SoloMostre') {
+        filteredNames = allNames.filter(m => m.includes('"'));
+    }
+
+    museoSel.innerHTML = '<option value="Tutti">Tutti</option>';
+    filteredNames.forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name;
+        museoSel.appendChild(opt);
+    });
+
+    if (filteredNames.includes(prevValue)) {
+        museoSel.value = prevValue;
+    } else {
+        museoSel.value = 'Tutti';
+    }
+}
+
+function onTipoConfrontoChange() {
+    updateMuseoConfrontoDropdown();
+    updateAnnualComparison();
+}
+
+function onMetricaConfrontoChange() {
+    const metrica = document.getElementById('metricaConfrontoSelect').value;
+    if (metrica === 'Perc_Stranieri' && comparisonSort.key === 'perc') {
+        comparisonSort = { key: 'diff', dir: 'desc' };
+    }
+    updateAnnualComparison();
+}
+
+function setComparisonSort(key) {
+    if (comparisonSort.key === key) {
+        comparisonSort.dir = comparisonSort.dir === 'desc' ? 'asc' : 'desc';
+    } else {
+        comparisonSort.key = key;
+        comparisonSort.dir = key === 'label' ? 'asc' : 'desc';
+    }
     updateAnnualComparison();
 }
 
@@ -1365,7 +1510,6 @@ function applyComparisonPreset(preset) {
         startA = availableComparisonPeriods[startIdx].value;
         endA = latest.value;
     } else if (preset === 'summer') {
-        // Cerca l'anno più recente con tutti e 3 i mesi estivi (Giu, Lug, Ago), altrimenti con almeno uno
         const yearsDesc = [...new Set(availableComparisonPeriods.map(p => p.annoNum))].sort((a, b) => b - a);
         let chosenSummer = [];
         for (const y of yearsDesc) {
@@ -1423,11 +1567,7 @@ function getMonthsSequence(startVal, endVal) {
 
 function populateComparisonDropdowns() {
     buildAvailableComparisonPeriods();
-
-    const musei = [...new Set(rawData.map(r => r.Museo))].filter(m => m && !m.includes('"')).sort();
-    const museoSel = document.getElementById('museoConfrontoSelect');
-    museoSel.innerHTML = '<option value="Tutti">Tutti</option>';
-    musei.forEach(m => museoSel.innerHTML += `<option value="${m}">${m}</option>`);
+    updateMuseoConfrontoDropdown();
 
     const selectIds = ['periodoAStartSelect', 'periodoAEndSelect', 'periodoBStartSelect', 'periodoBEndSelect'];
     selectIds.forEach(id => {
@@ -1442,8 +1582,163 @@ function populateComparisonDropdowns() {
     });
 
     if (availableComparisonPeriods.length > 0) {
-        // Default: YTD dell'anno più recente vs stesso periodo anno precedente
         applyComparisonPreset('ytd');
+    }
+}
+
+function accumulateBucket(bucket, row) {
+    bucket.Totale_Visitatori += parseInt(row.Totale_Visitatori, 10) || 0;
+    bucket.Bologna += parseInt(row.Bologna, 10) || 0;
+    bucket.Resto_Italia += parseInt(row.Resto_Italia, 10) || 0;
+    bucket.Stranieri += parseInt(row.Stranieri, 10) || 0;
+}
+
+function createEmptyBucket() {
+    return { Totale_Visitatori: 0, Bologna: 0, Resto_Italia: 0, Stranieri: 0 };
+}
+
+function extractMetricValue(bucket, metrica) {
+    if (!bucket) return null;
+    if (metrica === 'Perc_Stranieri') {
+        return bucket.Totale_Visitatori > 0
+            ? (bucket.Stranieri / bucket.Totale_Visitatori) * 100
+            : null;
+    }
+    return bucket[metrica] || 0;
+}
+
+function formatMetricValue(val, isPercent) {
+    if (val === null || val === undefined || isNaN(val)) return '—';
+    if (isPercent) return `${val.toFixed(1).replace('.', ',')}%`;
+    return Math.round(val).toLocaleString('it-IT');
+}
+
+function formatMetricDiff(diff, isPercent) {
+    if (diff === null || diff === undefined || isNaN(diff)) return '—';
+    const sign = diff > 0 ? '+' : '';
+    if (isPercent) return `${sign}${diff.toFixed(1).replace('.', ',')} p.p.`;
+    return `${sign}${Math.round(diff).toLocaleString('it-IT')}`;
+}
+
+function buildComparisonRowObj(label, bucketA, bucketB, metrica, sortOrderIndex = 0) {
+    const isPercent = metrica === 'Perc_Stranieri';
+    const valA = extractMetricValue(bucketA, metrica);
+    const valB = extractMetricValue(bucketB, metrica);
+
+    let diff = null;
+    let perc = null;
+    if (isPercent) {
+        if (valA !== null && valB !== null) {
+            diff = valA - valB;
+        }
+    } else {
+        diff = valA - valB;
+        perc = valB > 0 ? (diff / valB) * 100 : null;
+    }
+
+    return {
+        label,
+        base: valA,
+        comp: valB,
+        diff,
+        perc,
+        sortOrderIndex
+    };
+}
+
+function sortComparisonRows(rows, isPercent) {
+    const { key, dir } = comparisonSort;
+    const factor = dir === 'asc' ? 1 : -1;
+
+    return [...rows].sort((a, b) => {
+        if (key === 'label') {
+            return a.label.localeCompare(b.label, 'it') * factor;
+        }
+        const valA = (key === 'perc' && isPercent) ? a.diff : a[key];
+        const valB = (key === 'perc' && isPercent) ? b.diff : b[key];
+
+        if (valA === null && valB === null) return 0;
+        if (valA === null) return 1;
+        if (valB === null) return -1;
+        return (valA - valB) * factor;
+    });
+}
+
+function updateComparisonKPIs(totBucketA, totBucketB, rows, metrica, isSingleMuseumMultiMonth, museo) {
+    const isPercent = metrica === 'Perc_Stranieri';
+    const totalA = extractMetricValue(totBucketA, metrica);
+    const totalB = extractMetricValue(totBucketB, metrica);
+
+    // 1. Variazione totale
+    let totalDiff = null;
+    let totalPerc = null;
+    if (isPercent) {
+        if (totalA !== null && totalB !== null) totalDiff = totalA - totalB;
+        document.getElementById('compKpiTotalValue').textContent =
+            totalDiff !== null ? `${totalDiff > 0 ? '▲ +' : totalDiff < 0 ? '▼ ' : ''}${totalDiff.toFixed(1).replace('.', ',')} p.p.` : '—';
+    } else {
+        totalDiff = totalA - totalB;
+        totalPerc = totalB > 0 ? (totalDiff / totalB) * 100 : null;
+        document.getElementById('compKpiTotalValue').textContent =
+            totalPerc !== null
+                ? `${totalPerc > 0 ? '▲ +' : totalPerc < 0 ? '▼ ' : ''}${totalPerc.toFixed(1).replace('.', ',')}%`
+                : formatMetricDiff(totalDiff, false);
+    }
+    document.getElementById('compKpiTotalLabel').textContent = `Variazione (${METRICHE_CONFRONTI[metrica].label})`;
+    document.getElementById('compKpiTotalSub').textContent =
+        `${formatMetricValue(totalA, isPercent)} vs ${formatMetricValue(totalB, isPercent)} (${formatMetricDiff(totalDiff, isPercent)})`;
+
+    // 2 & 3. Maggior Crescita / Maggior Calo
+    const entityWord = isSingleMuseumMultiMonth ? 'Mese' : 'Museo';
+    document.getElementById('compKpiBestLabel').textContent = `${entityWord} con Maggior Crescita`;
+    document.getElementById('compKpiWorstLabel').textContent = `${entityWord} con Maggior Calo`;
+
+    const comparableRows = rows.filter(r => isPercent ? r.diff !== null : (r.perc !== null || r.diff !== 0));
+    const scoreFn = (r) => isPercent ? r.diff : (r.perc !== null ? r.perc : (r.diff > 0 ? Infinity : -Infinity));
+
+    const positiveRows = comparableRows.filter(r => r.diff > 0).sort((a, b) => scoreFn(b) - scoreFn(a) || b.diff - a.diff);
+    const negativeRows = comparableRows.filter(r => r.diff < 0).sort((a, b) => scoreFn(a) - scoreFn(b) || a.diff - b.diff);
+
+    if (positiveRows.length > 0) {
+        const best = positiveRows[0];
+        document.getElementById('compKpiBestValue').textContent =
+            isPercent
+                ? `+${best.diff.toFixed(1).replace('.', ',')} p.p.`
+                : (best.perc !== null ? `+${best.perc.toFixed(1).replace('.', ',')}%` : formatMetricDiff(best.diff, false));
+        document.getElementById('compKpiBestSub').textContent =
+            `${best.label} (${formatMetricDiff(best.diff, isPercent)})`;
+    } else {
+        document.getElementById('compKpiBestValue').textContent = 'Nessuno';
+        document.getElementById('compKpiBestSub').textContent =
+            (museo !== 'Tutti' && !isSingleMuseumMultiMonth) ? 'Singolo mese selezionato' : 'Nessuna variazione positiva';
+    }
+
+    if (negativeRows.length > 0) {
+        const worst = negativeRows[0];
+        document.getElementById('compKpiWorstValue').textContent =
+            isPercent
+                ? `${worst.diff.toFixed(1).replace('.', ',')} p.p.`
+                : (worst.perc !== null ? `${worst.perc.toFixed(1).replace('.', ',')}%` : formatMetricDiff(worst.diff, false));
+        document.getElementById('compKpiWorstSub').textContent =
+            `${worst.label} (${formatMetricDiff(worst.diff, isPercent)})`;
+    } else {
+        document.getElementById('compKpiWorstValue').textContent = 'Nessuno';
+        document.getElementById('compKpiWorstSub').textContent =
+            (museo !== 'Tutti' && !isSingleMuseumMultiMonth) ? 'Singolo mese selezionato' : 'Nessuna variazione negativa';
+    }
+
+    // 4. Variazione % Stranieri globale del filtro corrente
+    const percStrA = totBucketA.Totale_Visitatori > 0 ? (totBucketA.Stranieri / totBucketA.Totale_Visitatori) * 100 : null;
+    const percStrB = totBucketB.Totale_Visitatori > 0 ? (totBucketB.Stranieri / totBucketB.Totale_Visitatori) * 100 : null;
+    if (percStrA !== null && percStrB !== null) {
+        const strDiff = percStrA - percStrB;
+        document.getElementById('compKpiForeignValue').textContent =
+            `${strDiff > 0 ? '▲ +' : strDiff < 0 ? '▼ ' : ''}${strDiff.toFixed(1).replace('.', ',')} p.p.`;
+        document.getElementById('compKpiForeignSub').textContent =
+            `${percStrA.toFixed(1).replace('.', ',')}% vs ${percStrB.toFixed(1).replace('.', ',')}%`;
+    } else {
+        document.getElementById('compKpiForeignValue').textContent = '—';
+        document.getElementById('compKpiForeignSub').textContent = 'Dati non disponibili';
     }
 }
 
@@ -1454,7 +1749,11 @@ function updateAnnualComparison() {
     const endA = parseInt(document.getElementById('periodoAEndSelect').value, 10);
     const startB = parseInt(document.getElementById('periodoBStartSelect').value, 10);
     const endB = parseInt(document.getElementById('periodoBEndSelect').value, 10);
+    const tipo = document.getElementById('tipoConfrontoSelect').value;
     const museo = document.getElementById('museoConfrontoSelect').value;
+    const metrica = document.getElementById('metricaConfrontoSelect').value;
+    const metricaInfo = METRICHE_CONFRONTI[metrica];
+    const isPercent = metricaInfo.isPercent;
 
     const monthsA = endA - startA + 1;
     const monthsB = endB - startB + 1;
@@ -1467,14 +1766,24 @@ function updateAnnualComparison() {
     const shortA = formatRangeLabel(startA, endA, true);
     const shortB = formatRangeLabel(startB, endB, true);
 
-    // Gestione banner di avviso non bloccanti
+    // Banner di avviso non bloccanti
     const alertBox = document.getElementById('comparisonDurationAlert');
+    const alerts = [];
+
+    if (comparisonSyncWarning) {
+        alerts.push(comparisonSyncWarning);
+    }
     if (monthsA !== monthsB) {
-        alertBox.className = 'comparison-alert warning';
-        alertBox.innerHTML = `⚠️ Attenzione: stai confrontando un periodo di <strong>${monthsA} ${monthsA === 1 ? 'mese' : 'mesi'}</strong> (${labelA}) con uno di <strong>${monthsB} ${monthsB === 1 ? 'mese' : 'mesi'}</strong> (${labelB}).`;
+        alerts.push(`⚠️ Attenzione: stai confrontando un periodo di <strong>${monthsA} ${monthsA === 1 ? 'mese' : 'mesi'}</strong> (${labelA}) con uno di <strong>${monthsB} ${monthsB === 1 ? 'mese' : 'mesi'}</strong> (${labelB}).`);
     } else if (startA === startB && endA === endB) {
-        alertBox.className = 'comparison-alert info';
-        alertBox.innerHTML = `ℹ️ Periodo A e Periodo B coincidono (${labelA}). Modifica uno dei due intervalli per confrontare periodi diversi.`;
+        alerts.push(`ℹ️ Periodo A e Periodo B coincidono (${labelA}). Modifica uno dei due intervalli per confrontare periodi diversi.`);
+    }
+
+    if (alerts.length > 0) {
+        alertBox.className = (comparisonSyncWarning || monthsA !== monthsB)
+            ? 'comparison-alert warning'
+            : 'comparison-alert info';
+        alertBox.innerHTML = `<div>${alerts.join('<br>')}</div>`;
     } else {
         alertBox.className = 'comparison-alert';
         alertBox.innerHTML = '';
@@ -1482,13 +1791,27 @@ function updateAnnualComparison() {
 
     const righeA = [];
     const righeB = [];
+    const totBucketA = createEmptyBucket();
+    const totBucketB = createEmptyBucket();
+
     rawData.forEach(r => {
-        if (!r.Museo || r.Museo.includes('"')) return; // esclude mostre
+        if (!r.Museo) return;
+        const isMostra = r.Museo.includes('"');
+        if (tipo === 'SoloMusei' && isMostra) return;
+        if (tipo === 'SoloMostre' && !isMostra) return;
         if (museo !== 'Tutti' && r.Museo !== museo) return;
+
         const info = getRowPeriodInfo(r);
         if (!info) return;
-        if (info.value >= startA && info.value <= endA) righeA.push({ row: r, info });
-        if (info.value >= startB && info.value <= endB) righeB.push({ row: r, info });
+
+        if (info.value >= startA && info.value <= endA) {
+            righeA.push({ row: r, info });
+            accumulateBucket(totBucketA, r);
+        }
+        if (info.value >= startB && info.value <= endB) {
+            righeB.push({ row: r, info });
+            accumulateBucket(totBucketB, r);
+        }
     });
 
     const seqA = getMonthsSequence(startA, endA);
@@ -1496,108 +1819,108 @@ function updateAnnualComparison() {
     const maxMonths = Math.max(seqA.length, seqB.length);
     const isSingleMuseumMultiMonth = (museo !== 'Tutti' && maxMonths > 1);
 
-    // Costruzione tabella: per singolo museo multi-mese mostra il dettaglio mese per mese; altrimenti per museo
-    let tableRows = [];
+    let rawRows = [];
     if (isSingleMuseumMultiMonth) {
-        const sumByMonthA = {};
-        const sumByMonthB = {};
+        const bucketsA = {};
+        const bucketsB = {};
         righeA.forEach(({ row, info }) => {
-            sumByMonthA[info.value] = (sumByMonthA[info.value] || 0) + (parseInt(row.Totale_Visitatori, 10) || 0);
+            if (!bucketsA[info.value]) bucketsA[info.value] = createEmptyBucket();
+            accumulateBucket(bucketsA[info.value], row);
         });
         righeB.forEach(({ row, info }) => {
-            sumByMonthB[info.value] = (sumByMonthB[info.value] || 0) + (parseInt(row.Totale_Visitatori, 10) || 0);
+            if (!bucketsB[info.value]) bucketsB[info.value] = createEmptyBucket();
+            accumulateBucket(bucketsB[info.value], row);
         });
 
         for (let i = 0; i < maxMonths; i++) {
             const mA = seqA[i];
             const mB = seqB[i];
-            const valA = mA ? (sumByMonthA[mA.value] || 0) : 0;
-            const valB = mB ? (sumByMonthB[mB.value] || 0) : 0;
-            const diff = valA - valB;
-            const perc = valB > 0 ? ((diff / valB) * 100).toFixed(1) : '—';
+            const bA = mA ? (bucketsA[mA.value] || createEmptyBucket()) : createEmptyBucket();
+            const bB = mB ? (bucketsB[mB.value] || createEmptyBucket()) : createEmptyBucket();
             const rowLabel = (mA && mB)
                 ? (mA.monthIdx === mB.monthIdx ? `${mA.mese} (${mA.annoNum} vs ${mB.annoNum})` : `${mA.shortLabel} vs ${mB.shortLabel}`)
                 : (mA ? `${mA.label} vs —` : `— vs ${mB.label}`);
-            tableRows.push({ label: rowLabel, base: valA, comp: valB, diff, perc });
+            rawRows.push(buildComparisonRowObj(rowLabel, bA, bB, metrica, i));
         }
     } else {
-        const aggregati = {};
+        const museumBuckets = {};
         righeA.forEach(({ row }) => {
-            if (!aggregati[row.Museo]) aggregati[row.Museo] = { base: 0, comp: 0 };
-            aggregati[row.Museo].base += parseInt(row.Totale_Visitatori, 10) || 0;
+            if (!museumBuckets[row.Museo]) museumBuckets[row.Museo] = { a: createEmptyBucket(), b: createEmptyBucket() };
+            accumulateBucket(museumBuckets[row.Museo].a, row);
         });
         righeB.forEach(({ row }) => {
-            if (!aggregati[row.Museo]) aggregati[row.Museo] = { base: 0, comp: 0 };
-            aggregati[row.Museo].comp += parseInt(row.Totale_Visitatori, 10) || 0;
+            if (!museumBuckets[row.Museo]) museumBuckets[row.Museo] = { a: createEmptyBucket(), b: createEmptyBucket() };
+            accumulateBucket(museumBuckets[row.Museo].b, row);
         });
 
-        for (const nome in aggregati) {
-            const valBase = aggregati[nome].base;
-            const valComp = aggregati[nome].comp;
-            if (valBase === 0 && valComp === 0) continue;
-            const diff = valBase - valComp;
-            const perc = valComp > 0 ? ((diff / valComp) * 100).toFixed(1) : '—';
-            tableRows.push({ label: nome, base: valBase, comp: valComp, diff, perc });
-        }
-
-        tableRows.sort((a, b) => {
-            if (a.perc === '—') return 1;
-            if (b.perc === '—') return -1;
-            return parseFloat(b.perc) - parseFloat(a.perc);
+        Object.keys(museumBuckets).forEach((nome, idx) => {
+            const { a, b } = museumBuckets[nome];
+            const rowObj = buildComparisonRowObj(nome, a, b, metrica, idx);
+            if ((rowObj.base === 0 || rowObj.base === null) && (rowObj.comp === 0 || rowObj.comp === null)) return;
+            rawRows.push(rowObj);
         });
     }
 
-    const firstColTitle = isSingleMuseumMultiMonth ? `Mese (${museo})` : 'Museo';
+    // Aggiorna KPI
+    updateComparisonKPIs(totBucketA, totBucketB, rawRows, metrica, isSingleMuseumMultiMonth, museo);
+
+    // Ordina tabella secondo selezione utente
+    const sortedRows = sortComparisonRows(rawRows, isPercent);
+
+    const sortArrow = (key) => {
+        if (comparisonSort.key !== key) return '<span class="sort-indicator">⇅</span>';
+        return `<span class="sort-indicator">${comparisonSort.dir === 'desc' ? '▼' : '▲'}</span>`;
+    };
+
+    const firstColTitle = isSingleMuseumMultiMonth ? `Mese (${museo})` : 'Museo / Mostra';
+    const scopeLabel = museo !== 'Tutti'
+        ? museo
+        : (tipo === 'SoloMusei' ? 'Tutti i Musei' : tipo === 'SoloMostre' ? 'Tutte le Mostre' : 'Musei + Mostre');
+
     let html = `<div class="table-container">
-      <h3 class="table-title">📊 Confronto ${labelA} vs ${labelB} – ${museo === 'Tutti' ? 'Tutti i Musei' : museo}</h3>
+      <h3 class="table-title">📊 Confronto (${metricaInfo.label}): ${labelA} vs ${labelB} – ${scopeLabel}</h3>
       <table class="summary-table">
         <thead>
           <tr>
-            <th>${firstColTitle}</th>
-            <th>${shortA} (Periodo A)</th>
-            <th>${shortB} (Periodo B)</th>
-            <th>Δ</th>
-            <th>Δ%</th>
+            <th class="sortable-th" onclick="setComparisonSort('label')">${firstColTitle} ${sortArrow('label')}</th>
+            <th class="sortable-th" onclick="setComparisonSort('base')">${shortA} (A) ${sortArrow('base')}</th>
+            <th class="sortable-th" onclick="setComparisonSort('comp')">${shortB} (B) ${sortArrow('comp')}</th>
+            <th class="sortable-th" onclick="setComparisonSort('diff')">${isPercent ? 'Δ (p.p.)' : 'Δ'} ${sortArrow('diff')}</th>
+            ${isPercent ? '' : `<th class="sortable-th" onclick="setComparisonSort('perc')">Δ% ${sortArrow('perc')}</th>`}
           </tr>
         </thead>
         <tbody>`;
 
-    let totaleBase = 0;
-    let totaleComp = 0;
+    sortedRows.forEach(r => {
+        const diffClass = r.diff === null ? '' : (r.diff >= 0 ? 'percentage-cell positive' : 'percentage-cell negative');
+        const percClass = r.perc === null ? '' : (r.perc >= 0 ? 'percentage-cell positive' : 'percentage-cell negative');
 
-    tableRows.forEach(r => {
-        totaleBase += r.base;
-        totaleComp += r.comp;
         html += `<tr>
           <td>${r.label}</td>
-          <td class="numeric-cell">${r.base.toLocaleString('it-IT')}</td>
-          <td class="numeric-cell">${r.comp.toLocaleString('it-IT')}</td>
-          <td class="numeric-cell">${(r.diff >= 0 ? '+' : '') + r.diff.toLocaleString('it-IT')}</td>
-          <td class="${r.perc === '—' ? '' : parseFloat(r.perc) >= 0 ? 'percentage-cell positive' : 'percentage-cell negative'}">
-            ${r.perc !== '—' ? (parseFloat(r.perc) > 0 ? '▲ +' : '▼ ') + r.perc + '%' : '—'}
-          </td>
+          <td class="numeric-cell">${formatMetricValue(r.base, isPercent)}</td>
+          <td class="numeric-cell">${formatMetricValue(r.comp, isPercent)}</td>
+          <td class="${isPercent ? diffClass : 'numeric-cell'}">${isPercent && r.diff !== null ? (r.diff > 0 ? '▲ ' : r.diff < 0 ? '▼ ' : '') + formatMetricDiff(r.diff, true) : formatMetricDiff(r.diff, false)}</td>
+          ${isPercent ? '' : `<td class="${percClass}">${r.perc !== null ? (r.perc > 0 ? '▲ +' : r.perc < 0 ? '▼ ' : '') + r.perc.toFixed(1) + '%' : '—'}</td>`}
         </tr>`;
     });
 
-    const totaleDiff = totaleBase - totaleComp;
-    const totalePerc = totaleComp > 0 ? ((totaleDiff / totaleComp) * 100).toFixed(1) : '—';
+    // Riga Totale Generale (per % Stranieri è ponderata sui totali effettivi!)
+    const totRow = buildComparisonRowObj('📈 Totale Generale', totBucketA, totBucketB, metrica);
+    const totDiffClass = totRow.diff === null ? '' : (totRow.diff >= 0 ? 'percentage-cell positive' : 'percentage-cell negative');
+    const totPercClass = totRow.perc === null ? '' : (totRow.perc >= 0 ? 'percentage-cell positive' : 'percentage-cell negative');
 
     html += `<tr class="total-row">
-      <td>📈 Totale Generale</td>
-      <td class="numeric-cell">${totaleBase.toLocaleString('it-IT')}</td>
-      <td class="numeric-cell">${totaleComp.toLocaleString('it-IT')}</td>
-      <td class="numeric-cell">${(totaleDiff >= 0 ? '+' : '') + totaleDiff.toLocaleString('it-IT')}</td>
-      <td class="${totalePerc === '—' ? '' : parseFloat(totalePerc) >= 0 ? 'percentage-cell positive' : 'percentage-cell negative'}">
-        ${totalePerc !== '—' ? (parseFloat(totalePerc) > 0 ? '▲ +' : '▼ ') + totalePerc + '%' : '—'}
-      </td>
+      <td>${totRow.label}</td>
+      <td class="numeric-cell">${formatMetricValue(totRow.base, isPercent)}</td>
+      <td class="numeric-cell">${formatMetricValue(totRow.comp, isPercent)}</td>
+      <td class="${isPercent ? totDiffClass : 'numeric-cell'}">${isPercent && totRow.diff !== null ? (totRow.diff > 0 ? '▲ ' : totRow.diff < 0 ? '▼ ' : '') + formatMetricDiff(totRow.diff, true) : formatMetricDiff(totRow.diff, false)}</td>
+      ${isPercent ? '' : `<td class="${totPercClass}">${totRow.perc !== null ? (totRow.perc > 0 ? '▲ +' : totRow.perc < 0 ? '▼ ' : '') + totRow.perc.toFixed(1) + '%' : '—'}</td>`}
     </tr>`;
 
     html += '</tbody></table></div>';
     document.getElementById('comparisonTableContainer').innerHTML = html;
 
-    // Gestione grafici:
-    // - Singolo museo multi-mese: mostra il grafico a linee mese per mese al posto della barra singola
-    // - Tutti i musei: mostra il grafico a barre per museo E (se multi-mese) anche il grafico a linee aggregato sotto
+    // Gestione grafici
     const barContainer = document.getElementById('comparisonBarContainer');
     const lineContainer = document.getElementById('comparisonLineContainer');
 
@@ -1608,14 +1931,14 @@ function updateAnnualComparison() {
             window.comparisonChart = null;
         }
         lineContainer.style.display = 'block';
-        renderComparisonLineChart(seqA, seqB, righeA, righeB, labelA, labelB, museo);
+        renderComparisonLineChart(seqA, seqB, righeA, righeB, labelA, labelB, scopeLabel, metrica);
     } else {
         barContainer.style.display = 'block';
-        renderComparisonBarChart(tableRows, labelA, labelB, shortA, shortB, museo);
+        renderComparisonBarChart(sortedRows, labelA, labelB, shortA, shortB, scopeLabel, metrica);
 
         if (maxMonths > 1) {
             lineContainer.style.display = 'block';
-            renderComparisonLineChart(seqA, seqB, righeA, righeB, labelA, labelB, museo);
+            renderComparisonLineChart(seqA, seqB, righeA, righeB, labelA, labelB, scopeLabel, metrica);
         } else {
             lineContainer.style.display = 'none';
             if (window.comparisonLineChart instanceof Chart) {
@@ -1626,10 +1949,14 @@ function updateAnnualComparison() {
     }
 }
 
-function renderComparisonBarChart(rows, labelA, labelB, shortA, shortB, museo) {
+function renderComparisonBarChart(rows, labelA, labelB, shortA, shortB, scopeLabel, metrica) {
+    const metricaInfo = METRICHE_CONFRONTI[metrica];
+    const isPercent = metricaInfo.isPercent;
     const labels = rows.map(r => r.label);
-    const dataBase = rows.map(r => r.base);
-    const dataComp = rows.map(r => r.comp);
+    const dataBase = rows.map(r => r.base !== null ? Number(r.base.toFixed(1)) : 0);
+    const dataComp = rows.map(r => r.comp !== null ? Number(r.comp.toFixed(1)) : 0);
+
+    const maxChartVal = Math.max(...dataBase, ...dataComp, 1);
 
     if (window.comparisonChart instanceof Chart) {
         window.comparisonChart.destroy();
@@ -1658,13 +1985,13 @@ function renderComparisonBarChart(rows, labelA, labelB, shortA, shortB, museo) {
             responsive: true,
             maintainAspectRatio: false,
             layout: {
-                padding: { top: 30, right: 30 }
+                padding: { top: 30, right: 40 }
             },
             indexAxis: 'y',
             plugins: {
                 title: {
                     display: true,
-                    text: `Confronto ${labelA} vs ${labelB} – ${museo === 'Tutti' ? 'Tutti' : museo}`,
+                    text: `Confronto (${metricaInfo.label}): ${labelA} vs ${labelB} – ${scopeLabel}`,
                     font: {
                         size: 24,
                         weight: 'bold'
@@ -1678,15 +2005,17 @@ function renderComparisonBarChart(rows, labelA, labelB, shortA, shortB, museo) {
                 datalabels: {
                     color: '#000',
                     anchor: 'end',
-                    align: ctx => ctx.dataset.data[ctx.dataIndex] > 4000 ? 'center' : 'end',
-                    offset: ctx => ctx.dataset.data[ctx.dataIndex] > 4000 ? 0 : 10,
+                    align: ctx => ctx.dataset.data[ctx.dataIndex] > (maxChartVal * 0.25) ? 'center' : 'end',
+                    offset: ctx => ctx.dataset.data[ctx.dataIndex] > (maxChartVal * 0.25) ? 0 : 10,
                     clamp: true,
                     clip: false,
                     font: {
                         weight: 'bold',
                         size: 12
                     },
-                    formatter: value => value.toLocaleString('it-IT')
+                    formatter: value => isPercent
+                        ? `${value.toFixed(1).replace('.', ',')}%`
+                        : value.toLocaleString('it-IT')
                 },
                 legend: {
                     position: 'bottom',
@@ -1700,19 +2029,23 @@ function renderComparisonBarChart(rows, labelA, labelB, shortA, shortB, museo) {
                 },
                 tooltip: {
                     callbacks: {
-                        label: ctx => `${ctx.dataset.label}: ${ctx.raw.toLocaleString('it-IT')}`
+                        label: ctx => isPercent
+                            ? `${ctx.dataset.label}: ${ctx.raw.toFixed(1).replace('.', ',')}%`
+                            : `${ctx.dataset.label}: ${ctx.raw.toLocaleString('it-IT')}`
                     }
                 }
             },
             scales: {
                 x: {
+                    beginAtZero: true,
+                    suggestedMax: isPercent ? 100 : undefined,
                     ticks: {
                         color: '#000',
                         font: {
                             size: 13,
                             weight: 'bold'
                         },
-                        callback: v => v.toLocaleString('it-IT')
+                        callback: v => isPercent ? `${v}%` : v.toLocaleString('it-IT')
                     }
                 },
                 y: {
@@ -1729,15 +2062,19 @@ function renderComparisonBarChart(rows, labelA, labelB, shortA, shortB, museo) {
     });
 }
 
-function renderComparisonLineChart(seqA, seqB, righeA, righeB, labelA, labelB, museo) {
-    const sumByMonthA = {};
-    const sumByMonthB = {};
+function renderComparisonLineChart(seqA, seqB, righeA, righeB, labelA, labelB, scopeLabel, metrica) {
+    const metricaInfo = METRICHE_CONFRONTI[metrica];
+    const isPercent = metricaInfo.isPercent;
+    const bucketsA = {};
+    const bucketsB = {};
 
     righeA.forEach(({ row, info }) => {
-        sumByMonthA[info.value] = (sumByMonthA[info.value] || 0) + (parseInt(row.Totale_Visitatori, 10) || 0);
+        if (!bucketsA[info.value]) bucketsA[info.value] = createEmptyBucket();
+        accumulateBucket(bucketsA[info.value], row);
     });
     righeB.forEach(({ row, info }) => {
-        sumByMonthB[info.value] = (sumByMonthB[info.value] || 0) + (parseInt(row.Totale_Visitatori, 10) || 0);
+        if (!bucketsB[info.value]) bucketsB[info.value] = createEmptyBucket();
+        accumulateBucket(bucketsB[info.value], row);
     });
 
     const maxLen = Math.max(seqA.length, seqB.length);
@@ -1759,8 +2096,11 @@ function renderComparisonLineChart(seqA, seqB, righeA, righeB, labelA, labelB, m
             xLabels.push(`— / ${mB.shortLabel}`);
         }
 
-        dataA.push(mA ? (sumByMonthA[mA.value] || 0) : null);
-        dataB.push(mB ? (sumByMonthB[mB.value] || 0) : null);
+        const valA = mA ? extractMetricValue(bucketsA[mA.value] || createEmptyBucket(), metrica) : null;
+        const valB = mB ? extractMetricValue(bucketsB[mB.value] || createEmptyBucket(), metrica) : null;
+
+        dataA.push(valA !== null ? Number(valA.toFixed(1)) : null);
+        dataB.push(valB !== null ? Number(valB.toFixed(1)) : null);
         tooltipLabelsA.push(mA ? mA.label : 'N/D');
         tooltipLabelsB.push(mB ? mB.label : 'N/D');
     }
@@ -1812,7 +2152,7 @@ function renderComparisonLineChart(seqA, seqB, righeA, righeB, labelA, labelB, m
             plugins: {
                 title: {
                     display: true,
-                    text: `Andamento Mensile: ${labelA} vs ${labelB} – ${museo === 'Tutti' ? 'Tutti i Musei' : museo}`,
+                    text: `Andamento Mensile (${metricaInfo.label}): ${labelA} vs ${labelB} – ${scopeLabel}`,
                     font: { size: 24, weight: 'bold' },
                     color: 'blue',
                     padding: { top: 10, bottom: 15 }
@@ -1831,7 +2171,9 @@ function renderComparisonLineChart(seqA, seqB, righeA, righeB, labelA, labelB, m
                             const monthLabel = c.datasetIndex === 0
                                 ? tooltipLabelsA[c.dataIndex]
                                 : tooltipLabelsB[c.dataIndex];
-                            return `${monthLabel}: ${c.parsed.y.toLocaleString('it-IT')} visitatori`;
+                            return isPercent
+                                ? `${monthLabel}: ${c.parsed.y.toFixed(1).replace('.', ',')}%`
+                                : `${monthLabel}: ${c.parsed.y.toLocaleString('it-IT')} visitatori`;
                         }
                     }
                 },
@@ -1852,7 +2194,11 @@ function renderComparisonLineChart(seqA, seqB, righeA, righeB, labelA, labelB, m
                     backgroundColor: 'rgba(255, 255, 255, 0.85)',
                     borderRadius: 4,
                     padding: 3,
-                    formatter: v => (v !== null && v !== undefined && v > 0) ? v.toLocaleString('it-IT') : null
+                    formatter: v => {
+                        if (v === null || v === undefined) return null;
+                        if (isPercent) return `${v.toFixed(1).replace('.', ',')}%`;
+                        return v > 0 ? v.toLocaleString('it-IT') : null;
+                    }
                 }
             },
             scales: {
@@ -1871,16 +2217,17 @@ function renderComparisonLineChart(seqA, seqB, righeA, righeB, labelA, labelB, m
                 y: {
                     beginAtZero: true,
                     grace: '15%',
+                    suggestedMax: isPercent ? 100 : undefined,
                     title: {
                         display: true,
-                        text: 'Numero Visitatori Intervistati',
+                        text: isPercent ? '% Visitatori Stranieri' : `Numero Visitatori (${metricaInfo.label})`,
                         font: { size: 18, weight: 'bold' },
                         color: 'blue'
                     },
                     ticks: {
                         font: { size: 14, weight: 'bold' },
                         color: '#2c3e50',
-                        callback: v => v.toLocaleString('it-IT')
+                        callback: v => isPercent ? `${v}%` : v.toLocaleString('it-IT')
                     }
                 }
             }
