@@ -1295,6 +1295,7 @@
                         <label for="tickTicketTypeSelect">🎟️ Tipologia Biglietto</label>
                         <select id="tickTicketTypeSelect" onchange="updateBiglietteriaDashboard()">
                             <option value="Totale">Tutti gli ingressi</option>
+                            <option value="Paganti">Paganti (Intero + Ridotto)</option> 
                             <option value="Intero">Solo Intero</option>
                             <option value="Ridotto">Solo Ridotto</option>
                             <option value="Omaggio">Solo Omaggio</option>
@@ -1416,6 +1417,7 @@
                                     <label for="tickCompTicketSelect">🎟️ Biglietto</label>
                                     <select id="tickCompTicketSelect" onchange="updateBiglietteriaDateComparison()">
                                         <option value="Totale">Tutti gli ingressi</option>
+                                        <option value="Paganti">Paganti (Intero + Ridotto)</option> 
                                         <option value="Intero">Solo Intero</option>
                                         <option value="Ridotto">Solo Ridotto</option>
                                         <option value="Omaggio">Solo Omaggio</option>
@@ -3462,6 +3464,7 @@ function ensureBiglietteriaLoaded() {
                             Ora: ora,
                             Intero: intero,
                             Ridotto: ridotto,
+                            Paganti: intero + ridotto, 
                             Omaggio: omaggio,
                             Card: card,
                             Totale: intero + ridotto + omaggio + card,
@@ -3642,7 +3645,9 @@ function updateBiglietteriaDashboard() {
     // 2. Aggiorna 4 KPI
     document.getElementById('tickKpiTotal').textContent = sumSelected.toLocaleString('it-IT');
     document.getElementById('tickKpiTotalLabel').textContent =
-        ticketKey === 'Totale' ? 'Ingressi Totali nel periodo' : `Ingressi "${ticketKey}"`;
+        ticketKey === 'Totale'
+            ? 'Ingressi Totali nel periodo'
+            : (ticketKey === 'Paganti' ? 'Ingressi "Paganti (Int. + Rid.)"' : `Ingressi "${ticketKey}"`);
     document.getElementById('tickKpiTotalSub').textContent =
         numDays > 0 ? `Media ${avgPerDay.toFixed(1).replace('.', ',')} / giorno (${numDays} gg apertura)` : 'Nessun dato nel periodo';
 
@@ -3875,7 +3880,9 @@ function renderTickDailyChart(dailyTotals, dowTotals, dowOpeningDays, ticketKey,
     }
 
     const ctx = document.getElementById('tickDailyChart').getContext('2d');
-    const ticketLabel = ticketKey === 'Totale' ? 'Tutti gli ingressi' : ticketKey;
+    const ticketLabel = ticketKey === 'Totale'
+        ? 'Tutti gli ingressi'
+        : (ticketKey === 'Paganti' ? 'Paganti (Intero + Ridotto)' : ticketKey);
     const scopeTxt = museo === 'Tutti' ? 'Tutti i Musei' : museo;
 
     if (tickTrendMode === 'weekday') {
