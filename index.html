@@ -423,6 +423,77 @@
     color: #c53030;
     font-weight: 700;
 }
+
+/* === STILI TAB BIGLIETTERIA & ORARI (HEATMAP + DATE) === */
+.control-group input[type="date"] {
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: none;
+    font-size: 1rem;
+    background: white;
+    font-family: inherit;
+}
+
+.heatmap-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 4px;
+    margin-top: 10px;
+    font-size: 0.95rem;
+}
+.heatmap-table th {
+    background: #4a3fa5;
+    color: white;
+    padding: 10px 8px;
+    text-align: center;
+    border-radius: 8px;
+    font-weight: 700;
+}
+.heatmap-table th:first-child {
+    text-align: left;
+    padding-left: 14px;
+}
+.heatmap-table td {
+    padding: 11px 8px;
+    text-align: center;
+    border-radius: 8px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    transition: transform 0.15s ease;
+}
+.heatmap-table td:first-child {
+    text-align: left;
+    padding-left: 14px;
+    background: #f1f5f9 !important;
+    color: #1e293b !important;
+    font-weight: 800;
+}
+.heatmap-table td.heatmap-total-col {
+    background: #e2e8f0 !important;
+    color: #1e293b !important;
+    font-weight: 800;
+}
+.heatmap-table td:not(:first-child):not(.heatmap-total-col):hover {
+    transform: scale(1.04);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+}
+
+.biglietteria-status-banner {
+    padding: 16px 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    font-weight: 600;
+    font-size: 1.05rem;
+    text-align: center;
+    background: #e8f4fd;
+    color: #1a5276;
+    border-left: 5px solid #3498db;
+}
+.biglietteria-status-banner.error {
+    background: #fde8e8;
+    color: #9b1c1c;
+    border-left-color: #e02424;
+}
        
         /* === INIZIO BLOCCO STILI TAB AGGIORNATO === */
         .tab-buttons {
@@ -432,6 +503,7 @@
     margin-bottom: 0;
     padding-left: 15px;
     background-color: #f8f9fa;
+    flex-wrap: wrap;
 }
 
 .tab-buttons button {
@@ -859,11 +931,12 @@
     </div>
     <div class="status loading" id="status">📡 Caricamento dati</div>
 
-    <!-- BOTTONI TAB AGGIORNATI CON ICONE -->
+    <!-- BOTTONI TAB -->
     <div class="tab-buttons fade-in">
       <button class="tab-link active" onclick="openTab(event, 'Panoramica')">📊 Panoramica</button>
       <button class="tab-link" onclick="openTab(event, 'Confronti')">🆚 Confronti</button> 
       <button class="tab-link" onclick="openTab(event, 'Top10')">🏆 Top 10</button>
+      <button class="tab-link" onclick="openTab(event, 'Biglietteria')">🎟️ Biglietteria & Orari</button>
     </div>
 
     <div id="Panoramica" class="tab-content" style="display:block;">
@@ -912,9 +985,7 @@
                 </div>
             </div>
 
-            <div id="summaryTableContainer">
-                <!-- Tabella generata dinamicamente -->
-            </div>
+            <div id="summaryTableContainer"></div>
 
             <!-- FILTRI BLOCCO 2: GRAFICI DI DETTAGLIO -->
             <div class="filter-section-wrapper" style="margin-top: 25px; margin-bottom: 0;">
@@ -980,7 +1051,6 @@
     <h2>📈 Confronti tra Periodi per Museo</h2>
   </div>
 
-  <!-- 🎛️ FILTRI CONFRONTI AVANZATI -->
   <div class="comparison-controls-wrapper fade-in">
     <div class="preset-bar">
       <span class="preset-bar-label">⚡ Preset rapidi:</span>
@@ -991,7 +1061,6 @@
     </div>
 
     <div class="periods-grid">
-      <!-- Periodo A (Base) -->
       <div class="period-box">
         <div class="period-box-title">
           <span>🔵 Periodo A (Base)</span>
@@ -1009,7 +1078,6 @@
         </div>
       </div>
 
-      <!-- Periodo B (Confronto) -->
       <div class="period-box">
         <div class="period-box-title">
           <span>🔴 Periodo B (Confronto)</span>
@@ -1027,7 +1095,6 @@
         </div>
       </div>
 
-      <!-- Tipo, Museo e Metrica -->
       <div class="period-box">
         <div class="period-box-title">
           <span>🎯 Ambito e Metrica</span>
@@ -1062,10 +1129,8 @@
     </div>
   </div>
 
-  <!-- ⚠️ AVVISO DURATE DIVERSE / ANNO PRECEDENTE MANCANTE -->
   <div id="comparisonDurationAlert" class="comparison-alert"></div>
 
-  <!-- 📊 4 CARD KPI DI SINTESI CONFRONTI -->
   <div class="kpi-container" id="comparisonKpiContainer">
     <div class="kpi-card comp-total">
       <div class="kpi-icon">📊</div>
@@ -1093,15 +1158,12 @@
     </div>
   </div>
 
-  <!-- 📋 TABELLA COMPARATIVA -->
   <div id="comparisonTableContainer"></div>
 
-  <!-- 📊 GRAFICO A BARRE PER MUSEO -->
   <div class="chart-container" id="comparisonBarContainer">
     <canvas id="comparisonChart" class="chart-canvas-bar"></canvas>
   </div>
 
-  <!-- 📈 GRAFICO A LINEE MESE PER MESE (multi-mese) -->
   <div class="chart-container" id="comparisonLineContainer" style="display:none;">
     <canvas id="comparisonLineChart" class="chart-canvas-bar"></canvas>
   </div>
@@ -1112,7 +1174,6 @@
         <h2>🏆 Classifiche Geografiche (Top 10 / Top 20)</h2>
     </div>
 
-    <!-- Controlli avanzati per Top 10/20 con intervallo mesi e confronto YoY -->
     <div class="controls">
         <div class="control-group">
             <label for="annoGeoSelect">📆 Anno</label>
@@ -1145,7 +1206,6 @@
         </div>
     </div>
 
-    <!-- Barra di ricerca per qualsiasi località della classifica -->
     <div class="geo-search-card">
         <div class="geo-search-bar">
             <label for="geoSearchInput">🔍 Cerca località:</label>
@@ -1158,7 +1218,6 @@
         <div id="geoSearchResults" class="geo-search-results"></div>
     </div>
 
-    <!-- Container unico per il grafico, toggle % (per Nazioni) e riquadro laterale -->
     <div class="chart-container">
         <div class="chart-mode-bar" id="nazioniBaseToggleBar">
             <span class="chart-mode-label">Base calcolo % Nazioni:</span>
@@ -1174,7 +1233,6 @@
                      <canvas id="top10ChartCanvas"></canvas>
                  </div>
             </div>
-            <!-- Questo riquadro è dinamico e mostra anche il confronto YoY -->
             <div id="top10Tile" class="local-tile" style="display: none;">
                 <div class="local-tile-icon">🏛️</div>
                 <div class="local-tile-value" id="top10TileValue">0</div>
@@ -1184,6 +1242,186 @@
          </div>
     </div>
 </div>
+
+    <!-- === NUOVO TAB 4: BIGLIETTERIA & ORARI === -->
+    <div id="Biglietteria" class="tab-content" style="display:none;">
+        <div class="header">
+            <h2>🎟️ Biglietteria, Giorni & Fasce Orarie</h2>
+            <p>Analisi dettagliata per singolo giorno, fascia oraria e tipologia di biglietto</p>
+        </div>
+
+        <div id="biglietteriaStatus" class="biglietteria-status-banner">📡 In attesa di apertura del tab per scaricare Biglietteria.csv...</div>
+
+        <div id="biglietteriaMainArea" style="display:none;">
+            <!-- FILTRI PRINCIPALI -->
+            <div class="comparison-controls-wrapper">
+                <div class="preset-bar">
+                    <span class="preset-bar-label">⚡ Periodo rapido:</span>
+                    <button type="button" class="preset-btn" onclick="applyBiglietteriaPreset('latestYear')">📅 Anno più recente</button>
+                    <button type="button" class="preset-btn" onclick="applyBiglietteriaPreset('lastMonth')">🗓️ Ultimo mese</button>
+                    <button type="button" class="preset-btn" onclick="applyBiglietteriaPreset('last30Days')">⏱️ Ultimi 30 giorni</button>
+                    <button type="button" class="preset-btn" onclick="applyBiglietteriaPreset('all')">📆 Tutto il periodo</button>
+                </div>
+
+                <div class="controls" style="background:transparent; padding:0; margin-bottom:0;">
+                    <div class="control-group">
+                        <label for="tickDateStart">📅 Da Data</label>
+                        <input type="date" id="tickDateStart" onchange="onTickDateChange()">
+                    </div>
+                    <div class="control-group">
+                        <label for="tickDateEnd">📅 A Data</label>
+                        <input type="date" id="tickDateEnd" onchange="onTickDateChange()">
+                    </div>
+                    <div class="control-group">
+                        <label for="tickMuseoSelect">🏛️ Museo</label>
+                        <select id="tickMuseoSelect" onchange="updateBiglietteriaDashboard()">
+                            <option value="Tutti">Tutti</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label for="tickDayTypeSelect">🗓️ Giorni</label>
+                        <select id="tickDayTypeSelect" onchange="updateBiglietteriaDashboard()">
+                            <option value="Tutti">Tutti i giorni</option>
+                            <option value="Feriali">Solo Feriali (Lun–Ven)</option>
+                            <option value="Weekend">Solo Weekend (Sab–Dom)</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label for="tickTicketTypeSelect">🎟️ Tipologia Biglietto</label>
+                        <select id="tickTicketTypeSelect" onchange="updateBiglietteriaDashboard()">
+                            <option value="Totale">Tutti gli ingressi</option>
+                            <option value="Intero">Solo Intero</option>
+                            <option value="Ridotto">Solo Ridotto</option>
+                            <option value="Omaggio">Solo Omaggio</option>
+                            <option value="Card">Solo Card Cultura</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4 CARD KPI -->
+            <div class="kpi-container">
+                <div class="kpi-card comp-total">
+                    <div class="kpi-icon">🎟️</div>
+                    <div class="kpi-value" id="tickKpiTotal">0</div>
+                    <div class="kpi-label" id="tickKpiTotalLabel">Ingressi nel periodo</div>
+                    <div class="kpi-sublabel" id="tickKpiTotalSub">—</div>
+                </div>
+                <div class="kpi-card comp-best">
+                    <div class="kpi-icon">📆</div>
+                    <div class="kpi-value" id="tickKpiPeakDay">—</div>
+                    <div class="kpi-label">Giorno più affollato (media)</div>
+                    <div class="kpi-sublabel" id="tickKpiPeakDaySub">—</div>
+                </div>
+                <div class="kpi-card comp-foreign">
+                    <div class="kpi-icon">⏰</div>
+                    <div class="kpi-value" id="tickKpiPeakHour">—</div>
+                    <div class="kpi-label">Fascia oraria di picco</div>
+                    <div class="kpi-sublabel" id="tickKpiPeakHourSub">—</div>
+                </div>
+                <div class="kpi-card visitors">
+                    <div class="kpi-icon">💳</div>
+                    <div class="kpi-value" id="tickKpiMix">—</div>
+                    <div class="kpi-label">Quota Paganti (Int. + Rid.)</div>
+                    <div class="kpi-sublabel" id="tickKpiMixSub">—</div>
+                </div>
+            </div>
+
+            <!-- HEATMAP GIORNO SETTIMANA x FASCIA ORARIA -->
+            <div class="table-container">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:14px;">
+                    <h3 class="table-title" style="margin-bottom:0; text-align:left;">🔥 Mappa di Calore: Giorno della Settimana × Fascia Oraria</h3>
+                    <div class="mode-toggle-group">
+                        <button type="button" id="heatmapModeAvgBtn" class="mode-toggle-btn active" onclick="setHeatmapMode('avg')">📊 Media per apertura</button>
+                        <button type="button" id="heatmapModeTotBtn" class="mode-toggle-btn" onclick="setHeatmapMode('total')">🔢 Totale ingressi</button>
+                    </div>
+                </div>
+                <div id="tickHeatmapContainer" style="overflow-x:auto;"></div>
+            </div>
+
+            <!-- GRAFICO PROFILO ORARIO PER TIPOLOGIA BIGLIETTO -->
+            <div class="chart-container">
+                <canvas id="tickHourlyChart" class="chart-canvas-bar"></canvas>
+            </div>
+
+            <!-- GRAFICO ANDAMENTO GIORNALIERO / GIORNO SETTIMANA -->
+            <div class="chart-container">
+                <div class="chart-mode-bar">
+                    <span class="chart-mode-label">Visualizzazione andamento:</span>
+                    <div class="mode-toggle-group">
+                        <button type="button" id="tickTrendDailyBtn" class="mode-toggle-btn active" onclick="setTickTrendMode('daily')">📈 Giorno per giorno</button>
+                        <button type="button" id="tickTrendWeekdayBtn" class="mode-toggle-btn" onclick="setTickTrendMode('weekday')">📊 Media Lun–Dom</button>
+                    </div>
+                </div>
+                <canvas id="tickDailyChart" class="chart-canvas-bar"></canvas>
+            </div>
+
+            <!-- TABELLA RIEPILOGATIVA PER MUSEO -->
+            <div id="tickMuseumTableContainer"></div>
+
+            <!-- CONFRONTO TRA DATE ESATTE (PERIODO A vs PERIODO B) -->
+            <div class="chart-container" style="margin-top: 30px;">
+                <h3 class="table-title" style="margin-bottom: 18px;">🆚 Confronto tra Date Esatte (es. 23 sett – 23 nov)</h3>
+                <div class="comparison-controls-wrapper">
+                    <div class="periods-grid">
+                        <div class="period-box">
+                            <div class="period-box-title">
+                                <span>🔵 Periodo A (Base)</span>
+                                <span class="period-badge" id="tickCompBadgeA">0 gg</span>
+                            </div>
+                            <div class="period-selectors">
+                                <div class="control-group">
+                                    <label for="tickCompAStart">Da Data</label>
+                                    <input type="date" id="tickCompAStart" onchange="onTickCompAChange()">
+                                </div>
+                                <div class="control-group">
+                                    <label for="tickCompAEnd">A Data</label>
+                                    <input type="date" id="tickCompAEnd" onchange="onTickCompAChange()">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="period-box">
+                            <div class="period-box-title">
+                                <span>🔴 Periodo B (Confronto)</span>
+                                <span class="period-badge" id="tickCompBadgeB">0 gg</span>
+                            </div>
+                            <div class="period-selectors">
+                                <div class="control-group">
+                                    <label for="tickCompBStart">Da Data</label>
+                                    <input type="date" id="tickCompBStart" onchange="onTickCompBChange()">
+                                </div>
+                                <div class="control-group">
+                                    <label for="tickCompBEnd">A Data</label>
+                                    <input type="date" id="tickCompBEnd" onchange="onTickCompBChange()">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="period-box">
+                            <div class="period-box-title">
+                                <span>🎯 Ambito Confronto</span>
+                            </div>
+                            <div class="period-selectors">
+                                <div class="control-group">
+                                    <label for="tickCompTicketSelect">🎟️ Biglietto</label>
+                                    <select id="tickCompTicketSelect" onchange="updateBiglietteriaDateComparison()">
+                                        <option value="Totale">Tutti gli ingressi</option>
+                                        <option value="Intero">Solo Intero</option>
+                                        <option value="Ridotto">Solo Ridotto</option>
+                                        <option value="Omaggio">Solo Omaggio</option>
+                                        <option value="Card">Solo Card Cultura</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="tickCompAlert" class="comparison-alert"></div>
+                <div id="tickCompTableContainer"></div>
+            </div>
+        </div>
+    </div>
     
     <script>
 
@@ -1267,6 +1505,12 @@
                 setTimeout(() => {
                     if (window.top10Chart instanceof Chart) window.top10Chart.resize();
                 }, 50);
+            } else if (tabName === 'Biglietteria') {
+                ensureBiglietteriaLoaded();
+                setTimeout(() => {
+                    if (window.tickHourlyChart instanceof Chart) window.tickHourlyChart.resize();
+                    if (window.tickDailyChart instanceof Chart) window.tickDailyChart.resize();
+                }, 50);
             }
         }
 
@@ -1282,9 +1526,23 @@
         let availableComparisonPeriods = [];
         let comparisonSyncWarning = '';
         let comparisonSort = { key: 'perc', dir: 'desc' };
-        let nazioniBaseMode = 'all'; // 'all' | 'foreign'
-        let currentGeoRankingState = null; // Stato completo della classifica corrente per ricerca istantanea
+        let nazioniBaseMode = 'all';
+        let currentGeoRankingState = null;
         window.top10Chart = null;
+
+        // Variabili globali Tab Biglietteria & Orari
+        const urlBiglietteria = 'https://raw.githubusercontent.com/Lucab73/Dashboard-Musei/main/Biglietteria.csv';
+        let biglietteriaData = [];
+        let biglietteriaLoaded = false;
+        let biglietteriaLoading = false;
+        let biglietteriaMinDate = '';
+        let biglietteriaMaxDate = '';
+        let tickHeatmapMode = 'avg'; // 'avg' | 'total'
+        let tickTrendMode = 'daily'; // 'daily' | 'weekday'
+        let tickTableSort = { key: 'Totale', dir: 'desc' };
+        let tickCompSyncWarning = '';
+        window.tickHourlyChart = null;
+        window.tickDailyChart = null;
 
         function darkenColor(hex, percent) {
             let num = parseInt(hex.replace("#", ""), 16);
@@ -2699,7 +2957,6 @@ function updateGeographicCharts() {
     const endIdx = getGeoMonthIndex(meseEnd);
     const prevAnno = String(parseInt(annoSelected, 10) - 1);
 
-    // Mostra toggle base % solo per Nazioni
     document.getElementById('nazioniBaseToggleBar').style.display =
         typeSelected === 'nazioni' ? 'flex' : 'none';
 
@@ -2756,11 +3013,9 @@ function updateGeographicCharts() {
     const prevRows = filterByYearAndRange(prevAnno);
     const hasPrevYear = prevRows.length > 0;
 
-    // Aggregazioni complete (prima dell'esclusione per avere anche il riferimento locale)
     const currMapAll = aggregateGeoCategory(currRows, config.categoryCol, config.valueCol);
     const prevMapAll = aggregateGeoCategory(prevRows, config.categoryCol, config.valueCol);
 
-    // Calcolo denominatore corrente e precedente
     const calcDenominator = (rows, mapAll) => {
         if (typeSelected === 'nazioni') {
             if (nazioniBaseMode === 'foreign') {
@@ -2779,13 +3034,9 @@ function updateGeographicCharts() {
     };
 
     const denominatorCurr = calcDenominator(currRows, currMapAll);
-    const denominatorPrev = calcDenominator(prevRows, prevMapAll);
-
-    // Estrai l'eventuale valore escluso (es. italia, emilia-romagna, bologna)
     const excludedCurr = config.excludeValue ? (currMapAll[config.excludeValue] || 0) : 0;
     const excludedPrev = config.excludeValue ? (prevMapAll[config.excludeValue] || 0) : 0;
 
-    // Costruisci classifica completa (escluso riferimento locale) per Top N, Rank YoY e Ricerca
     const buildSortedRanking = (mapObj) => Object.entries(mapObj)
         .filter(([k]) => !config.excludeValue || k !== config.excludeValue)
         .sort(([, a], [, b]) => b - a);
@@ -2805,7 +3056,7 @@ function updateGeographicCharts() {
         const prevRank = prevInfo ? prevInfo.rank : null;
         const yoyPerc = (hasPrevYear && prevVal > 0) ? ((val - prevVal) / prevVal) * 100 : null;
         const yoyDiff = hasPrevYear ? (val - prevVal) : null;
-        const rankDelta = (hasPrevYear && prevRank !== null) ? (prevRank - rank) : null; // positivo = salito in classifica
+        const rankDelta = (hasPrevYear && prevRank !== null) ? (prevRank - rank) : null;
         const sharePerc = denominatorCurr > 0 ? (val / denominatorCurr) * 100 : 0;
 
         return {
@@ -2823,7 +3074,6 @@ function updateGeographicCharts() {
         };
     });
 
-    // Salva stato per ricerca istantanea (includendo anche l'eventuale voce locale esclusa)
     let excludedSearchEntry = null;
     if (config.excludeValue && excludedCurr > 0) {
         const excShare = denominatorCurr > 0 ? (excludedCurr / denominatorCurr) * 100 : 0;
@@ -2853,7 +3103,6 @@ function updateGeographicCharts() {
         excludedEntry: excludedSearchEntry
     };
 
-    // Sottotitolo descrittivo
     let subtitleText = '';
     if (typeSelected === 'nazioni') {
         subtitleText = nazioniBaseMode === 'foreign'
@@ -2888,7 +3137,7 @@ function updateGeographicCharts() {
     });
 
     updateTop10SideTile(config, excludedCurr, excludedPrev, denominatorCurr, hasPrevYear, prevAnno);
-    onGeoSearchInput(); // Aggiorna eventuali risultati ricerca al cambio filtri
+    onGeoSearchInput();
 }
 
 function renderTop10BarChart(opts) {
@@ -2901,7 +3150,6 @@ function renderTop10BarChart(opts) {
         window.top10Chart.destroy();
     }
 
-    // Ridimensiona dinamicamente il contenitore per Top 10 vs Top 20
     const wrapper = document.getElementById('top10CanvasWrapper');
     wrapper.style.height = topN > 10 ? '780px' : '500px';
 
@@ -3115,6 +3363,889 @@ function onGeoSearchInput() {
 function clearGeoSearch() {
     document.getElementById('geoSearchInput').value = '';
     onGeoSearchInput();
+}
+
+// === FUNZIONI PER IL TAB BIGLIETTERIA & ORARI (LAZY LOADING + HEATMAP + DATE ESATTE) ===
+
+const GIORNI_SETTIMANA_IT = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'];
+
+function normalizeTickDate(raw) {
+    const s = String(raw || '').trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+    const m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+    if (m) return `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`;
+    return '';
+}
+
+function formatDateIt(isoDate) {
+    if (!isoDate || isoDate.length < 10) return '—';
+    return `${isoDate.slice(8, 10)}/${isoDate.slice(5, 7)}/${isoDate.slice(0, 4)}`;
+}
+
+function shiftIsoDateByYears(isoDate, deltaYears) {
+    if (!isoDate) return '';
+    const [y, m, d] = isoDate.split('-').map(Number);
+    const dt = new Date(y + deltaYears, m - 1, d);
+    // Gestisce il 29 febbraio sugli anni non bisestili
+    if (dt.getMonth() !== m - 1) {
+        return `${y + deltaYears}-${String(m).padStart(2, '0')}-28`;
+    }
+    return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+}
+
+function shiftIsoDateByDays(isoDate, deltaDays) {
+    const [y, m, d] = isoDate.split('-').map(Number);
+    const dt = new Date(y, m - 1, d + deltaDays);
+    return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+}
+
+function daysBetweenInclusive(startIso, endIso) {
+    if (!startIso || !endIso) return 0;
+    const d1 = new Date(startIso + 'T00:00:00');
+    const d2 = new Date(endIso + 'T00:00:00');
+    return Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
+}
+
+function ensureBiglietteriaLoaded() {
+    if (biglietteriaLoaded || biglietteriaLoading) return;
+    biglietteriaLoading = true;
+
+    const statusEl = document.getElementById('biglietteriaStatus');
+    statusEl.className = 'biglietteria-status-banner';
+    statusEl.textContent = '📥 Caricamento dati biglietteria (Biglietteria.csv)...';
+
+    fetch(urlBiglietteria)
+        .then(res => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return res.text();
+        })
+        .then(csvText => {
+            Papa.parse(csvText, {
+                header: true,
+                skipEmptyLines: true,
+                transformHeader: h => h.replace(/^\uFEFF/, '').trim(),
+                complete: function(results) {
+                    const parsed = [];
+                    let minD = '';
+                    let maxD = '';
+
+                    results.data.forEach(r => {
+                        const giorno = normalizeTickDate(r.Giorno);
+                        const ora = String(r.Ora || '').trim();
+                        const museo = String(r.Museo || '').trim();
+                        if (!giorno || !ora || !museo) return;
+
+                        const dt = new Date(giorno + 'T00:00:00');
+                        if (isNaN(dt.getTime())) return;
+
+                        const intero = parseInt(r.Intero, 10) || 0;
+                        const ridotto = parseInt(r.Ridotto, 10) || 0;
+                        const omaggio = parseInt(r.Omaggio, 10) || 0;
+                        const card = parseInt(r.Card, 10) || 0;
+                        const dow = (dt.getDay() + 6) % 7; // 0 = Lunedì ... 6 = Domenica
+
+                        if (!minD || giorno < minD) minD = giorno;
+                        if (!maxD || giorno > maxD) maxD = giorno;
+
+                        parsed.push({
+                            Museo: museo,
+                            Giorno: giorno,
+                            Ora: ora,
+                            Intero: intero,
+                            Ridotto: ridotto,
+                            Omaggio: omaggio,
+                            Card: card,
+                            Totale: intero + ridotto + omaggio + card,
+                            _dow: dow,
+                            _isWeekend: dow >= 5
+                        });
+                    });
+
+                    biglietteriaData = parsed;
+                    biglietteriaMinDate = minD;
+                    biglietteriaMaxDate = maxD;
+                    biglietteriaLoaded = true;
+                    biglietteriaLoading = false;
+
+                    if (!biglietteriaData.length) {
+                        statusEl.className = 'biglietteria-status-banner error';
+                        statusEl.textContent = '⚠️ Il file Biglietteria.csv è vuoto o non contiene colonne valide (Museo, Giorno, Ora, Intero, Ridotto, Omaggio, Card).';
+                        return;
+                    }
+
+                    statusEl.textContent = `✅ Dati biglietteria caricati: ${biglietteriaData.length.toLocaleString('it-IT')} fasce orarie (${formatDateIt(minD)} → ${formatDateIt(maxD)})`;
+                    document.getElementById('biglietteriaMainArea').style.display = 'block';
+
+                    initBiglietteriaControls();
+                },
+                error: err => {
+                    biglietteriaLoading = false;
+                    statusEl.className = 'biglietteria-status-banner error';
+                    statusEl.textContent = `❌ Errore nel parsing di Biglietteria.csv: ${err.message}`;
+                }
+            });
+        })
+        .catch(err => {
+            biglietteriaLoading = false;
+            statusEl.className = 'biglietteria-status-banner error';
+            statusEl.innerHTML = `⚠️ Impossibile caricare <strong>Biglietteria.csv</strong> da GitHub (${err.message}).<br>Carica il file CSV generato dal convertitore nel repository <code>Lucab73/Dashboard-Musei</code> con nome <code>Biglietteria.csv</code>.`;
+        });
+}
+
+function initBiglietteriaControls() {
+    const musei = [...new Set(biglietteriaData.map(r => r.Museo))].sort((a, b) => a.localeCompare(b, 'it'));
+    const museoSel = document.getElementById('tickMuseoSelect');
+    museoSel.innerHTML = '<option value="Tutti">Tutti</option>';
+    musei.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m;
+        opt.textContent = m;
+        museoSel.appendChild(opt);
+    });
+
+    ['tickDateStart', 'tickDateEnd', 'tickCompAStart', 'tickCompAEnd', 'tickCompBStart', 'tickCompBEnd'].forEach(id => {
+        const el = document.getElementById(id);
+        el.min = biglietteriaMinDate;
+        el.max = biglietteriaMaxDate;
+    });
+
+    // Default vista principale: anno più recente disponibile
+    applyBiglietteriaPreset('latestYear');
+
+    // Default confronto date esatte: ultimo mese vs stesso mese anno prima
+    const defaultAEnd = biglietteriaMaxDate;
+    const defaultAStart = `${defaultAEnd.slice(0, 7)}-01` >= biglietteriaMinDate
+        ? `${defaultAEnd.slice(0, 7)}-01`
+        : biglietteriaMinDate;
+    document.getElementById('tickCompAStart').value = defaultAStart;
+    document.getElementById('tickCompAEnd').value = defaultAEnd;
+    onTickCompAChange();
+}
+
+function applyBiglietteriaPreset(preset) {
+    if (!biglietteriaMaxDate) return;
+    let start = biglietteriaMinDate;
+    const end = biglietteriaMaxDate;
+
+    if (preset === 'latestYear') {
+        const latestYearStart = `${end.slice(0, 4)}-01-01`;
+        start = latestYearStart >= biglietteriaMinDate ? latestYearStart : biglietteriaMinDate;
+    } else if (preset === 'lastMonth') {
+        const monthStart = `${end.slice(0, 7)}-01`;
+        start = monthStart >= biglietteriaMinDate ? monthStart : biglietteriaMinDate;
+    } else if (preset === 'last30Days') {
+        const minus29 = shiftIsoDateByDays(end, -29);
+        start = minus29 >= biglietteriaMinDate ? minus29 : biglietteriaMinDate;
+    } else if (preset === 'all') {
+        start = biglietteriaMinDate;
+    }
+
+    document.getElementById('tickDateStart').value = start;
+    document.getElementById('tickDateEnd').value = end;
+    onTickDateChange();
+}
+
+function onTickDateChange() {
+    const startEl = document.getElementById('tickDateStart');
+    const endEl = document.getElementById('tickDateEnd');
+    endEl.min = startEl.value || biglietteriaMinDate;
+    if (endEl.value < startEl.value) {
+        endEl.value = startEl.value;
+    }
+    updateBiglietteriaDashboard();
+}
+
+function setHeatmapMode(mode) {
+    tickHeatmapMode = mode;
+    document.getElementById('heatmapModeAvgBtn').classList.toggle('active', mode === 'avg');
+    document.getElementById('heatmapModeTotBtn').classList.toggle('active', mode === 'total');
+    updateBiglietteriaDashboard();
+}
+
+function setTickTrendMode(mode) {
+    tickTrendMode = mode;
+    document.getElementById('tickTrendDailyBtn').classList.toggle('active', mode === 'daily');
+    document.getElementById('tickTrendWeekdayBtn').classList.toggle('active', mode === 'weekday');
+    updateBiglietteriaDashboard();
+}
+
+function setTickTableSort(key) {
+    if (tickTableSort.key === key) {
+        tickTableSort.dir = tickTableSort.dir === 'desc' ? 'asc' : 'desc';
+    } else {
+        tickTableSort.key = key;
+        tickTableSort.dir = key === 'Museo' ? 'asc' : 'desc';
+    }
+    updateBiglietteriaDashboard();
+}
+
+function getFilteredBiglietteriaRows() {
+    const start = document.getElementById('tickDateStart').value;
+    const end = document.getElementById('tickDateEnd').value;
+    const museo = document.getElementById('tickMuseoSelect').value;
+    const dayType = document.getElementById('tickDayTypeSelect').value;
+
+    return biglietteriaData.filter(r => {
+        if (start && r.Giorno < start) return false;
+        if (end && r.Giorno > end) return false;
+        if (museo !== 'Tutti' && r.Museo !== museo) return false;
+        if (dayType === 'Feriali' && r._isWeekend) return false;
+        if (dayType === 'Weekend' && !r._isWeekend) return false;
+        return true;
+    });
+}
+
+function updateBiglietteriaDashboard() {
+    if (!biglietteriaLoaded) return;
+    const filtered = getFilteredBiglietteriaRows();
+    const ticketKey = document.getElementById('tickTicketTypeSelect').value; // Totale | Intero | Ridotto | Omaggio | Card
+    const museo = document.getElementById('tickMuseoSelect').value;
+
+    // 1. Calcoli base su giorni di apertura, ore e giorni settimana
+    const uniqueDays = new Set();
+    const dowOpeningDays = Array.from({ length: 7 }, () => new Set());
+    const dowTotals = Array(7).fill(0);
+    const hourTotals = {};
+    const cellMatrix = Array.from({ length: 7 }, () => ({}));
+    const dailyTotals = {};
+
+    let sumIntero = 0, sumRidotto = 0, sumOmaggio = 0, sumCard = 0, sumSelected = 0;
+
+    filtered.forEach(r => {
+        const val = r[ticketKey];
+        uniqueDays.add(r.Giorno);
+        dowOpeningDays[r._dow].add(r.Giorno);
+        dowTotals[r._dow] += val;
+        hourTotals[r.Ora] = (hourTotals[r.Ora] || 0) + val;
+        cellMatrix[r._dow][r.Ora] = (cellMatrix[r._dow][r.Ora] || 0) + val;
+        dailyTotals[r.Giorno] = (dailyTotals[r.Giorno] || 0) + val;
+
+        sumIntero += r.Intero;
+        sumRidotto += r.Ridotto;
+        sumOmaggio += r.Omaggio;
+        sumCard += r.Card;
+        sumSelected += val;
+    });
+
+    const numDays = uniqueDays.size;
+    const avgPerDay = numDays > 0 ? sumSelected / numDays : 0;
+
+    // 2. Aggiorna 4 KPI
+    document.getElementById('tickKpiTotal').textContent = sumSelected.toLocaleString('it-IT');
+    document.getElementById('tickKpiTotalLabel').textContent =
+        ticketKey === 'Totale' ? 'Ingressi Totali nel periodo' : `Ingressi "${ticketKey}"`;
+    document.getElementById('tickKpiTotalSub').textContent =
+        numDays > 0 ? `Media ${avgPerDay.toFixed(1).replace('.', ',')} / giorno (${numDays} gg apertura)` : 'Nessun dato nel periodo';
+
+    // Giorno più affollato in media
+    let bestDowIdx = -1;
+    let bestDowAvg = -1;
+    for (let d = 0; d < 7; d++) {
+        const count = dowOpeningDays[d].size;
+        if (count > 0) {
+            const avg = dowTotals[d] / count;
+            if (avg > bestDowAvg) {
+                bestDowAvg = avg;
+                bestDowIdx = d;
+            }
+        }
+    }
+    if (bestDowIdx !== -1) {
+        document.getElementById('tickKpiPeakDay').textContent = GIORNI_SETTIMANA_IT[bestDowIdx];
+        document.getElementById('tickKpiPeakDaySub').textContent =
+            `Media ${bestDowAvg.toFixed(1).replace('.', ',')} / apertura (${dowOpeningDays[bestDowIdx].size} giorni)`;
+    } else {
+        document.getElementById('tickKpiPeakDay').textContent = '—';
+        document.getElementById('tickKpiPeakDaySub').textContent = '—';
+    }
+
+    // Fascia oraria di picco
+    const sortedHours = Object.keys(hourTotals).sort();
+    let bestHour = '—';
+    let bestHourVal = -1;
+    sortedHours.forEach(h => {
+        if (hourTotals[h] > bestHourVal) {
+            bestHourVal = hourTotals[h];
+            bestHour = h;
+        }
+    });
+    if (bestHourVal >= 0 && sumSelected > 0) {
+        const hPerc = ((bestHourVal / sumSelected) * 100).toFixed(1).replace('.', ',');
+        document.getElementById('tickKpiPeakHour').textContent = bestHour;
+        document.getElementById('tickKpiPeakHourSub').textContent = `${bestHourVal.toLocaleString('it-IT')} ingressi (${hPerc}%)`;
+    } else {
+        document.getElementById('tickKpiPeakHour').textContent = '—';
+        document.getElementById('tickKpiPeakHourSub').textContent = '—';
+    }
+
+    // Composizione biglietti
+    const grandAllTickets = sumIntero + sumRidotto + sumOmaggio + sumCard;
+    if (grandAllTickets > 0) {
+        const pPag = (((sumIntero + sumRidotto) / grandAllTickets) * 100).toFixed(1).replace('.', ',');
+        const pInt = ((sumIntero / grandAllTickets) * 100).toFixed(0);
+        const pRid = ((sumRidotto / grandAllTickets) * 100).toFixed(0);
+        const pOma = ((sumOmaggio / grandAllTickets) * 100).toFixed(0);
+        const pCard = ((sumCard / grandAllTickets) * 100).toFixed(0);
+        document.getElementById('tickKpiMix').textContent = `${pPag}%`;
+        document.getElementById('tickKpiMixSub').textContent = `Int ${pInt}% • Rid ${pRid}% • Omag ${pOma}% • Card ${pCard}%`;
+    } else {
+        document.getElementById('tickKpiMix').textContent = '—';
+        document.getElementById('tickKpiMixSub').textContent = '—';
+    }
+
+    // 3. Heatmap Giorno x Fascia Oraria
+    renderTickHeatmap(sortedHours, cellMatrix, dowOpeningDays, dowTotals);
+
+    // 4. Grafico profilo orario per tipologia biglietto
+    renderTickHourlyChart(filtered, sortedHours, museo);
+
+    // 5. Grafico andamento giornaliero o media Lun–Dom
+    renderTickDailyChart(dailyTotals, dowTotals, dowOpeningDays, ticketKey, museo);
+
+    // 6. Tabella riepilogativa per Museo
+    renderTickMuseumTable(filtered);
+}
+
+function getHeatmapCellColor(val, maxVal) {
+    if (maxVal <= 0 || val <= 0) return { bg: '#f8fafc', fg: '#94a3b8' };
+    const ratio = Math.min(1, val / maxVal);
+    // Gradiente pulito da azzurro tenue (#eef2ff) a indaco/blu scuro (#4338ca) e rosso caldo (#dc2626) sopra 0.85
+    let r, g, b;
+    if (ratio < 0.5) {
+        const t = ratio * 2;
+        r = Math.round(238 + (129 - 238) * t);
+        g = Math.round(242 + (140 - 242) * t);
+        b = Math.round(255 + (248 - 255) * t);
+    } else {
+        const t = (ratio - 0.5) * 2;
+        r = Math.round(129 + (79 - 129) * t);
+        g = Math.round(140 + (70 - 140) * t);
+        b = Math.round(248 + (229 - 248) * t);
+    }
+    const fg = ratio > 0.48 ? '#ffffff' : '#1e293b';
+    return { bg: `rgb(${r},${g},${b})`, fg };
+}
+
+function renderTickHeatmap(sortedHours, cellMatrix, dowOpeningDays, dowTotals) {
+    const container = document.getElementById('tickHeatmapContainer');
+    if (!sortedHours.length) {
+        container.innerHTML = '<p style="text-align:center; color:#64748b; padding:20px;">Nessun dato disponibile per i filtri selezionati.</p>';
+        return;
+    }
+
+    const isAvg = tickHeatmapMode === 'avg';
+    let maxCellVal = 0;
+
+    for (let d = 0; d < 7; d++) {
+        const openCount = dowOpeningDays[d].size;
+        sortedHours.forEach(h => {
+            const rawVal = cellMatrix[d][h] || 0;
+            const val = isAvg ? (openCount > 0 ? rawVal / openCount : 0) : rawVal;
+            if (val > maxCellVal) maxCellVal = val;
+        });
+    }
+
+    let html = '<table class="heatmap-table"><thead><tr><th>Giorno</th>';
+    sortedHours.forEach(h => { html += `<th>${h}</th>`; });
+    html += `<th>${isAvg ? 'Media / giorno' : 'Totale'}</th></tr></thead><tbody>`;
+
+    for (let d = 0; d < 7; d++) {
+        const openCount = dowOpeningDays[d].size;
+        html += `<tr><td>${GIORNI_SETTIMANA_IT[d]} <small style="color:#64748b; font-weight:600;">(${openCount} gg)</small></td>`;
+
+        sortedHours.forEach(h => {
+            if (openCount === 0) {
+                html += `<td style="background:#f8fafc; color:#cbd5e1;">—</td>`;
+                return;
+            }
+            const rawVal = cellMatrix[d][h] || 0;
+            const val = isAvg ? rawVal / openCount : rawVal;
+            const { bg, fg } = getHeatmapCellColor(val, maxCellVal);
+            const txt = val === 0
+                ? '0'
+                : (isAvg ? val.toFixed(1).replace('.', ',') : Math.round(val).toLocaleString('it-IT'));
+            html += `<td style="background:${bg}; color:${fg};" title="${GIORNI_SETTIMANA_IT[d]} ${h}: ${txt}">${txt}</td>`;
+        });
+
+        const rowVal = isAvg
+            ? (openCount > 0 ? (dowTotals[d] / openCount).toFixed(1).replace('.', ',') : '—')
+            : dowTotals[d].toLocaleString('it-IT');
+        html += `<td class="heatmap-total-col">${rowVal}</td></tr>`;
+    }
+
+    html += '</tbody></table>';
+    container.innerHTML = html;
+}
+
+function renderTickHourlyChart(filtered, sortedHours, museo) {
+    if (window.tickHourlyChart instanceof Chart) {
+        window.tickHourlyChart.destroy();
+    }
+
+    const byHour = {};
+    sortedHours.forEach(h => {
+        byHour[h] = { Intero: 0, Ridotto: 0, Omaggio: 0, Card: 0, Totale: 0 };
+    });
+
+    filtered.forEach(r => {
+        if (!byHour[r.Ora]) return;
+        byHour[r.Ora].Intero += r.Intero;
+        byHour[r.Ora].Ridotto += r.Ridotto;
+        byHour[r.Ora].Omaggio += r.Omaggio;
+        byHour[r.Ora].Card += r.Card;
+        byHour[r.Ora].Totale += r.Totale;
+    });
+
+    const maxHourTotal = Math.max(...sortedHours.map(h => byHour[h].Totale), 1);
+
+    const ctx = document.getElementById('tickHourlyChart').getContext('2d');
+    window.tickHourlyChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: sortedHours,
+            datasets: [
+                { label: 'Intero', data: sortedHours.map(h => byHour[h].Intero), backgroundColor: '#3498db', borderRadius: 3 },
+                { label: 'Ridotto', data: sortedHours.map(h => byHour[h].Ridotto), backgroundColor: '#9b59b6', borderRadius: 3 },
+                { label: 'Omaggio', data: sortedHours.map(h => byHour[h].Omaggio), backgroundColor: '#f39c12', borderRadius: 3 },
+                { label: 'Card Cultura', data: sortedHours.map(h => byHour[h].Card), backgroundColor: '#2ecc71', borderRadius: 3 }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { intersect: false, mode: 'index' },
+            layout: { padding: { top: 15 } },
+            plugins: {
+                title: {
+                    display: true,
+                    text: `Profilo Orario per Tipologia di Biglietto – ${museo === 'Tutti' ? 'Tutti i Musei' : museo}`,
+                    font: { size: 22, weight: 'bold' },
+                    color: 'blue',
+                    padding: { top: 8, bottom: 14 }
+                },
+                legend: {
+                    position: 'top',
+                    labels: { font: { size: 15, weight: 'bold' }, color: 'blue' }
+                },
+                tooltip: {
+                    callbacks: {
+                        footer: items => {
+                            const sum = items.reduce((acc, it) => acc + (it.parsed.y || 0), 0);
+                            return `Totale fascia: ${sum.toLocaleString('it-IT')}`;
+                        },
+                        label: c => `${c.dataset.label}: ${c.parsed.y.toLocaleString('it-IT')}`
+                    }
+                },
+                datalabels: {
+                    display: ctx => ctx.dataset.data[ctx.dataIndex] > (maxHourTotal * 0.08),
+                    color: '#fff',
+                    font: { weight: 'bold', size: 11 },
+                    formatter: v => v.toLocaleString('it-IT')
+                }
+            },
+            scales: {
+                x: {
+                    stacked: true,
+                    title: { display: true, text: 'Fascia Oraria', font: { size: 16, weight: 'bold' }, color: 'blue' },
+                    ticks: { font: { size: 13, weight: 'bold' }, color: '#2c3e50' }
+                },
+                y: {
+                    stacked: true,
+                    beginAtZero: true,
+                    title: { display: true, text: 'Numero Ingressi', font: { size: 16, weight: 'bold' }, color: 'blue' },
+                    ticks: { font: { size: 13, weight: 'bold' }, color: '#2c3e50', callback: v => v.toLocaleString('it-IT') }
+                }
+            }
+        }
+    });
+}
+
+function renderTickDailyChart(dailyTotals, dowTotals, dowOpeningDays, ticketKey, museo) {
+    if (window.tickDailyChart instanceof Chart) {
+        window.tickDailyChart.destroy();
+    }
+
+    const ctx = document.getElementById('tickDailyChart').getContext('2d');
+    const ticketLabel = ticketKey === 'Totale' ? 'Tutti gli ingressi' : ticketKey;
+    const scopeTxt = museo === 'Tutti' ? 'Tutti i Musei' : museo;
+
+    if (tickTrendMode === 'weekday') {
+        const avgs = GIORNI_SETTIMANA_IT.map((_, d) => {
+            const cnt = dowOpeningDays[d].size;
+            return cnt > 0 ? Number((dowTotals[d] / cnt).toFixed(1)) : 0;
+        });
+
+        window.tickDailyChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: GIORNI_SETTIMANA_IT,
+                datasets: [{
+                    label: `Media ingressi per apertura (${ticketLabel})`,
+                    data: avgs,
+                    backgroundColor: ['#667eea', '#667eea', '#667eea', '#667eea', '#667eea', '#e74c3c', '#e74c3c'],
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: { padding: { top: 25 } },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: `Media Ingressi per Giorno della Settimana (${ticketLabel}) – ${scopeTxt}`,
+                        font: { size: 22, weight: 'bold' },
+                        color: 'blue',
+                        padding: { top: 8, bottom: 16 }
+                    },
+                    legend: { display: false },
+                    datalabels: {
+                        anchor: 'end',
+                        align: 'end',
+                        color: '#1f3a5a',
+                        font: { weight: 'bold', size: 13 },
+                        formatter: v => v > 0 ? v.toFixed(1).replace('.', ',') : ''
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: c => `Media: ${c.parsed.y.toFixed(1).replace('.', ',')} ingressi/giorno (${dowOpeningDays[c.dataIndex].size} aperture)`
+                        }
+                    }
+                },
+                scales: {
+                    x: { ticks: { font: { size: 14, weight: 'bold' }, color: '#2c3e50' } },
+                    y: {
+                        beginAtZero: true,
+                        grace: '12%',
+                        title: { display: true, text: 'Media Ingressi / Apertura', font: { size: 16, weight: 'bold' }, color: 'blue' },
+                        ticks: { font: { size: 13, weight: 'bold' }, color: '#2c3e50', callback: v => v.toLocaleString('it-IT') }
+                    }
+                }
+            }
+        });
+        return;
+    }
+
+    // Modalità andamento giorno per giorno
+    const sortedDates = Object.keys(dailyTotals).sort();
+    const values = sortedDates.map(d => dailyTotals[d]);
+    const labels = sortedDates.map(d => `${d.slice(8, 10)}/${d.slice(5, 7)}/${d.slice(2, 4)}`);
+    const showPointLabels = sortedDates.length <= 35;
+
+    window.tickDailyChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                label: `Ingressi giornalieri (${ticketLabel})`,
+                data: values,
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.16)',
+                borderWidth: 3,
+                tension: 0.25,
+                fill: true,
+                pointRadius: sortedDates.length > 90 ? 1.5 : 4,
+                pointHoverRadius: 7
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { intersect: false, mode: 'index' },
+            layout: { padding: { top: 20, right: 20 } },
+            plugins: {
+                title: {
+                    display: true,
+                    text: `Andamento Giornaliero (${ticketLabel}) – ${scopeTxt}`,
+                    font: { size: 22, weight: 'bold' },
+                    color: 'blue',
+                    padding: { top: 8, bottom: 14 }
+                },
+                legend: {
+                    position: 'top',
+                    labels: { font: { size: 15, weight: 'bold' }, color: 'blue' }
+                },
+                datalabels: {
+                    display: showPointLabels,
+                    align: 'top',
+                    color: '#1f3a5a',
+                    font: { weight: 'bold', size: 11 },
+                    backgroundColor: 'rgba(255,255,255,0.78)',
+                    borderRadius: 4,
+                    padding: 2,
+                    formatter: v => v > 0 ? v.toLocaleString('it-IT') : null
+                },
+                tooltip: {
+                    callbacks: {
+                        label: c => `${c.dataset.label}: ${c.parsed.y.toLocaleString('it-IT')}`
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { font: { size: 12, weight: 'bold' }, color: '#2c3e50', maxTicksLimit: 18 }
+                },
+                y: {
+                    beginAtZero: true,
+                    grace: '10%',
+                    title: { display: true, text: 'Numero Ingressi', font: { size: 16, weight: 'bold' }, color: 'blue' },
+                    ticks: { font: { size: 13, weight: 'bold' }, color: '#2c3e50', callback: v => v.toLocaleString('it-IT') }
+                }
+            }
+        }
+    });
+}
+
+function renderTickMuseumTable(filtered) {
+    const byMuseum = {};
+    const allDays = new Set();
+
+    filtered.forEach(r => {
+        allDays.add(r.Giorno);
+        if (!byMuseum[r.Museo]) {
+            byMuseum[r.Museo] = {
+                Museo: r.Museo,
+                days: new Set(),
+                Intero: 0,
+                Ridotto: 0,
+                Omaggio: 0,
+                Card: 0,
+                Totale: 0
+            };
+        }
+        const m = byMuseum[r.Museo];
+        m.days.add(r.Giorno);
+        m.Intero += r.Intero;
+        m.Ridotto += r.Ridotto;
+        m.Omaggio += r.Omaggio;
+        m.Card += r.Card;
+        m.Totale += r.Totale;
+    });
+
+    const rows = Object.values(byMuseum).map(m => ({
+        Museo: m.Museo,
+        Giorni: m.days.size,
+        Intero: m.Intero,
+        Ridotto: m.Ridotto,
+        Omaggio: m.Omaggio,
+        Card: m.Card,
+        Totale: m.Totale,
+        Media: m.days.size > 0 ? m.Totale / m.days.size : 0
+    }));
+
+    const factor = tickTableSort.dir === 'asc' ? 1 : -1;
+    rows.sort((a, b) => {
+        if (tickTableSort.key === 'Museo') return a.Museo.localeCompare(b.Museo, 'it') * factor;
+        return ((a[tickTableSort.key] || 0) - (b[tickTableSort.key] || 0)) * factor;
+    });
+
+    const sortArrow = key => tickTableSort.key !== key
+        ? '<span class="sort-indicator">⇅</span>'
+        : `<span class="sort-indicator">${tickTableSort.dir === 'desc' ? '▼' : '▲'}</span>`;
+
+    const tot = rows.reduce((acc, r) => {
+        acc.Intero += r.Intero;
+        acc.Ridotto += r.Ridotto;
+        acc.Omaggio += r.Omaggio;
+        acc.Card += r.Card;
+        acc.Totale += r.Totale;
+        return acc;
+    }, { Intero: 0, Ridotto: 0, Omaggio: 0, Card: 0, Totale: 0 });
+    const totMedia = allDays.size > 0 ? tot.Totale / allDays.size : 0;
+
+    let html = `<div class="table-container">
+        <h3 class="table-title">📋 Riepilogo Biglietteria per Museo</h3>
+        <table class="summary-table">
+            <thead>
+                <tr>
+                    <th class="sortable-th" onclick="setTickTableSort('Museo')">Museo ${sortArrow('Museo')}</th>
+                    <th class="sortable-th" onclick="setTickTableSort('Giorni')">Giorni apertura ${sortArrow('Giorni')}</th>
+                    <th class="sortable-th" onclick="setTickTableSort('Intero')">Intero ${sortArrow('Intero')}</th>
+                    <th class="sortable-th" onclick="setTickTableSort('Ridotto')">Ridotto ${sortArrow('Ridotto')}</th>
+                    <th class="sortable-th" onclick="setTickTableSort('Omaggio')">Omaggio ${sortArrow('Omaggio')}</th>
+                    <th class="sortable-th" onclick="setTickTableSort('Card')">Card Cultura ${sortArrow('Card')}</th>
+                    <th class="sortable-th" onclick="setTickTableSort('Totale')">Totale ${sortArrow('Totale')}</th>
+                    <th class="sortable-th" onclick="setTickTableSort('Media')">Media / giorno ${sortArrow('Media')}</th>
+                </tr>
+            </thead>
+            <tbody>`;
+
+    rows.forEach(r => {
+        html += `<tr>
+            <td>${r.Museo}</td>
+            <td class="numeric-cell">${r.Giorni}</td>
+            <td class="numeric-cell">${r.Intero.toLocaleString('it-IT')}</td>
+            <td class="numeric-cell">${r.Ridotto.toLocaleString('it-IT')}</td>
+            <td class="numeric-cell">${r.Omaggio.toLocaleString('it-IT')}</td>
+            <td class="numeric-cell">${r.Card.toLocaleString('it-IT')}</td>
+            <td class="numeric-cell"><strong>${r.Totale.toLocaleString('it-IT')}</strong></td>
+            <td class="numeric-cell">${r.Media.toFixed(1).replace('.', ',')}</td>
+        </tr>`;
+    });
+
+    html += `<tr class="total-row">
+        <td>📈 Totale Generale</td>
+        <td class="numeric-cell">${allDays.size}</td>
+        <td class="numeric-cell">${tot.Intero.toLocaleString('it-IT')}</td>
+        <td class="numeric-cell">${tot.Ridotto.toLocaleString('it-IT')}</td>
+        <td class="numeric-cell">${tot.Omaggio.toLocaleString('it-IT')}</td>
+        <td class="numeric-cell">${tot.Card.toLocaleString('it-IT')}</td>
+        <td class="numeric-cell">${tot.Totale.toLocaleString('it-IT')}</td>
+        <td class="numeric-cell">${totMedia.toFixed(1).replace('.', ',')}</td>
+    </tr></tbody></table></div>`;
+
+    document.getElementById('tickMuseumTableContainer').innerHTML = html;
+}
+
+// === CONFRONTO TRA DATE ESATTE IN BIGLIETTERIA ===
+
+function onTickCompAChange() {
+    const startAEl = document.getElementById('tickCompAStart');
+    const endAEl = document.getElementById('tickCompAEnd');
+    endAEl.min = startAEl.value || biglietteriaMinDate;
+    if (endAEl.value < startAEl.value) endAEl.value = startAEl.value;
+
+    const targetBStart = shiftIsoDateByYears(startAEl.value, -1);
+    const targetBEnd = shiftIsoDateByYears(endAEl.value, -1);
+
+    if (targetBStart >= biglietteriaMinDate && targetBEnd <= biglietteriaMaxDate) {
+        document.getElementById('tickCompBStart').value = targetBStart;
+        document.getElementById('tickCompBEnd').value = targetBEnd;
+        document.getElementById('tickCompBEnd').min = targetBStart;
+        tickCompSyncWarning = '';
+    } else if (targetBEnd >= biglietteriaMinDate && targetBStart < biglietteriaMinDate) {
+        document.getElementById('tickCompBStart').value = biglietteriaMinDate;
+        document.getElementById('tickCompBEnd').value = targetBEnd;
+        document.getElementById('tickCompBEnd').min = biglietteriaMinDate;
+        tickCompSyncWarning = `⚠️ Dati parziali per l'anno precedente (${formatDateIt(targetBStart)} – ${formatDateIt(targetBEnd)}): il Periodo B parte dal primo giorno disponibile (${formatDateIt(biglietteriaMinDate)}).`;
+    } else {
+        tickCompSyncWarning = `⚠️ Nessun dato disponibile per l'anno precedente (${formatDateIt(targetBStart)} – ${formatDateIt(targetBEnd)}). Seleziona manualmente il Periodo B.`;
+    }
+
+    updateBiglietteriaDateComparison();
+}
+
+function onTickCompBChange() {
+    const startBEl = document.getElementById('tickCompBStart');
+    const endBEl = document.getElementById('tickCompBEnd');
+    endBEl.min = startBEl.value || biglietteriaMinDate;
+    if (endBEl.value < startBEl.value) endBEl.value = startBEl.value;
+    tickCompSyncWarning = '';
+    updateBiglietteriaDateComparison();
+}
+
+function updateBiglietteriaDateComparison() {
+    if (!biglietteriaLoaded) return;
+    const sA = document.getElementById('tickCompAStart').value;
+    const eA = document.getElementById('tickCompAEnd').value;
+    const sB = document.getElementById('tickCompBStart').value;
+    const eB = document.getElementById('tickCompBEnd').value;
+    const ticketKey = document.getElementById('tickCompTicketSelect').value;
+
+    const daysA = daysBetweenInclusive(sA, eA);
+    const daysB = daysBetweenInclusive(sB, eB);
+
+    document.getElementById('tickCompBadgeA').textContent = `${daysA} gg`;
+    document.getElementById('tickCompBadgeB').textContent = `${daysB} gg`;
+
+    const alertEl = document.getElementById('tickCompAlert');
+    const alerts = [];
+    if (tickCompSyncWarning) alerts.push(tickCompSyncWarning);
+    if (daysA !== daysB) {
+        alerts.push(`⚠️ Attenzione: stai confrontando un intervallo di <strong>${daysA} giorni</strong> (${formatDateIt(sA)} – ${formatDateIt(eA)}) con uno di <strong>${daysB} giorni</strong> (${formatDateIt(sB)} – ${formatDateIt(eB)}).`);
+    } else if (sA === sB && eA === eB) {
+        alerts.push(`ℹ️ Periodo A e Periodo B coincidono. Modifica uno dei due intervalli per confrontarli.`);
+    }
+
+    if (alerts.length > 0) {
+        alertEl.className = (tickCompSyncWarning || daysA !== daysB) ? 'comparison-alert warning' : 'comparison-alert info';
+        alertEl.innerHTML = `<div>${alerts.join('<br>')}</div>`;
+    } else {
+        alertEl.className = 'comparison-alert';
+        alertEl.innerHTML = '';
+    }
+
+    const byMuseum = {};
+    const openDaysA = new Set();
+    const openDaysB = new Set();
+    let totA = 0;
+    let totB = 0;
+
+    biglietteriaData.forEach(r => {
+        const val = r[ticketKey];
+        if (r.Giorno >= sA && r.Giorno <= eA) {
+            if (!byMuseum[r.Museo]) byMuseum[r.Museo] = { a: 0, b: 0, daysA: new Set(), daysB: new Set() };
+            byMuseum[r.Museo].a += val;
+            byMuseum[r.Museo].daysA.add(r.Giorno);
+            openDaysA.add(r.Giorno);
+            totA += val;
+        }
+        if (r.Giorno >= sB && r.Giorno <= eB) {
+            if (!byMuseum[r.Museo]) byMuseum[r.Museo] = { a: 0, b: 0, daysA: new Set(), daysB: new Set() };
+            byMuseum[r.Museo].b += val;
+            byMuseum[r.Museo].daysB.add(r.Giorno);
+            openDaysB.add(r.Giorno);
+            totB += val;
+        }
+    });
+
+    const rows = Object.entries(byMuseum).map(([nome, d]) => {
+        const diff = d.a - d.b;
+        const perc = d.b > 0 ? ((diff / d.b) * 100) : null;
+        const avgA = d.daysA.size > 0 ? d.a / d.daysA.size : 0;
+        const avgB = d.daysB.size > 0 ? d.b / d.daysB.size : 0;
+        return { nome, a: d.a, b: d.b, diff, perc, avgA, avgB };
+    }).sort((x, y) => {
+        if (x.perc === null && y.perc === null) return 0;
+        if (x.perc === null) return 1;
+        if (y.perc === null) return -1;
+        return y.perc - x.perc;
+    });
+
+    const totDiff = totA - totB;
+    const totPerc = totB > 0 ? (totDiff / totB) * 100 : null;
+    const totAvgA = openDaysA.size > 0 ? totA / openDaysA.size : 0;
+    const totAvgB = openDaysB.size > 0 ? totB / openDaysB.size : 0;
+
+    let html = `<table class="summary-table">
+        <thead>
+            <tr>
+                <th>Museo</th>
+                <th>Periodo A (${formatDateIt(sA)}–${formatDateIt(eA)})</th>
+                <th>Periodo B (${formatDateIt(sB)}–${formatDateIt(eB)})</th>
+                <th>Δ</th>
+                <th>Δ%</th>
+                <th>Media/gg (A vs B)</th>
+            </tr>
+        </thead>
+        <tbody>`;
+
+    rows.forEach(r => {
+        const pClass = r.perc === null ? '' : (r.perc >= 0 ? 'percentage-cell positive' : 'percentage-cell negative');
+        const pText = r.perc === null ? '—' : `${r.perc > 0 ? '▲ +' : r.perc < 0 ? '▼ ' : ''}${r.perc.toFixed(1)}%`;
+        html += `<tr>
+            <td>${r.nome}</td>
+            <td class="numeric-cell">${r.a.toLocaleString('it-IT')}</td>
+            <td class="numeric-cell">${r.b.toLocaleString('it-IT')}</td>
+            <td class="numeric-cell">${(r.diff >= 0 ? '+' : '') + r.diff.toLocaleString('it-IT')}</td>
+            <td class="${pClass}">${pText}</td>
+            <td class="numeric-cell">${r.avgA.toFixed(1).replace('.', ',')} vs ${r.avgB.toFixed(1).replace('.', ',')}</td>
+        </tr>`;
+    });
+
+    const totPClass = totPerc === null ? '' : (totPerc >= 0 ? 'percentage-cell positive' : 'percentage-cell negative');
+    const totPText = totPerc === null ? '—' : `${totPerc > 0 ? '▲ +' : totPerc < 0 ? '▼ ' : ''}${totPerc.toFixed(1)}%`;
+
+    html += `<tr class="total-row">
+        <td>📈 Totale Generale</td>
+        <td class="numeric-cell">${totA.toLocaleString('it-IT')}</td>
+        <td class="numeric-cell">${totB.toLocaleString('it-IT')}</td>
+        <td class="numeric-cell">${(totDiff >= 0 ? '+' : '') + totDiff.toLocaleString('it-IT')}</td>
+        <td class="${totPClass}">${totPText}</td>
+        <td class="numeric-cell">${totAvgA.toFixed(1).replace('.', ',')} vs ${totAvgB.toFixed(1).replace('.', ',')}</td>
+    </tr></tbody></table>`;
+
+    document.getElementById('tickCompTableContainer').innerHTML = html;
 }
 
         function handleMuseumShowSelection(changedSelect) {
