@@ -870,7 +870,12 @@
             height: 500px;
             width: 100%;
         }
-        
+        .chart-wrapper-bar {
+            position: relative;
+            height: 500px;
+            max-height: 500px;
+            width: 100%;
+        }
         .status {
             text-align: center;
             font-style: italic;
@@ -1339,22 +1344,26 @@
                 <div id="tickHeatmapContainer" style="overflow-x:auto;"></div>
             </div>
 
-            <!-- GRAFICO PROFILO ORARIO PER TIPOLOGIA BIGLIETTO -->
-            <div class="chart-container">
-                <canvas id="tickHourlyChart" class="chart-canvas-bar"></canvas>
-            </div>
+           <!-- GRAFICO PROFILO ORARIO PER TIPOLOGIA BIGLIETTO -->
+<div class="chart-container">
+    <div class="chart-wrapper-bar">
+        <canvas id="tickHourlyChart"></canvas>
+    </div>
+</div>
 
-            <!-- GRAFICO ANDAMENTO GIORNALIERO / GIORNO SETTIMANA -->
-            <div class="chart-container">
-                <div class="chart-mode-bar">
-                    <span class="chart-mode-label">Visualizzazione andamento:</span>
-                    <div class="mode-toggle-group">
-                        <button type="button" id="tickTrendDailyBtn" class="mode-toggle-btn active" onclick="setTickTrendMode('daily')">📈 Giorno per giorno</button>
-                        <button type="button" id="tickTrendWeekdayBtn" class="mode-toggle-btn" onclick="setTickTrendMode('weekday')">📊 Media Lun–Dom</button>
-                    </div>
-                </div>
-                <canvas id="tickDailyChart" class="chart-canvas-bar"></canvas>
-            </div>
+<!-- GRAFICO ANDAMENTO GIORNALIERO / GIORNO SETTIMANA -->
+<div class="chart-container">
+    <div class="chart-mode-bar">
+        <span class="chart-mode-label">Visualizzazione andamento:</span>
+        <div class="mode-toggle-group">
+            <button type="button" id="tickTrendDailyBtn" class="mode-toggle-btn active" onclick="setTickTrendMode('daily')">📈 Giorno per giorno</button>
+            <button type="button" id="tickTrendWeekdayBtn" class="mode-toggle-btn" onclick="setTickTrendMode('weekday')">📊 Media Lun–Dom</button>
+        </div>
+    </div>
+    <div class="chart-wrapper-bar">
+        <canvas id="tickDailyChart"></canvas>
+    </div>
+</div>
 
             <!-- TABELLA RIEPILOGATIVA PER MUSEO -->
             <div id="tickMuseumTableContainer"></div>
