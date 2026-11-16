@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛠️ Convertitore Export Biglietteria – Musei Civici Bologna</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 24px;
+            color: #1e293b;
+        }
+        .container {
+            max-width: 1150px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            padding: 28px 20px;
+            background: white;
+            border-radius: 18px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+            margin-bottom: 24px;
+        }
+        .header h1 {
+            font-size: 2.1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+        .header p {
+            color: #64748b;
+            font-size: 1.05rem;
+        }
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 22px 24px;
+            margin-bottom: 22px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.07);
+        }
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .dropzone {
+            border: 3px dashed #94a3b8;
+            border-radius: 14px;
+            padding: 32px 20px;
+            text-align: center;
+            background: #f8fafc;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .dropzone:hover, .dropzone.dragover {
+            border-color: #667eea;
+            background: #eef2ff;
+        }
+        .dropzone-icon { font-size: 2.5rem; margin-bottom: 8px; }
+        .dropzone-text { font-size: 1.08rem; font-weight: 600; color: #334155; }
+        .dropzone-sub { font-size: 0.92rem; color: #64748b; margin-top: 6px; }
+
+        .existing-csv-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 14px 16px;
+        }
+        .btn {
+            border: none;
+            border-radius: 10px;
+            padding: 10px 18px;
+            font-size: 0.98rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        .btn-primary:hover { transform: translateY(-1px); opacity: 0.95; }
+        .btn-success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(17, 153, 142, 0.3);
+        }
+        .btn-success:hover { transform: translateY(-1px); opacity: 0.95; }
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #334155;
+        }
+        .btn-secondary:hover { background: #cbd5e1; }
+        .btn-danger {
+            background: #fee2e2;
+            color: #b91c1c;
+            padding: 6px 10px;
+            font-size: 0.85rem;
+        }
+        .btn-danger:hover { background: #fecaca; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 0.94rem;
+        }
+        th {
+            background: #4a3fa5;
+            color: white;
+            padding: 11px 10px;
+            text-align: left;
+            font-weight: 700;
+        }
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: middle;
+        }
+        tr:nth-child(even) td { background: #f8fafc; }
+        .num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+
+        select, input[type="text"] {
+            padding: 7px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            background: white;
+        }
+        .custom-museum-input {
+            margin-top: 6px;
+            width: 100%;
+            display: none;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+        .stat-box {
+            background: linear-gradient(135deg, #f8faff 0%, #eef2ff 100%);
+            border: 1px solid #c7d2fe;
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+        }
+        .stat-val { font-size: 1.6rem; font-weight: 800; color: #4a3fa5; }
+        .stat-lbl { font-size: 0.88rem; color: #475569; margin-top: 4px; font-weight: 600; }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-top: 12px;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        .alert-info { background: #e0f2fe; color: #075985; border-left: 4px solid #0284c7; }
+        .alert-warn { background: #fef3c7; color: #92400e; border-left: 4px solid #f59e0b; }
+        .alert-ok { background: #dcfce7; color: #166534; border-left: 4px solid #16a34a; }
+
+        .actions-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-top: 18px;
+        }
+        .filename-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .detected-badge {
+            display: inline-block;
+            margin-top: 4px;
+            font-size: 0.8rem;
+            color: #166534;
+            background: #dcfce7;
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🛠️ Convertitore Export Biglietteria (Strada A)</h1>
+        <p>Fondi gli export Excel (.xls / .xlsx / .csv) dei singoli musei in un unico CSV pulito pronto per la Dashboard</p>
+    </div>
+
+    <!-- STEP 1: CSV ESISTENTE (OPZIONALE) -->
+    <div class="card">
+        <div class="card-title">1️⃣ (Opzionale) Carica un CSV già esistente da aggiornare</div>
+        <div class="existing-csv-box">
+            <div>
+                <div style="font-weight: 600;">Vuoi aggiungere nuovi mesi a un file già caricato su GitHub?</div>
+                <div style="font-size: 0.9rem; color: #64748b;" id="existingCsvStatus">Nessun CSV precedente caricato (verrà creato un nuovo file da zero).</div>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <input type="file" id="existingCsvInput" accept=".csv" style="display:none;" onchange="handleExistingCsv(this.files[0])">
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('existingCsvInput').click()">📂 Carica CSV esistente</button>
+                <button type="button" class="btn btn-danger" id="clearExistingBtn" style="display:none;" onclick="clearExistingCsv()">✕ Rimuovi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- STEP 2: CARICAMENTO NUOVI EXPORT -->
+    <div class="card">
+        <div class="card-title">2️⃣ Carica i nuovi export dei musei (.xls, .xlsx, .csv)</div>
+        <div class="dropzone" id="dropzone" onclick="document.getElementById('filesInput').click()">
+            <div class="dropzone-icon">📥</div>
+            <div class="dropzone-text">Trascina qui i file dei musei oppure clicca per selezionarli</div>
+            <div class="dropzone-sub">Mantiene le date italiane esatte (GG/MM/AAAA) senza inversioni giorno/mese, rileva la tabella e riconosce il museo.</div>
+        </div>
+        <input type="file" id="filesInput" multiple accept=".xls,.xlsx,.csv,.ods" style="display:none;" onchange="handleNewFiles(this.files)">
+
+        <div id="filesTableWrap" style="display:none; margin-top: 18px;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>File caricato</th>
+                        <th>Righe, Date & Colonne rilevate</th>
+                        <th>Associa Museo / Mostra</th>
+                        <th style="width: 90px; text-align:center;">Azioni</th>
+                    </tr>
+                </thead>
+                <tbody id="filesTableBody"></tbody>
+            </table>
+
+            <div class="actions-bar">
+                <button type="button" class="btn btn-secondary" onclick="clearAllNewFiles()">🗑️ Svuota elenco file</button>
+                <button type="button" class="btn btn-primary" onclick="processAndPreview()">⚙️ Elabora e Genera Anteprima</button>
+            </div>
+        </div>
+        <div id="parseMessage"></div>
+    </div>
+
+    <!-- STEP 3: RIEPILOGO, ANTEPRIMA E DOWNLOAD -->
+    <div class="card" id="outputCard" style="display:none;">
+        <div class="card-title">3️⃣ Riepilogo e Download CSV Unificato</div>
+
+        <div class="stats-grid" id="statsGrid"></div>
+        <div id="mergeAlert"></div>
+
+        <h4 style="margin-top: 18px; margin-bottom: 8px; color: #334155;">🏛️ Riepilogo per Museo</h4>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Museo</th>
+                        <th class="num">Fasce orarie</th>
+                        <th class="num">Intero</th>
+                        <th class="num">Ridotto</th>
+                        <th class="num">Omaggio</th>
+                        <th class="num">Card</th>
+                        <th class="num">Totale Ingressi</th>
+                    </tr>
+                </thead>
+                <tbody id="summaryByMuseumBody"></tbody>
+            </table>
+        </div>
+
+        <h4 style="margin-top: 22px; margin-bottom: 8px; color: #334155;">👀 Anteprima prime 15 righe del CSV finale</h4>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Museo</th>
+                        <th>Giorno</th>
+                        <th>Ora</th>
+                        <th class="num">Intero</th>
+                        <th class="num">Ridotto</th>
+                        <th class="num">Omaggio</th>
+                        <th class="num">Card</th>
+                    </tr>
+                </thead>
+                <tbody id="previewBody"></tbody>
+            </table>
+        </div>
+
+        <div class="actions-bar">
+            <div class="filename-wrap">
+                <label for="outputFilename" style="font-weight:700;">Nome file CSV:</label>
+                <input type="text" id="outputFilename" value="Biglietteria.csv" style="width: 240px;">
+            </div>
+            <button type="button" class="btn btn-success" onclick="downloadFinalCsv()">⬇️ Scarica CSV Unificato</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const MUSEI_NOTI = [
+    { name: 'Museo Archeologico', keywords: ['archeologico'] },
+    { name: 'Museo Musica', keywords: ['musica'] },
+    { name: 'Collezioni Comunali', keywords: ['collezioni', 'comunali'] },
+    { name: 'Museo Medievale', keywords: ['medievale'] },
+    { name: 'Museo Bargellini', keywords: ['bargellini', 'davìa', 'davia'] },
+    { name: 'Museo del Risorgimento', keywords: ['risorgimento'] },
+    { name: 'Museo del Patrimonio Industriale', keywords: ['patrimonio', 'industriale'] },
+    { name: 'Museo di Ustica', keywords: ['ustica'] },
+    { name: 'Casa Morandi', keywords: ['casa morandi', 'casamorandi'] },
+    { name: 'Mambo Collezione', keywords: ['mambo'] },
+    { name: 'Museo Morandi', keywords: ['museo morandi'] },
+    { name: 'Villa delle Rose', keywords: ['villa delle rose', 'villadellerose'] }
+];
+
+let existingRows = [];
+let uploadedFiles = [];
+let finalMergedRows = [];
+
+const dropzone = document.getElementById('dropzone');
+dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragover'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+dropzone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropzone.classList.remove('dragover');
+    if (e.dataTransfer.files.length) handleNewFiles(e.dataTransfer.files);
+});
+
+function detectMuseumFromText(text) {
+    if (!text) return { museum: '', custom: '', source: '' };
+    const low = text.toLowerCase();
+    for (const m of MUSEI_NOTI) {
+        if (m.keywords.some(k => low.includes(k))) {
+            return { museum: m.name, custom: '', source: 'report' };
+        }
+    }
+    const eventMatch = text.match(/PER\s+L['’]?EVENTO\s+([^:\r\n]+)/i);
+    if (eventMatch && eventMatch[1]) {
+        const rawEvent = eventMatch[1].trim();
+        if (rawEvent) {
+            const titled = rawEvent.toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+            return { museum: '__CUSTOM__', custom: titled, source: 'report' };
+        }
+    }
+    return { museum: '', custom: '', source: '' };
+}
+
+function detectMuseumFromFilename(fileName) {
+    const low = fileName.toLowerCase();
+    for (const m of MUSEI_NOTI) {
+        if (m.keywords.some(k => low.includes(k))) {
+            return { museum: m.name, custom: '', source: 'filename' };
+        }
+    }
+    return { museum: '', custom: '', source: '' };
+}
+
+function normalizeDate(val) {
+    if (val === null || val === undefined || val === '') return null;
+
+    if (typeof val === 'number' && !isNaN(val)) {
+        const parsed = XLSX.SSF.parse_date_code(val);
+        if (parsed && parsed.y && parsed.m && parsed.d) {
+            return `${parsed.y}-${String(parsed.m).padStart(2, '0')}-${String(parsed.d).padStart(2, '0')}`;
+        }
+    }
+
+    if (val instanceof Date && !isNaN(val.getTime())) {
+        return `${val.getFullYear()}-${String(val.getMonth() + 1).padStart(2, '0')}-${String(val.getDate()).padStart(2, '0')}`;
+    }
+
+    const str = String(val).trim();
+    const isoMatch = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+    if (isoMatch) {
+        return `${isoMatch[1]}-${isoMatch[2].padStart(2, '0')}-${isoMatch[3].padStart(2, '0')}`;
+    }
+    const itMatch = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+    if (itMatch) {
+        const d = parseInt(itMatch[1], 10);
+        const m = parseInt(itMatch[2], 10);
+        const y = parseInt(itMatch[3], 10);
+        if (m >= 1 && m <= 12 && d >= 1 && d <= 31) {
+            return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        }
+    }
+    return null;
+}
+
+function normalizeTime(val) {
+    if (val === null || val === undefined || val === '') return null;
+
+    if (typeof val === 'number' && !isNaN(val)) {
+        const frac = val % 1;
+        const totalMinutes = Math.round(frac * 24 * 60);
+        const h = Math.floor(totalMinutes / 60) % 24;
+        const m = totalMinutes % 60;
+        return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    }
+
+    const str = String(val).trim();
+    const m = str.match(/^(\d{1,2})[:.](\d{2})/);
+    if (m) {
+        return `${m[1].padStart(2, '0')}:${m[2]}`;
+    }
+    if (/^\d{1,2}$/.test(str)) {
+        const h = parseInt(str, 10);
+        if (h >= 0 && h <= 23) return `${String(h).padStart(2, '0')}:00`;
+    }
+    return null;
+}
+
+function toInt(val) {
+    if (val === null || val === undefined || val === '') return 0;
+    if (typeof val === 'number') return Math.round(val);
+    const cleaned = String(val).replace(/\./g, '').replace(',', '.').trim();
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? 0 : Math.round(num);
+}
+
+function findColIndexStrict(rowCells, exactCandidates, partialCandidates = [], excludeIndices = []) {
+    const norm = h => String(h || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    for (let i = 0; i < rowCells.length; i++) {
+        if (excludeIndices.includes(i)) continue;
+        const n = norm(rowCells[i]);
+        if (!n) continue;
+        if (exactCandidates.includes(n)) return i;
+    }
+    for (let i = 0; i < rowCells.length; i++) {
+        if (excludeIndices.includes(i)) continue;
+        const n = norm(rowCells[i]);
+        if (!n) continue;
+        for (const cand of partialCandidates) {
+            if (n.includes(cand)) return i;
+        }
+    }
+    return -1;
+}
+
+// Se il .xls è in realtà una tabella HTML, la leggiamo direttamente col DOMParser
+// per evitare che SheetJS converta "12/10/2026" in data USA "2026-12-10"
+function tryParseHtmlTableBuffer(arrayBuffer) {
+    const sample = new TextDecoder('utf-8', { fatal: false }).decode(arrayBuffer.slice(0, 600)).trim().toLowerCase();
+    if (!sample.startsWith('<') || (!sample.includes('<html') && !sample.includes('<table') && !sample.includes('<!doctype') && !sample.includes('<meta'))) {
+        return null;
+    }
+    let text = new TextDecoder('utf-8', { fatal: false }).decode(arrayBuffer);
+    if (text.includes('\uFFFD')) {
+        text = new TextDecoder('windows-1252').decode(arrayBuffer);
+    }
+    const doc = new DOMParser().parseFromString(text, 'text/html');
+    const trs = Array.from(doc.querySelectorAll('tr'));
+    if (!trs.length) return null;
+    return trs.map(tr => Array.from(tr.querySelectorAll('th, td')).map(td => td.textContent.trim()));
+}
+
+function parseWorkbookBuffer(arrayBuffer, hasMuseumCol = false) {
+    let matrix = tryParseHtmlTableBuffer(arrayBuffer);
+
+    if (!matrix) {
+        // raw: true impedisce a SheetJS di convertire stringhe GG/MM/AAAA in date USA MM/GG/AAAA
+        const wb = XLSX.read(arrayBuffer, { type: 'array', raw: true });
+        const firstSheetName = wb.SheetNames[0];
+        const ws = wb.Sheets[firstSheetName];
+        matrix = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: '' });
+    }
+
+    if (!matrix || !matrix.length) {
+        return { rows: [], skipped: 0, headerRowIndex: -1, preambleText: '', foundCols: [], minDate: '', maxDate: '', error: 'Il foglio non contiene dati.' };
+    }
+
+    let headerRowIndex = -1;
+    let idxMuseo = -1;
+    let idxGiorno = -1;
+    let idxOra = -1;
+    let idxIntero = -1;
+    let idxRidotto = -1;
+    let idxOmaggio = -1;
+    let idxCard = -1;
+
+    const maxScan = Math.min(matrix.length, 40);
+    for (let r = 0; r < maxScan; r++) {
+        const rowCells = matrix[r] || [];
+        const nonEmptyCount = rowCells.filter(c => String(c || '').trim() !== '').length;
+        if (nonEmptyCount < 3) continue;
+
+        const gIdx = findColIndexStrict(rowCells, ['giorno', 'data', 'date']);
+        const oIdx = findColIndexStrict(rowCells, ['ora', 'orario', 'fascia', 'fasciaoraria'], [], gIdx !== -1 ? [gIdx] : []);
+        const mIdx = hasMuseumCol ? findColIndexStrict(rowCells, ['museo']) : -1;
+
+        const iIdx = findColIndexStrict(rowCells, ['intero'], ['intero']);
+        const rIdx = findColIndexStrict(rowCells, ['ridotto'], ['ridotto']);
+        const omIdx = findColIndexStrict(rowCells, ['omaggio', 'gratuito'], ['omaggio']);
+        const cIdx = findColIndexStrict(rowCells, ['card', 'cardcultura'], ['cardcultura', 'cardmetro', 'quantitacard']);
+
+        const hasTicketCols = (iIdx !== -1 || rIdx !== -1 || omIdx !== -1);
+
+        if (gIdx !== -1 && oIdx !== -1 && gIdx !== oIdx && (!hasMuseumCol || mIdx !== -1) && hasTicketCols) {
+            headerRowIndex = r;
+            idxGiorno = gIdx;
+            idxOra = oIdx;
+            idxMuseo = mIdx;
+            idxIntero = iIdx;
+            idxRidotto = rIdx;
+            idxOmaggio = omIdx;
+            idxCard = cIdx;
+            break;
+        }
+    }
+
+    if (headerRowIndex === -1) {
+        return {
+            rows: [],
+            skipped: matrix.length,
+            headerRowIndex: -1,
+            preambleText: '',
+            foundCols: [],
+            minDate: '',
+            maxDate: '',
+            error: 'Riga intestazione non trovata (attese colonne: Giorno, Ora, Intero/Ridotto/Omaggio).'
+        };
+    }
+
+    const foundCols = [];
+    if (idxGiorno !== -1) foundCols.push('Giorno');
+    if (idxOra !== -1) foundCols.push('Ora');
+    if (idxIntero !== -1) foundCols.push('Intero');
+    if (idxRidotto !== -1) foundCols.push('Ridotto');
+    if (idxOmaggio !== -1) foundCols.push('Omaggio');
+    if (idxCard !== -1) foundCols.push('Card');
+
+    const preambleLines = [];
+    for (let r = 0; r < headerRowIndex; r++) {
+        const line = (matrix[r] || []).map(c => String(c || '').trim()).filter(Boolean).join(' ');
+        if (line) preambleLines.push(line);
+    }
+    const preambleText = preambleLines.join('\n');
+
+    const parsedRows = [];
+    let skipped = 0;
+    let minDate = '';
+    let maxDate = '';
+
+    for (let r = headerRowIndex + 1; r < matrix.length; r++) {
+        const rowCells = matrix[r] || [];
+        const giorno = normalizeDate(rowCells[idxGiorno]);
+        const ora = normalizeTime(rowCells[idxOra]);
+        if (!giorno || !ora) {
+            skipped++;
+            continue;
+        }
+        const museo = (hasMuseumCol && idxMuseo !== -1) ? String(rowCells[idxMuseo] || '').trim() : '';
+        if (hasMuseumCol && !museo) {
+            skipped++;
+            continue;
+        }
+        if (!minDate || giorno < minDate) minDate = giorno;
+        if (!maxDate || giorno > maxDate) maxDate = giorno;
+
+        parsedRows.push({
+            Museo: museo,
+            Giorno: giorno,
+            Ora: ora,
+            Intero: idxIntero !== -1 ? toInt(rowCells[idxIntero]) : 0,
+            Ridotto: idxRidotto !== -1 ? toInt(rowCells[idxRidotto]) : 0,
+            Omaggio: idxOmaggio !== -1 ? toInt(rowCells[idxOmaggio]) : 0,
+            Card: idxCard !== -1 ? toInt(rowCells[idxCard]) : 0
+        });
+    }
+
+    return { rows: parsedRows, skipped, headerRowIndex, preambleText, foundCols, minDate, maxDate, error: null };
+}
+
+async function handleExistingCsv(file) {
+    if (!file) return;
+    const buf = await file.arrayBuffer();
+    const res = parseWorkbookBuffer(buf, true);
+    const statusEl = document.getElementById('existingCsvStatus');
+    const clearBtn = document.getElementById('clearExistingBtn');
+
+    if (res.error) {
+        statusEl.innerHTML = `<span style="color:#b91c1c;">❌ Errore in ${file.name}: ${res.error}</span>`;
+        return;
+    }
+    existingRows = res.rows;
+    statusEl.innerHTML = `<span style="color:#166534; font-weight:700;">✅ Caricato "${file.name}": ${existingRows.length.toLocaleString('it-IT')} righe esistenti pronte per l'unione.</span>`;
+    clearBtn.style.display = 'inline-block';
+    document.getElementById('outputFilename').value = file.name;
+}
+
+function clearExistingCsv() {
+    existingRows = [];
+    document.getElementById('existingCsvInput').value = '';
+    document.getElementById('existingCsvStatus').textContent = 'Nessun CSV precedente caricato (verrà creato un nuovo file da zero).';
+    document.getElementById('clearExistingBtn').style.display = 'none';
+}
+
+async function handleNewFiles(fileList) {
+    const msgEl = document.getElementById('parseMessage');
+    msgEl.innerHTML = '';
+
+    for (const file of fileList) {
+        try {
+            const buf = await file.arrayBuffer();
+            const res = parseWorkbookBuffer(buf, false);
+            if (res.error) {
+                msgEl.innerHTML += `<div class="alert alert-warn">⚠️ ${file.name}: ${res.error}</div>`;
+                continue;
+            }
+
+            let detected = detectMuseumFromText(res.preambleText);
+            if (!detected.museum) {
+                detected = detectMuseumFromFilename(file.name);
+            }
+
+            uploadedFiles.push({
+                id: Date.now() + Math.random(),
+                fileName: file.name,
+                rows: res.rows,
+                skippedCount: res.skipped,
+                headerRowIndex: res.headerRowIndex,
+                foundCols: res.foundCols,
+                minDate: res.minDate,
+                maxDate: res.maxDate,
+                assignedMuseum: detected.museum,
+                customMuseum: detected.custom,
+                detectSource: detected.source
+            });
+        } catch (err) {
+            msgEl.innerHTML += `<div class="alert alert-warn">⚠️ Impossibile leggere ${file.name}: ${err.message}</div>`;
+        }
+    }
+
+    document.getElementById('filesInput').value = '';
+    renderFilesTable();
+}
+
+function fmtDateIt(d) {
+    return d ? `${d.slice(8, 10)}/${d.slice(5, 7)}/${d.slice(0, 4)}` : '—';
+}
+
+function renderFilesTable() {
+    const wrap = document.getElementById('filesTableWrap');
+    const tbody = document.getElementById('filesTableBody');
+
+    if (!uploadedFiles.length) {
+        wrap.style.display = 'none';
+        return;
+    }
+
+    wrap.style.display = 'block';
+    tbody.innerHTML = uploadedFiles.map((item, idx) => {
+        const optionsHtml = [
+            `<option value="">-- Seleziona Museo --</option>`,
+            ...MUSEI_NOTI.map(m => `<option value="${m.name}" ${item.assignedMuseum === m.name ? 'selected' : ''}>${m.name}</option>`),
+            `<option value="__CUSTOM__" ${item.assignedMuseum === '__CUSTOM__' ? 'selected' : ''}>✏️ Altro / Mostra personalizzata...</option>`
+        ].join('');
+
+        const showCustom = item.assignedMuseum === '__CUSTOM__';
+        const dateRangeInfo = item.minDate
+            ? `<br><small style="color:#0f766e; font-weight:700;">Date: ${fmtDateIt(item.minDate)} → ${fmtDateIt(item.maxDate)}</small>`
+            : '';
+        const colsInfo = item.foundCols && item.foundCols.length
+            ? `<br><small style="color:#4a3fa5;">Riga ${item.headerRowIndex + 1} • Colonne: ${item.foundCols.join(', ')}</small>`
+            : '';
+        const skippedNote = item.skippedCount > 0
+            ? `<br><small style="color:#64748b;">(${item.skippedCount} righe vuote/totali ignorate)</small>`
+            : '';
+        const detectNote = item.detectSource === 'report'
+            ? `<span class="detected-badge">✨ Rilevato dal testo del report</span>`
+            : item.detectSource === 'filename'
+                ? `<span class="detected-badge">✨ Rilevato dal nome file</span>`
+                : '';
+
+        return `<tr>
+            <td><strong>${item.fileName}</strong></td>
+            <td><strong>${item.rows.length.toLocaleString('it-IT')}</strong> righe${dateRangeInfo}${colsInfo}${skippedNote}</td>
+            <td>
+                <select onchange="onMuseumSelectChange(${idx}, this.value)" style="width:100%;">
+                    ${optionsHtml}
+                </select>
+                ${detectNote}
+                <input type="text" class="custom-museum-input" id="customInput_${idx}"
+                    placeholder="Es. MAMbo &quot;Facile Ironia&quot;"
+                    value="${item.customMuseum.replace(/"/g, '&quot;')}"
+                    style="display:${showCustom ? 'block' : 'none'};"
+                    oninput="uploadedFiles[${idx}].customMuseum = this.value">
+            </td>
+            <td style="text-align:center;">
+                <button type="button" class="btn btn-danger" onclick="removeUploadedFile(${idx})">Rimuovi</button>
+            </td>
+        </tr>`;
+    }).join('');
+}
+
+function onMuseumSelectChange(idx, val) {
+    uploadedFiles[idx].assignedMuseum = val;
+    uploadedFiles[idx].detectSource = '';
+    const customInput = document.getElementById(`customInput_${idx}`);
+    customInput.style.display = val === '__CUSTOM__' ? 'block' : 'none';
+}
+
+function removeUploadedFile(idx) {
+    uploadedFiles.splice(idx, 1);
+    renderFilesTable();
+}
+
+function clearAllNewFiles() {
+    uploadedFiles = [];
+    document.getElementById('parseMessage').innerHTML = '';
+    document.getElementById('outputCard').style.display = 'none';
+    renderFilesTable();
+}
+
+function processAndPreview() {
+    const msgEl = document.getElementById('parseMessage');
+    msgEl.innerHTML = '';
+
+    if (!uploadedFiles.length && !existingRows.length) {
+        msgEl.innerHTML = '<div class="alert alert-warn">⚠️ Carica almeno un file per generare il CSV.</div>';
+        return;
+    }
+
+    for (const item of uploadedFiles) {
+        const finalName = item.assignedMuseum === '__CUSTOM__' ? item.customMuseum.trim() : item.assignedMuseum;
+        if (!finalName) {
+            msgEl.innerHTML = `<div class="alert alert-warn">⚠️ Seleziona o scrivi il nome del museo per il file "<strong>${item.fileName}</strong>".</div>`;
+            return;
+        }
+    }
+
+    const mergedMap = new Map();
+    let overwrittenFromExisting = 0;
+    let duplicatesWithinNew = 0;
+
+    existingRows.forEach(r => {
+        const key = `${r.Museo}|||${r.Giorno}|||${r.Ora}`;
+        mergedMap.set(key, { ...r, _fromExisting: true });
+    });
+
+    uploadedFiles.forEach(item => {
+        const museumName = item.assignedMuseum === '__CUSTOM__' ? item.customMuseum.trim() : item.assignedMuseum;
+        item.rows.forEach(r => {
+            const key = `${museumName}|||${r.Giorno}|||${r.Ora}`;
+            if (mergedMap.has(key)) {
+                if (mergedMap.get(key)._fromExisting) {
+                    overwrittenFromExisting++;
+                } else {
+                    duplicatesWithinNew++;
+                }
+            }
+            mergedMap.set(key, {
+                Museo: museumName,
+                Giorno: r.Giorno,
+                Ora: r.Ora,
+                Intero: r.Intero,
+                Ridotto: r.Ridotto,
+                Omaggio: r.Omaggio,
+                Card: r.Card,
+                _fromExisting: false
+            });
+        });
+    });
+
+    finalMergedRows = Array.from(mergedMap.values()).sort((a, b) => {
+        if (a.Giorno !== b.Giorno) return a.Giorno.localeCompare(b.Giorno);
+        if (a.Museo !== b.Museo) return a.Museo.localeCompare(b.Museo, 'it');
+        return a.Ora.localeCompare(b.Ora);
+    });
+
+    renderOutputSummary(overwrittenFromExisting, duplicatesWithinNew);
+}
+
+function renderOutputSummary(overwrittenFromExisting, duplicatesWithinNew) {
+    const card = document.getElementById('outputCard');
+    card.style.display = 'block';
+
+    const byMuseum = {};
+    let minDate = null;
+    let maxDate = null;
+    let totalIngressi = 0;
+
+    finalMergedRows.forEach(r => {
+        if (!minDate || r.Giorno < minDate) minDate = r.Giorno;
+        if (!maxDate || r.Giorno > maxDate) maxDate = r.Giorno;
+        if (!byMuseum[r.Museo]) {
+            byMuseum[r.Museo] = { rows: 0, Intero: 0, Ridotto: 0, Omaggio: 0, Card: 0, Totale: 0 };
+        }
+        const tot = r.Intero + r.Ridotto + r.Omaggio + r.Card;
+        byMuseum[r.Museo].rows++;
+        byMuseum[r.Museo].Intero += r.Intero;
+        byMuseum[r.Museo].Ridotto += r.Ridotto;
+        byMuseum[r.Museo].Omaggio += r.Omaggio;
+        byMuseum[r.Museo].Card += r.Card;
+        byMuseum[r.Museo].Totale += tot;
+        totalIngressi += tot;
+    });
+
+    document.getElementById('statsGrid').innerHTML = `
+        <div class="stat-box"><div class="stat-val">${finalMergedRows.length.toLocaleString('it-IT')}</div><div class="stat-lbl">Righe totali CSV</div></div>
+        <div class="stat-box"><div class="stat-val">${Object.keys(byMuseum).length}</div><div class="stat-lbl">Musei inclusi</div></div>
+        <div class="stat-box"><div class="stat-val">${totalIngressi.toLocaleString('it-IT')}</div><div class="stat-lbl">Ingressi totali</div></div>
+        <div class="stat-box"><div class="stat-val" style="font-size:1.15rem;">${fmtDateIt(minDate)} → ${fmtDateIt(maxDate)}</div><div class="stat-lbl">Periodo coperto</div></div>
+    `;
+
+    const mergeAlert = document.getElementById('mergeAlert');
+    let alertHtml = '';
+    if (overwrittenFromExisting > 0) {
+        alertHtml += `<div class="alert alert-info">ℹ️ Aggiornate <strong>${overwrittenFromExisting.toLocaleString('it-IT')}</strong> righe già presenti nel CSV precedente.</div>`;
+    }
+    if (duplicatesWithinNew > 0) {
+        alertHtml += `<div class="alert alert-warn">⚠️ Nei nuovi file erano presenti <strong>${duplicatesWithinNew.toLocaleString('it-IT')}</strong> righe duplicate (stesso Museo/Giorno/Ora): è stata mantenuta l'ultima occorrenza.</div>`;
+    }
+    if (!alertHtml) {
+        alertHtml = `<div class="alert alert-ok">✅ Nessun duplicato trovato. Il file è pronto per essere scaricato!</div>`;
+    }
+    mergeAlert.innerHTML = alertHtml;
+
+    const sumBody = document.getElementById('summaryByMuseumBody');
+    sumBody.innerHTML = Object.entries(byMuseum)
+        .sort(([, a], [, b]) => b.Totale - a.Totale)
+        .map(([name, s]) => `<tr>
+            <td><strong>${name}</strong></td>
+            <td class="num">${s.rows.toLocaleString('it-IT')}</td>
+            <td class="num">${s.Intero.toLocaleString('it-IT')}</td>
+            <td class="num">${s.Ridotto.toLocaleString('it-IT')}</td>
+            <td class="num">${s.Omaggio.toLocaleString('it-IT')}</td>
+            <td class="num">${s.Card.toLocaleString('it-IT')}</td>
+            <td class="num">${s.Totale.toLocaleString('it-IT')}</td>
+        </tr>`).join('');
+
+    const prevBody = document.getElementById('previewBody');
+    prevBody.innerHTML = finalMergedRows.slice(0, 15).map(r => `<tr>
+        <td>${r.Museo}</td>
+        <td>${r.Giorno}</td>
+        <td>${r.Ora}</td>
+        <td class="num">${r.Intero}</td>
+        <td class="num">${r.Ridotto}</td>
+        <td class="num">${r.Omaggio}</td>
+        <td class="num">${r.Card}</td>
+    </tr>`).join('');
+
+    card.scrollIntoView({ behavior: 'smooth' });
+}
+
+function escapeCsvField(val) {
+    const str = String(val);
+    if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+        return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+}
+
+function downloadFinalCsv() {
+    if (!finalMergedRows.length) return;
+    const header = 'Museo,Giorno,Ora,Intero,Ridotto,Omaggio,Card';
+    const lines = finalMergedRows.map(r => [
+        escapeCsvField(r.Museo),
+        r.Giorno,
+        r.Ora,
+        r.Intero,
+        r.Ridotto,
+        r.Omaggio,
+        r.Card
+    ].join(','));
+
+    const csvContent = '\uFEFF' + [header, ...lines].join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+
+    const filename = (document.getElementById('outputFilename').value || 'Biglietteria.csv').trim();
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename.endsWith('.csv') ? filename : `${filename}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>
