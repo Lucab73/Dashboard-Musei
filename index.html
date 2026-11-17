@@ -191,6 +191,39 @@
     font-weight: 700;
     color: #27ae60;
 }
+
+/* Stili riga "Complessivo" e sottorighe "di cui" */
+.summary-table tr.parent-group-row {
+    background: #eef2ff !important;
+    border-top: 2px solid #a5b4fc;
+}
+.summary-table tr.parent-group-row td:first-child {
+    color: #312e81;
+    font-weight: 800;
+}
+.summary-table tr.sub-detail-row {
+    background: #fafbff !important;
+}
+.summary-table tr.sub-detail-row td {
+    padding: 10px 12px;
+    font-size: 0.94rem;
+    color: #475569;
+    border-bottom: 1px dashed #e2e8f0;
+}
+.summary-table tr.sub-detail-row td:first-child {
+    padding-left: 28px;
+    font-size: 0.96rem;
+    font-weight: 600;
+    color: #475569;
+    font-style: italic;
+    background: #f8fafc;
+}
+.summary-table tr.sub-detail-row .numeric-cell {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #475569;
+}
+
 .table-container {
     background: white;
     border-radius: 15px;
@@ -453,6 +486,9 @@
     text-align: left;
     padding-left: 14px;
 }
+.heatmap-table th.heatmap-nohour-th {
+    background: #64748b;
+}
 .heatmap-table td {
     padding: 11px 8px;
     text-align: center;
@@ -467,6 +503,11 @@
     background: #f1f5f9 !important;
     color: #1e293b !important;
     font-weight: 800;
+}
+.heatmap-table td.heatmap-nohour-col {
+    background: #f1f5f9 !important;
+    color: #334155 !important;
+    border: 1px dashed #94a3b8;
 }
 .heatmap-table td.heatmap-total-col {
     background: #e2e8f0 !important;
@@ -567,7 +608,6 @@
     background-color: #667eea;
 }
 
-/* Pulsante Guida nella barra delle tab */
 .help-guide-btn {
     margin-left: auto;
     align-self: center;
@@ -1112,8 +1152,8 @@
                 <div class="help-section" data-help-id="Origini">
                     <h4>🧭 Come orientarsi nella Dashboard</h4>
                     <ul>
-                        <li><strong>Due fonti di dati diverse:</strong> le prime tre schede (<em>Panoramica</em>, <em>Confronti</em> e <em>Top 10</em>) analizzano le <strong>interviste sulla provenienza</strong> dei visitatori raccolte all'ingresso. La quarta scheda (<em>Biglietteria &amp; Orari</em>) utilizza invece i <strong>dati effettivi di biglietteria</strong>, cioè gli ingressi reali registrati ora per ora.</li>
-                        <li><strong>Perché i totali tra Panoramica e Biglietteria sono diversi?</strong> Perché in biglietteria risultano tutti i biglietti emessi, mentre nelle provenienze vengono conteggiati solo i visitatori intervistati (esclusi quelli per cui non è stato possibile rilevare l'area di provenienza, indicati nella nota in fondo alla Panoramica).</li>
+                        <li><strong>Due fonti di dati diverse:</strong> le prime tre schede (<em>Panoramica</em>, <em>Confronti</em> e <em>Top 10</em>) analizzano le <strong>interviste sulla provenienza</strong> dei visitatori raccolte all'ingresso. La quarta scheda (<em>Biglietteria &amp; Orari</em>) utilizza invece i <strong>dati effettivi di biglietteria</strong>, cioè gli ingressi reali registrati giorno per giorno.</li>
+                        <li><strong>Perché i totali tra Panoramica e Biglietteria sono diversi?</strong> Perché in biglietteria risultano tutti gli ingressi registrati, mentre nelle provenienze vengono conteggiati solo i visitatori intervistati (esclusi quelli per cui non è stato possibile rilevare l'area di provenienza, indicati nella nota in fondo alla Panoramica).</li>
                     </ul>
                 </div>
 
@@ -1155,8 +1195,8 @@
                     <h4>🎟️ Scheda Biglietteria &amp; Orari</h4>
                     <ul>
                         <li><strong>Filtri al singolo giorno:</strong> puoi scegliere qualsiasi intervallo di date esatte, selezionare un singolo museo, isolare i soli giorni feriali o il fine settimana e filtrare per tipologia di biglietto (compresa la voce <em>Paganti</em> che somma Intero e Ridotto).</li>
-                        <li><strong>Mappa di calore (Giorno × Fascia oraria):</strong> mostra a colpo d'occhio le ore più intense della settimana. La modalità predefinita <em>"Media per apertura"</em> divide gli ingressi per il numero effettivo di aperture di quel giorno, evitando che un mese con 5 domeniche sembri più affollato di uno con 4.</li>
-                        <li><strong>Profilo orario e andamento:</strong> il grafico orario mostra come si distribuiscono Interi, Ridotti, Omaggi e Card Cultura nelle diverse ore; quello successivo consente di vedere l'andamento giorno per giorno oppure la media dal lunedì alla domenica.</li>
+                        <li><strong>Collezioni Comunali, Torre dell'Orologio e Palazzo d'Accursio:</strong> nelle tabelle compare la voce <em>Collezioni Comunali (Complessivo)</em> seguita dalle righe rientrate <em>"di cui Sede museale"</em>, <em>"di cui Torre dell'Orologio"</em> e <em>"di cui Palazzo d'Accursio"</em>. Il <em>Totale Generale</em> in fondo conta ogni voce una sola volta senza doppi conteggi.</li>
+                        <li><strong>Mappa di calore e dati senza fascia oraria:</strong> la modalità predefinita <em>"Media per apertura"</em> evita che un mese con 5 domeniche sembri più affollato di uno con 4. Gli ingressi di Torre dell'Orologio e Palazzo d'Accursio (rilevati solo su base giornaliera) compaiono nella colonna <em>"Senza ora"</em> della mappa di calore e sono esclusi dal profilo orario (08:00–19:00) per non alterare le ore di picco.</li>
                         <li><strong>Confronto tra date esatte:</strong> in fondo alla pagina puoi confrontare direttamente due intervalli precisi (ad esempio <em>23 settembre – 23 novembre</em> di un anno contro lo stesso periodo dell'anno precedente).</li>
                     </ul>
                 </div>
@@ -1804,6 +1844,8 @@
 
         // Variabili globali Tab Biglietteria & Orari
         const urlBiglietteria = 'https://raw.githubusercontent.com/Lucab73/Dashboard-Musei/main/Biglietteria.csv';
+        const COLLEZIONI_COMPLESSIVO_VALUE = '__COLLEZIONI_COMPLESSIVO__';
+        const COLLEZIONI_SUB_MUSEUMS = ['Collezioni Comunali', "Torre dell'Orologio", "Palazzo d'Accursio"];
         let biglietteriaData = [];
         let biglietteriaLoaded = false;
         let biglietteriaLoading = false;
@@ -3643,7 +3685,7 @@ function clearGeoSearch() {
     onGeoSearchInput();
 }
 
-// === FUNZIONI PER IL TAB BIGLIETTERIA & ORARI (LAZY LOADING + HEATMAP + DATE ESATTE) ===
+// === FUNZIONI PER IL TAB BIGLIETTERIA & ORARI (LAZY LOADING + HEATMAP + DATE ESATTE + COLLEZIONI/TORRE/ACCURSIO) ===
 
 const GIORNI_SETTIMANA_IT = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica'];
 
@@ -3708,7 +3750,8 @@ function ensureBiglietteriaLoaded() {
 
                     results.data.forEach(r => {
                         const giorno = normalizeTickDate(r.Giorno);
-                        const ora = String(r.Ora || '').trim();
+                        const oraRaw = String(r.Ora || '').trim();
+                        const ora = oraRaw.toUpperCase() === 'N/D' ? 'N/D' : oraRaw;
                         const museo = String(r.Museo || '').trim();
                         if (!giorno || !ora || !museo) return;
 
@@ -3751,7 +3794,7 @@ function ensureBiglietteriaLoaded() {
                         return;
                     }
 
-                    statusEl.textContent = `✅ Dati biglietteria caricati: ${biglietteriaData.length.toLocaleString('it-IT')} fasce orarie (${formatDateIt(minD)} → ${formatDateIt(maxD)})`;
+                    statusEl.textContent = `✅ Dati biglietteria caricati: ${biglietteriaData.length.toLocaleString('it-IT')} rilevazioni (${formatDateIt(minD)} → ${formatDateIt(maxD)})`;
                     document.getElementById('biglietteriaMainArea').style.display = 'block';
 
                     initBiglietteriaControls();
@@ -3771,15 +3814,49 @@ function ensureBiglietteriaLoaded() {
 }
 
 function initBiglietteriaControls() {
-    const musei = [...new Set(biglietteriaData.map(r => r.Museo))].sort((a, b) => a.localeCompare(b, 'it'));
+    const museiSet = new Set(biglietteriaData.map(r => r.Museo));
+    const hasTorreOAccursio = museiSet.has("Torre dell'Orologio") || museiSet.has("Palazzo d'Accursio");
+    const hasCollezioni = museiSet.has('Collezioni Comunali');
+
     const museoSel = document.getElementById('tickMuseoSelect');
     museoSel.innerHTML = '<option value="Tutti">Tutti</option>';
-    musei.forEach(m => {
-        const opt = document.createElement('option');
-        opt.value = m;
-        opt.textContent = m;
-        museoSel.appendChild(opt);
-    });
+
+    if (hasTorreOAccursio) {
+        const otherMusei = Array.from(museiSet)
+            .filter(m => !COLLEZIONI_SUB_MUSEUMS.includes(m))
+            .sort((a, b) => a.localeCompare(b, 'it'));
+
+        // Ordine alfabetico con il gruppo Collezioni Comunali inserito al posto giusto
+        let insertedCollezioni = false;
+        const insertCollezioniGroup = () => {
+            if (insertedCollezioni) return;
+            insertedCollezioni = true;
+            museoSel.innerHTML += `<option value="${COLLEZIONI_COMPLESSIVO_VALUE}">Collezioni Comunali (Complessivo)</option>`;
+            if (hasCollezioni) museoSel.innerHTML += `<option value="Collezioni Comunali">↳ Collezioni Comunali (solo sede)</option>`;
+            if (museiSet.has("Torre dell'Orologio")) museoSel.innerHTML += `<option value="Torre dell'Orologio">↳ Torre dell'Orologio</option>`;
+            if (museiSet.has("Palazzo d'Accursio")) museoSel.innerHTML += `<option value="Palazzo d'Accursio">↳ Palazzo d'Accursio</option>`;
+        };
+
+        otherMusei.forEach(m => {
+            if (!insertedCollezioni && m.localeCompare('Collezioni Comunali', 'it') > 0) {
+                insertCollezioniGroup();
+            }
+            const opt = document.createElement('option');
+            opt.value = m;
+            opt.textContent = m;
+            museoSel.appendChild(opt);
+        });
+        insertCollezioniGroup();
+    } else {
+        Array.from(museiSet)
+            .sort((a, b) => a.localeCompare(b, 'it'))
+            .forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m;
+                opt.textContent = m;
+                museoSel.appendChild(opt);
+            });
+    }
 
     ['tickDateStart', 'tickDateEnd', 'tickCompAStart', 'tickCompAEnd', 'tickCompBStart', 'tickCompBEnd'].forEach(id => {
         const el = document.getElementById(id);
@@ -3864,11 +3941,21 @@ function getFilteredBiglietteriaRows() {
     return biglietteriaData.filter(r => {
         if (start && r.Giorno < start) return false;
         if (end && r.Giorno > end) return false;
-        if (museo !== 'Tutti' && r.Museo !== museo) return false;
+        if (museo === COLLEZIONI_COMPLESSIVO_VALUE) {
+            if (!COLLEZIONI_SUB_MUSEUMS.includes(r.Museo)) return false;
+        } else if (museo !== 'Tutti' && r.Museo !== museo) {
+            return false;
+        }
         if (dayType === 'Feriali' && r._isWeekend) return false;
         if (dayType === 'Weekend' && !r._isWeekend) return false;
         return true;
     });
+}
+
+function getMuseoScopeDisplayName(museoVal) {
+    if (museoVal === 'Tutti') return 'Tutti i Musei';
+    if (museoVal === COLLEZIONI_COMPLESSIVO_VALUE) return 'Collezioni Comunali (Complessivo)';
+    return museoVal;
 }
 
 function updateBiglietteriaDashboard() {
@@ -3876,24 +3963,35 @@ function updateBiglietteriaDashboard() {
     const filtered = getFilteredBiglietteriaRows();
     const ticketKey = document.getElementById('tickTicketTypeSelect').value;
     const museo = document.getElementById('tickMuseoSelect').value;
+    const scopeTxt = getMuseoScopeDisplayName(museo);
 
     const uniqueDays = new Set();
     const dowOpeningDays = Array.from({ length: 7 }, () => new Set());
     const dowTotals = Array(7).fill(0);
     const hourTotals = {};
     const cellMatrix = Array.from({ length: 7 }, () => ({}));
+    const noHourByDow = Array(7).fill(0);
     const dailyTotals = {};
 
     let sumIntero = 0, sumRidotto = 0, sumOmaggio = 0, sumCard = 0, sumSelected = 0;
+    let noHourSelectedTotal = 0;
+    let noHourAllTicketsTotal = 0;
 
     filtered.forEach(r => {
         const val = r[ticketKey];
         uniqueDays.add(r.Giorno);
         dowOpeningDays[r._dow].add(r.Giorno);
         dowTotals[r._dow] += val;
-        hourTotals[r.Ora] = (hourTotals[r.Ora] || 0) + val;
-        cellMatrix[r._dow][r.Ora] = (cellMatrix[r._dow][r.Ora] || 0) + val;
         dailyTotals[r.Giorno] = (dailyTotals[r.Giorno] || 0) + val;
+
+        if (r.Ora === 'N/D') {
+            noHourByDow[r._dow] += val;
+            noHourSelectedTotal += val;
+            noHourAllTicketsTotal += r.Totale;
+        } else {
+            hourTotals[r.Ora] = (hourTotals[r.Ora] || 0) + val;
+            cellMatrix[r._dow][r.Ora] = (cellMatrix[r._dow][r.Ora] || 0) + val;
+        }
 
         sumIntero += r.Intero;
         sumRidotto += r.Ridotto;
@@ -3943,13 +4041,15 @@ function updateBiglietteriaDashboard() {
             bestHour = h;
         }
     });
-    if (bestHourVal >= 0 && sumSelected > 0) {
-        const hPerc = ((bestHourVal / sumSelected) * 100).toFixed(1).replace('.', ',');
+    const hourlySelectedTotal = sumSelected - noHourSelectedTotal;
+    if (bestHourVal >= 0 && hourlySelectedTotal > 0) {
+        const hPerc = ((bestHourVal / hourlySelectedTotal) * 100).toFixed(1).replace('.', ',');
+        const hSuffix = noHourSelectedTotal > 0 ? '% delle fasce orarie' : '%';
         document.getElementById('tickKpiPeakHour').textContent = bestHour;
-        document.getElementById('tickKpiPeakHourSub').textContent = `${bestHourVal.toLocaleString('it-IT')} ingressi (${hPerc}%)`;
+        document.getElementById('tickKpiPeakHourSub').textContent = `${bestHourVal.toLocaleString('it-IT')} ingressi (${hPerc}${hSuffix})`;
     } else {
         document.getElementById('tickKpiPeakHour').textContent = '—';
-        document.getElementById('tickKpiPeakHourSub').textContent = '—';
+        document.getElementById('tickKpiPeakHourSub').textContent = noHourSelectedTotal > 0 ? 'Solo dati giornalieri senza ora' : '—';
     }
 
     const grandAllTickets = sumIntero + sumRidotto + sumOmaggio + sumCard;
@@ -3966,10 +4066,10 @@ function updateBiglietteriaDashboard() {
         document.getElementById('tickKpiMixSub').textContent = '—';
     }
 
-    renderTickHeatmap(sortedHours, cellMatrix, dowOpeningDays, dowTotals);
-    renderTickHourlyChart(filtered, sortedHours, museo);
-    renderTickDailyChart(dailyTotals, dowTotals, dowOpeningDays, ticketKey, museo);
-    renderTickMuseumTable(filtered);
+    renderTickHeatmap(sortedHours, cellMatrix, dowOpeningDays, dowTotals, noHourByDow);
+    renderTickHourlyChart(filtered, sortedHours, scopeTxt, noHourAllTicketsTotal);
+    renderTickDailyChart(dailyTotals, dowTotals, dowOpeningDays, ticketKey, scopeTxt);
+    renderTickMuseumTable(filtered, museo);
 }
 
 function getHeatmapCellColor(val, maxVal) {
@@ -3991,9 +4091,11 @@ function getHeatmapCellColor(val, maxVal) {
     return { bg: `rgb(${r},${g},${b})`, fg };
 }
 
-function renderTickHeatmap(sortedHours, cellMatrix, dowOpeningDays, dowTotals) {
+function renderTickHeatmap(sortedHours, cellMatrix, dowOpeningDays, dowTotals, noHourByDow) {
     const container = document.getElementById('tickHeatmapContainer');
-    if (!sortedHours.length) {
+    const hasNoHourData = noHourByDow.some(v => v > 0);
+
+    if (!sortedHours.length && !hasNoHourData) {
         container.innerHTML = '<p style="text-align:center; color:#64748b; padding:20px;">Nessun dato disponibile per i filtri selezionati.</p>';
         return;
     }
@@ -4012,6 +4114,9 @@ function renderTickHeatmap(sortedHours, cellMatrix, dowOpeningDays, dowTotals) {
 
     let html = '<table class="heatmap-table"><thead><tr><th>Giorno</th>';
     sortedHours.forEach(h => { html += `<th>${h}</th>`; });
+    if (hasNoHourData) {
+        html += `<th class="heatmap-nohour-th" title="Ingressi giornalieri senza dettaglio orario (Torre dell'Orologio / Palazzo d'Accursio)">Senza ora</th>`;
+    }
     html += `<th>${isAvg ? 'Media / giorno' : 'Totale'}</th></tr></thead><tbody>`;
 
     for (let d = 0; d < 7; d++) {
@@ -4032,6 +4137,19 @@ function renderTickHeatmap(sortedHours, cellMatrix, dowOpeningDays, dowTotals) {
             html += `<td style="background:${bg}; color:${fg};" title="${GIORNI_SETTIMANA_IT[d]} ${h}: ${txt}">${txt}</td>`;
         });
 
+        if (hasNoHourData) {
+            if (openCount === 0) {
+                html += `<td class="heatmap-nohour-col">—</td>`;
+            } else {
+                const rawNd = noHourByDow[d] || 0;
+                const valNd = isAvg ? rawNd / openCount : rawNd;
+                const txtNd = valNd === 0
+                    ? '0'
+                    : (isAvg ? valNd.toFixed(1).replace('.', ',') : Math.round(valNd).toLocaleString('it-IT'));
+                html += `<td class="heatmap-nohour-col" title="${GIORNI_SETTIMANA_IT[d]} senza fascia oraria: ${txtNd}">${txtNd}</td>`;
+            }
+        }
+
         const rowVal = isAvg
             ? (openCount > 0 ? (dowTotals[d] / openCount).toFixed(1).replace('.', ',') : '—')
             : dowTotals[d].toLocaleString('it-IT');
@@ -4042,7 +4160,7 @@ function renderTickHeatmap(sortedHours, cellMatrix, dowOpeningDays, dowTotals) {
     container.innerHTML = html;
 }
 
-function renderTickHourlyChart(filtered, sortedHours, museo) {
+function renderTickHourlyChart(filtered, sortedHours, scopeTxt, noHourAllTicketsTotal) {
     if (window.tickHourlyChart instanceof Chart) {
         window.tickHourlyChart.destroy();
     }
@@ -4053,7 +4171,7 @@ function renderTickHourlyChart(filtered, sortedHours, museo) {
     });
 
     filtered.forEach(r => {
-        if (!byHour[r.Ora]) return;
+        if (r.Ora === 'N/D' || !byHour[r.Ora]) return;
         byHour[r.Ora].Intero += r.Intero;
         byHour[r.Ora].Ridotto += r.Ridotto;
         byHour[r.Ora].Omaggio += r.Omaggio;
@@ -4083,10 +4201,17 @@ function renderTickHourlyChart(filtered, sortedHours, museo) {
             plugins: {
                 title: {
                     display: true,
-                    text: `Profilo Orario per Tipologia di Biglietto – ${museo === 'Tutti' ? 'Tutti i Musei' : museo}`,
+                    text: `Profilo Orario per Tipologia di Biglietto – ${scopeTxt}`,
                     font: { size: 22, weight: 'bold' },
                     color: 'blue',
-                    padding: { top: 8, bottom: 14 }
+                    padding: { top: 8, bottom: noHourAllTicketsTotal > 0 ? 4 : 14 }
+                },
+                subtitle: {
+                    display: noHourAllTicketsTotal > 0,
+                    text: `Esclusi ${noHourAllTicketsTotal.toLocaleString('it-IT')} ingressi giornalieri senza fascia oraria (Torre dell'Orologio / Palazzo d'Accursio)`,
+                    color: '#666',
+                    font: { size: 14, style: 'italic', weight: 'normal' },
+                    padding: { bottom: 12 }
                 },
                 legend: {
                     position: 'top',
@@ -4125,7 +4250,7 @@ function renderTickHourlyChart(filtered, sortedHours, museo) {
     });
 }
 
-function renderTickDailyChart(dailyTotals, dowTotals, dowOpeningDays, ticketKey, museo) {
+function renderTickDailyChart(dailyTotals, dowTotals, dowOpeningDays, ticketKey, scopeTxt) {
     if (window.tickDailyChart instanceof Chart) {
         window.tickDailyChart.destroy();
     }
@@ -4134,7 +4259,6 @@ function renderTickDailyChart(dailyTotals, dowTotals, dowOpeningDays, ticketKey,
     const ticketLabel = ticketKey === 'Totale'
         ? 'Tutti gli ingressi'
         : (ticketKey === 'Paganti' ? 'Paganti (Intero + Ridotto)' : ticketKey);
-    const scopeTxt = museo === 'Tutti' ? 'Tutti i Musei' : museo;
 
     if (tickTrendMode === 'weekday') {
         const avgs = GIORNI_SETTIMANA_IT.map((_, d) => {
@@ -4262,7 +4386,7 @@ function renderTickDailyChart(dailyTotals, dowTotals, dowOpeningDays, ticketKey,
     });
 }
 
-function renderTickMuseumTable(filtered) {
+function renderTickMuseumTable(filtered, selectedMuseoFilter) {
     const byMuseum = {};
     const allDays = new Set();
 
@@ -4288,19 +4412,75 @@ function renderTickMuseumTable(filtered) {
         m.Totale += r.Totale;
     });
 
-    const rows = Object.values(byMuseum).map(m => ({
-        Museo: m.Museo,
-        Giorni: m.days.size,
-        Intero: m.Intero,
-        Ridotto: m.Ridotto,
-        Omaggio: m.Omaggio,
-        Card: m.Card,
-        Totale: m.Totale,
-        Media: m.days.size > 0 ? m.Totale / m.days.size : 0
-    }));
+    const subDisplayLabels = {
+        'Collezioni Comunali': '↳ di cui Sede museale (Collezioni Comunali)',
+        "Torre dell'Orologio": "↳ di cui Torre dell'Orologio",
+        "Palazzo d'Accursio": "↳ di cui Palazzo d'Accursio"
+    };
+
+    const presentSubs = COLLEZIONI_SUB_MUSEUMS.filter(name => byMuseum[name]);
+    const shouldGroupCollezioni = (selectedMuseoFilter === 'Tutti' || selectedMuseoFilter === COLLEZIONI_COMPLESSIVO_VALUE)
+        && (byMuseum["Torre dell'Orologio"] || byMuseum["Palazzo d'Accursio"]);
+
+    const topLevelRows = [];
+
+    Object.values(byMuseum).forEach(m => {
+        if (shouldGroupCollezioni && COLLEZIONI_SUB_MUSEUMS.includes(m.Museo)) return;
+        topLevelRows.push({
+            Museo: m.Museo,
+            Giorni: m.days.size,
+            Intero: m.Intero,
+            Ridotto: m.Ridotto,
+            Omaggio: m.Omaggio,
+            Card: m.Card,
+            Totale: m.Totale,
+            Media: m.days.size > 0 ? m.Totale / m.days.size : 0,
+            isParentGroup: false,
+            children: []
+        });
+    });
+
+    if (shouldGroupCollezioni && presentSubs.length > 0) {
+        const unionDays = new Set();
+        let gInt = 0, gRid = 0, gOma = 0, gCard = 0, gTot = 0;
+        const children = [];
+
+        presentSubs.forEach(subName => {
+            const m = byMuseum[subName];
+            m.days.forEach(d => unionDays.add(d));
+            gInt += m.Intero;
+            gRid += m.Ridotto;
+            gOma += m.Omaggio;
+            gCard += m.Card;
+            gTot += m.Totale;
+            children.push({
+                Museo: subDisplayLabels[subName] || `↳ di cui ${subName}`,
+                Giorni: m.days.size,
+                Intero: m.Intero,
+                Ridotto: m.Ridotto,
+                Omaggio: m.Omaggio,
+                Card: m.Card,
+                Totale: m.Totale,
+                Media: m.days.size > 0 ? m.Totale / m.days.size : 0
+            });
+        });
+
+        topLevelRows.push({
+            Museo: 'Collezioni Comunali (Complessivo)',
+            Giorni: unionDays.size,
+            Intero: gInt,
+            Ridotto: gRid,
+            Omaggio: gOma,
+            Card: gCard,
+            Totale: gTot,
+            Media: unionDays.size > 0 ? gTot / unionDays.size : 0,
+            isParentGroup: true,
+            children
+        });
+    }
 
     const factor = tickTableSort.dir === 'asc' ? 1 : -1;
-    rows.sort((a, b) => {
+    topLevelRows.sort((a, b) => {
         if (tickTableSort.key === 'Museo') return a.Museo.localeCompare(b.Museo, 'it') * factor;
         return ((a[tickTableSort.key] || 0) - (b[tickTableSort.key] || 0)) * factor;
     });
@@ -4309,12 +4489,13 @@ function renderTickMuseumTable(filtered) {
         ? '<span class="sort-indicator">⇅</span>'
         : `<span class="sort-indicator">${tickTableSort.dir === 'desc' ? '▼' : '▲'}</span>`;
 
-    const tot = rows.reduce((acc, r) => {
-        acc.Intero += r.Intero;
-        acc.Ridotto += r.Ridotto;
-        acc.Omaggio += r.Omaggio;
-        acc.Card += r.Card;
-        acc.Totale += r.Totale;
+    // Totale Generale calcolato ESCLUSIVAMENTE sui musei reali originali (mai doppio conteggio)
+    const tot = Object.values(byMuseum).reduce((acc, m) => {
+        acc.Intero += m.Intero;
+        acc.Ridotto += m.Ridotto;
+        acc.Omaggio += m.Omaggio;
+        acc.Card += m.Card;
+        acc.Totale += m.Totale;
         return acc;
     }, { Intero: 0, Ridotto: 0, Omaggio: 0, Card: 0, Totale: 0 });
     const totMedia = allDays.size > 0 ? tot.Totale / allDays.size : 0;
@@ -4336,8 +4517,9 @@ function renderTickMuseumTable(filtered) {
             </thead>
             <tbody>`;
 
-    rows.forEach(r => {
-        html += `<tr>
+    topLevelRows.forEach(r => {
+        const rowClass = r.isParentGroup ? ' class="parent-group-row"' : '';
+        html += `<tr${rowClass}>
             <td>${r.Museo}</td>
             <td class="numeric-cell">${r.Giorni}</td>
             <td class="numeric-cell">${r.Intero.toLocaleString('it-IT')}</td>
@@ -4347,6 +4529,21 @@ function renderTickMuseumTable(filtered) {
             <td class="numeric-cell"><strong>${r.Totale.toLocaleString('it-IT')}</strong></td>
             <td class="numeric-cell">${r.Media.toFixed(1).replace('.', ',')}</td>
         </tr>`;
+
+        if (r.isParentGroup && r.children.length) {
+            r.children.forEach(sub => {
+                html += `<tr class="sub-detail-row">
+                    <td>${sub.Museo}</td>
+                    <td class="numeric-cell">${sub.Giorni}</td>
+                    <td class="numeric-cell">${sub.Intero.toLocaleString('it-IT')}</td>
+                    <td class="numeric-cell">${sub.Ridotto.toLocaleString('it-IT')}</td>
+                    <td class="numeric-cell">${sub.Omaggio.toLocaleString('it-IT')}</td>
+                    <td class="numeric-cell">${sub.Card.toLocaleString('it-IT')}</td>
+                    <td class="numeric-cell">${sub.Totale.toLocaleString('it-IT')}</td>
+                    <td class="numeric-cell">${sub.Media.toFixed(1).replace('.', ',')}</td>
+                </tr>`;
+            });
+        }
     });
 
     html += `<tr class="total-row">
@@ -4455,13 +4652,66 @@ function updateBiglietteriaDateComparison() {
         }
     });
 
-    const rows = Object.entries(byMuseum).map(([nome, d]) => {
+    const subDisplayLabels = {
+        'Collezioni Comunali': '↳ di cui Sede museale (Collezioni Comunali)',
+        "Torre dell'Orologio": "↳ di cui Torre dell'Orologio",
+        "Palazzo d'Accursio": "↳ di cui Palazzo d'Accursio"
+    };
+
+    const presentSubs = COLLEZIONI_SUB_MUSEUMS.filter(name => byMuseum[name]);
+    const shouldGroup = Boolean(byMuseum["Torre dell'Orologio"] || byMuseum["Palazzo d'Accursio"]);
+
+    const topRows = [];
+    Object.entries(byMuseum).forEach(([nome, d]) => {
+        if (shouldGroup && COLLEZIONI_SUB_MUSEUMS.includes(nome)) return;
         const diff = d.a - d.b;
         const perc = d.b > 0 ? ((diff / d.b) * 100) : null;
         const avgA = d.daysA.size > 0 ? d.a / d.daysA.size : 0;
         const avgB = d.daysB.size > 0 ? d.b / d.daysB.size : 0;
-        return { nome, a: d.a, b: d.b, diff, perc, avgA, avgB };
-    }).sort((x, y) => {
+        topRows.push({ nome, a: d.a, b: d.b, diff, perc, avgA, avgB, isParentGroup: false, children: [] });
+    });
+
+    if (shouldGroup && presentSubs.length > 0) {
+        const unionA = new Set();
+        const unionB = new Set();
+        let sumA = 0, sumB = 0;
+        const children = [];
+
+        presentSubs.forEach(subName => {
+            const d = byMuseum[subName];
+            d.daysA.forEach(dt => unionA.add(dt));
+            d.daysB.forEach(dt => unionB.add(dt));
+            sumA += d.a;
+            sumB += d.b;
+            const diff = d.a - d.b;
+            const perc = d.b > 0 ? ((diff / d.b) * 100) : null;
+            children.push({
+                nome: subDisplayLabels[subName] || `↳ di cui ${subName}`,
+                a: d.a,
+                b: d.b,
+                diff,
+                perc,
+                avgA: d.daysA.size > 0 ? d.a / d.daysA.size : 0,
+                avgB: d.daysB.size > 0 ? d.b / d.daysB.size : 0
+            });
+        });
+
+        const gDiff = sumA - sumB;
+        const gPerc = sumB > 0 ? ((gDiff / sumB) * 100) : null;
+        topRows.push({
+            nome: 'Collezioni Comunali (Complessivo)',
+            a: sumA,
+            b: sumB,
+            diff: gDiff,
+            perc: gPerc,
+            avgA: unionA.size > 0 ? sumA / unionA.size : 0,
+            avgB: unionB.size > 0 ? sumB / unionB.size : 0,
+            isParentGroup: true,
+            children
+        });
+    }
+
+    topRows.sort((x, y) => {
         if (x.perc === null && y.perc === null) return 0;
         if (x.perc === null) return 1;
         if (y.perc === null) return -1;
@@ -4486,10 +4736,11 @@ function updateBiglietteriaDateComparison() {
         </thead>
         <tbody>`;
 
-    rows.forEach(r => {
+    topRows.forEach(r => {
         const pClass = r.perc === null ? '' : (r.perc >= 0 ? 'percentage-cell positive' : 'percentage-cell negative');
         const pText = r.perc === null ? '—' : `${r.perc > 0 ? '▲ +' : r.perc < 0 ? '▼ ' : ''}${r.perc.toFixed(1)}%`;
-        html += `<tr>
+        const rowClass = r.isParentGroup ? ' class="parent-group-row"' : '';
+        html += `<tr${rowClass}>
             <td>${r.nome}</td>
             <td class="numeric-cell">${r.a.toLocaleString('it-IT')}</td>
             <td class="numeric-cell">${r.b.toLocaleString('it-IT')}</td>
@@ -4497,6 +4748,21 @@ function updateBiglietteriaDateComparison() {
             <td class="${pClass}">${pText}</td>
             <td class="numeric-cell">${r.avgA.toFixed(1).replace('.', ',')} vs ${r.avgB.toFixed(1).replace('.', ',')}</td>
         </tr>`;
+
+        if (r.isParentGroup && r.children.length) {
+            r.children.forEach(sub => {
+                const spClass = sub.perc === null ? '' : (sub.perc >= 0 ? 'percentage-cell positive' : 'percentage-cell negative');
+                const spText = sub.perc === null ? '—' : `${sub.perc > 0 ? '▲ +' : sub.perc < 0 ? '▼ ' : ''}${sub.perc.toFixed(1)}%`;
+                html += `<tr class="sub-detail-row">
+                    <td>${sub.nome}</td>
+                    <td class="numeric-cell">${sub.a.toLocaleString('it-IT')}</td>
+                    <td class="numeric-cell">${sub.b.toLocaleString('it-IT')}</td>
+                    <td class="numeric-cell">${(sub.diff >= 0 ? '+' : '') + sub.diff.toLocaleString('it-IT')}</td>
+                    <td class="${spClass}">${spText}</td>
+                    <td class="numeric-cell">${sub.avgA.toFixed(1).replace('.', ',')} vs ${sub.avgB.toFixed(1).replace('.', ',')}</td>
+                </tr>`;
+            });
+        }
     });
 
     const totPClass = totPerc === null ? '' : (totPerc >= 0 ? 'percentage-cell positive' : 'percentage-cell negative');
