@@ -499,14 +499,17 @@
         .tab-buttons {
     display: flex;
     justify-content: flex-start;
+    align-items: flex-end;
     border-bottom: 2px solid #e0e0e0;
     margin-bottom: 0;
     padding-left: 15px;
+    padding-right: 15px;
     background-color: #f8f9fa;
     flex-wrap: wrap;
+    gap: 4px;
 }
 
-.tab-buttons button {
+.tab-buttons button.tab-link {
     border: 2px solid #e0e0e0;
     border-bottom: none;
     background: #ffffff;
@@ -523,7 +526,7 @@
     box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
     overflow: hidden;
 }
-.tab-buttons button::after {
+.tab-buttons button.tab-link::after {
   content: '';
   position: absolute;
   width: 100%;
@@ -534,17 +537,17 @@
   transition: height 0.3s ease;
   z-index: 0;
 }
-.tab-buttons button:hover::after {
+.tab-buttons button.tab-link:hover::after {
   height: 100%;
 }
-.tab-buttons button:hover {
+.tab-buttons button.tab-link:hover {
     background-color: #f0f4ff;
     color: #667eea;
     transform: translateY(-2px);
     box-shadow: 0 -4px 8px rgba(0,0,0,0.15);
 }
 
-.tab-buttons button.active {
+.tab-buttons button.tab-link.active {
     background-color: #667eea;
     color: white;
     font-weight: 600;
@@ -554,7 +557,7 @@
     box-shadow: 0 -3px 6px rgba(102, 126, 234, 0.3);
 }
 
-.tab-buttons button.active::after {
+.tab-buttons button.tab-link.active::after {
     content: '';
     position: absolute;
     bottom: -2px;
@@ -562,6 +565,27 @@
     right: 0;
     height: 2px;
     background-color: #667eea;
+}
+
+/* Pulsante Guida nella barra delle tab */
+.help-guide-btn {
+    margin-left: auto;
+    align-self: center;
+    margin-bottom: 6px;
+    background: linear-gradient(135deg, #4a3fa5 0%, #667eea 100%);
+    color: white;
+    border: none;
+    border-radius: 22px;
+    padding: 9px 18px;
+    font-size: 1.02rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(74, 63, 165, 0.28);
+    transition: all 0.2s ease;
+}
+.help-guide-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 5px 14px rgba(74, 63, 165, 0.4);
 }
                 
         .tab-content {
@@ -572,6 +596,130 @@
             background-color: white;
         }
         /* === FINE BLOCCO STILI TAB AGGIORNATO === */
+
+        /* === STILI MODALE GUIDA ALL'UTILIZZO === */
+        .help-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.62);
+            backdrop-filter: blur(3px);
+            z-index: 9999;
+            padding: 20px;
+            overflow-y: auto;
+            align-items: flex-start;
+            justify-content: center;
+        }
+        .help-modal-overlay.open {
+            display: flex;
+        }
+        .help-modal {
+            background: white;
+            width: 100%;
+            max-width: 900px;
+            margin: 24px auto;
+            border-radius: 20px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            animation: helpFadeIn 0.2s ease;
+        }
+        @keyframes helpFadeIn {
+            from { opacity: 0; transform: translateY(-12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .help-modal-header {
+            background: linear-gradient(135deg, #4a3fa5 0%, #667eea 100%);
+            color: white;
+            padding: 20px 26px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .help-modal-header h3 {
+            font-size: 1.55rem;
+            font-weight: 800;
+        }
+        .help-modal-close {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            font-size: 1.3rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        .help-modal-close:hover {
+            background: rgba(255,255,255,0.35);
+        }
+        .help-nav-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 14px 24px;
+            background: #f1f5f9;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .help-nav-pill {
+            border: 1px solid #cbd5e1;
+            background: white;
+            color: #334155;
+            padding: 7px 14px;
+            border-radius: 20px;
+            font-size: 0.94rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.18s ease;
+        }
+        .help-nav-pill:hover {
+            background: #e0e7ff;
+            border-color: #667eea;
+            color: #4a3fa5;
+        }
+        .help-nav-pill.active {
+            background: #4a3fa5;
+            border-color: #4a3fa5;
+            color: white;
+        }
+        .help-modal-body {
+            padding: 24px 28px;
+            max-height: 70vh;
+            overflow-y: auto;
+            color: #1e293b;
+            line-height: 1.65;
+            font-size: 1.02rem;
+        }
+        .help-section {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-left: 5px solid #667eea;
+            border-radius: 12px;
+            padding: 18px 20px;
+            margin-bottom: 18px;
+        }
+        .help-section h4 {
+            font-size: 1.25rem;
+            color: #3730a3;
+            margin-bottom: 10px;
+        }
+        .help-section ul {
+            padding-left: 20px;
+        }
+        .help-section li {
+            margin-bottom: 8px;
+        }
+        .help-tip {
+            background: #eef2ff;
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin-top: 10px;
+            font-size: 0.96rem;
+            color: #312e81;
+        }
+        /* === FINE STILI MODALE GUIDA === */
 
         .kpi-container {
             display: flex;
@@ -936,12 +1084,84 @@
     </div>
     <div class="status loading" id="status">📡 Caricamento dati</div>
 
-    <!-- BOTTONI TAB -->
+    <!-- BOTTONI TAB + PULSANTE GUIDA -->
     <div class="tab-buttons fade-in">
       <button class="tab-link active" onclick="openTab(event, 'Panoramica')">📊 Panoramica</button>
       <button class="tab-link" onclick="openTab(event, 'Confronti')">🆚 Confronti</button> 
       <button class="tab-link" onclick="openTab(event, 'Top10')">🏆 Top 10</button>
       <button class="tab-link" onclick="openTab(event, 'Biglietteria')">🎟️ Biglietteria & Orari</button>
+      <button type="button" class="help-guide-btn" onclick="openHelpModal()">❓ Guida all'uso</button>
+    </div>
+
+    <!-- MODALE GUIDA ALL'UTILIZZO -->
+    <div id="helpModalOverlay" class="help-modal-overlay" onclick="if (event.target === this) closeHelpModal()">
+        <div class="help-modal" role="dialog" aria-modal="true" aria-labelledby="helpModalTitle">
+            <div class="help-modal-header">
+                <h3 id="helpModalTitle">📖 Guida all'utilizzo della Dashboard</h3>
+                <button type="button" class="help-modal-close" onclick="closeHelpModal()" aria-label="Chiudi guida">✕</button>
+            </div>
+            <div class="help-nav-bar" id="helpNavBar">
+                <button type="button" class="help-nav-pill" data-section="all" onclick="filterHelpSection('all')">📖 Tutta la guida</button>
+                <button type="button" class="help-nav-pill" data-section="Origini" onclick="filterHelpSection('Origini')">🧭 Come orientarsi</button>
+                <button type="button" class="help-nav-pill" data-section="Panoramica" onclick="filterHelpSection('Panoramica')">📊 Panoramica</button>
+                <button type="button" class="help-nav-pill" data-section="Confronti" onclick="filterHelpSection('Confronti')">🆚 Confronti</button>
+                <button type="button" class="help-nav-pill" data-section="Top10" onclick="filterHelpSection('Top10')">🏆 Top 10</button>
+                <button type="button" class="help-nav-pill" data-section="Biglietteria" onclick="filterHelpSection('Biglietteria')">🎟️ Biglietteria & Orari</button>
+            </div>
+            <div class="help-modal-body">
+                <div class="help-section" data-help-id="Origini">
+                    <h4>🧭 Come orientarsi nella Dashboard</h4>
+                    <ul>
+                        <li><strong>Due fonti di dati diverse:</strong> le prime tre schede (<em>Panoramica</em>, <em>Confronti</em> e <em>Top 10</em>) analizzano le <strong>interviste sulla provenienza</strong> dei visitatori raccolte all'ingresso. La quarta scheda (<em>Biglietteria &amp; Orari</em>) utilizza invece i <strong>dati effettivi di biglietteria</strong>, cioè gli ingressi reali registrati ora per ora.</li>
+                        <li><strong>Perché i totali tra Panoramica e Biglietteria sono diversi?</strong> Perché in biglietteria risultano tutti i biglietti emessi, mentre nelle provenienze vengono conteggiati solo i visitatori intervistati (esclusi quelli per cui non è stato possibile rilevare l'area di provenienza, indicati nella nota in fondo alla Panoramica).</li>
+                    </ul>
+                </div>
+
+                <div class="help-section" data-help-id="Panoramica">
+                    <h4>📊 Scheda Panoramica</h4>
+                    <ul>
+                        <li><strong>Riquadri in alto e Tabella riepilogativa:</strong> il primo blocco di filtri (<em>Anno</em>, <em>Mese</em> e <em>Tipo</em> tra Collezioni permanenti / Mostre / Tutti) aggiorna contemporaneamente i due riquadri riassuntivi in cima e la tabella sottostante.</li>
+                        <li><strong>Pulsante "Applica anche ai grafici":</strong> i 3 grafici sotto (torte di provenienza e andamento mensile) hanno un proprio blocco di filtri indipendente per poter esplorare un singolo museo o una singola mostra. Con il pulsante <em>"Applica anche ai grafici"</em> puoi copiare subito le scelte della tabella anche sui grafici.</li>
+                        <li><strong>Ordinamento e distinzione Musei/Mostre:</strong> la tabella è ordinata dal totale più alto a quello più basso, ma puoi cliccare su qualunque intestazione di colonna per cambiare l'ordine. Le etichette colorate distinguono a colpo d'occhio i musei dalle mostre temporanee.</li>
+                        <li><strong>Grafico dell'andamento mensile in %:</strong> sopra il grafico a linee trovi i due pulsanti per passare dai numeri assoluti alla quota percentuale sul totale di ogni mese (utile per vedere quando cresce il peso dei visitatori stranieri rispetto ai residenti).</li>
+                    </ul>
+                </div>
+
+                <div class="help-section" data-help-id="Confronti">
+                    <h4>🆚 Scheda Confronti</h4>
+                    <ul>
+                        <li><strong>Scelta di due periodi flessibili:</strong> puoi impostare <em>Periodo A</em> e <em>Periodo B</em> scegliendo mese e anno di inizio e fine, anche a cavallo tra due anni (ad esempio dicembre–gennaio). I pulsanti rapidi in alto impostano subito i periodi più comuni.</li>
+                        <li><strong>Allineamento automatico:</strong> appena modifichi il <em>Periodo A</em>, il <em>Periodo B</em> si imposta in automatico sullo stesso intervallo dell'anno precedente. Se mancano i dati dell'anno prima o se selezioni due durate diverse (es. 2 mesi contro 3 mesi), compare un avviso chiaro sopra la tabella.</li>
+                        <li><strong>Scelta della metrica e delle mostre:</strong> oltre al totale dei visitatori, puoi confrontare solo i bolognesi, il resto d'Italia, gli stranieri o la <em>% di stranieri</em>. Di default il confronto riguarda le sole <em>Collezioni permanenti</em> (così si confrontano gli stessi musei da un anno all'altro).</li>
+                    </ul>
+                    <div class="help-tip">
+                        💡 <strong>Nota sulle mostre nei confronti:</strong> quando includi le mostre, quelle presenti solo l'anno scorso mostrano <strong>-100%</strong>. Questo valore <strong>non</strong> falsa la percentuale del <em>Totale Generale</em>: il totale è calcolato sulla somma complessiva degli ingressi dell'uno e dell'altro periodo, non come media delle singole percentuali.
+                    </div>
+                </div>
+
+                <div class="help-section" data-help-id="Top10">
+                    <h4>🏆 Scheda Top 10</h4>
+                    <ul>
+                        <li><strong>Intervallo di più mesi e Top 10 / Top 20:</strong> puoi analizzare un singolo mese o più mesi insieme (es. stagione estiva) e scegliere se mostrare le prime 10 oppure le prime 20 posizioni.</li>
+                        <li><strong>Confronto con l'anno precedente:</strong> accanto al valore di ogni barra (e nel riquadro colorato laterale) compare anche la variazione rispetto allo stesso periodo dell'anno prima. Passando col mouse sulle barre vedi anche se la località è salita o scesa in classifica.</li>
+                        <li><strong>Barra di ricerca:</strong> scrivendo almeno 2 lettere nella casella di ricerca puoi trovare qualsiasi nazione, regione, provincia, comune o città europea del periodo scelto, anche se non rientra tra le prime 10 o 20 posizioni.</li>
+                    </ul>
+                    <div class="help-tip">
+                        💡 <strong>"Totale generale" vs "Solo stranieri" (Nazioni):</strong> l'Italia è sempre mostrata nel riquadro verde laterale ed esclusa dalle barre del grafico, quindi la lunghezza delle barre e l'ordine delle nazioni restano uguali in entrambe le modalità. Ciò che cambia è la <strong>percentuale</strong> scritta accanto a ciascuna barra: nel primo caso è calcolata su tutti i visitatori (Italia inclusa), nel secondo caso solo sul totale dei visitatori stranieri.
+                    </div>
+                </div>
+
+                <div class="help-section" data-help-id="Biglietteria">
+                    <h4>🎟️ Scheda Biglietteria &amp; Orari</h4>
+                    <ul>
+                        <li><strong>Filtri al singolo giorno:</strong> puoi scegliere qualsiasi intervallo di date esatte, selezionare un singolo museo, isolare i soli giorni feriali o il fine settimana e filtrare per tipologia di biglietto (compresa la voce <em>Paganti</em> che somma Intero e Ridotto).</li>
+                        <li><strong>Mappa di calore (Giorno × Fascia oraria):</strong> mostra a colpo d'occhio le ore più intense della settimana. La modalità predefinita <em>"Media per apertura"</em> divide gli ingressi per il numero effettivo di aperture di quel giorno, evitando che un mese con 5 domeniche sembri più affollato di uno con 4.</li>
+                        <li><strong>Profilo orario e andamento:</strong> il grafico orario mostra come si distribuiscono Interi, Ridotti, Omaggi e Card Cultura nelle diverse ore; quello successivo consente di vedere l'andamento giorno per giorno oppure la media dal lunedì alla domenica.</li>
+                        <li><strong>Confronto tra date esatte:</strong> in fondo alla pagina puoi confrontare direttamente due intervalli precisi (ad esempio <em>23 settembre – 23 novembre</em> di un anno contro lo stesso periodo dell'anno precedente).</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div id="Panoramica" class="tab-content" style="display:block;">
@@ -1436,6 +1656,46 @@
     
     <script>
 
+        // --- FUNZIONI MODALE GUIDA ALL'UTILIZZO ---
+        let currentActiveTabId = 'Panoramica';
+
+        function openHelpModal() {
+            const overlay = document.getElementById('helpModalOverlay');
+            overlay.classList.add('open');
+            document.body.style.overflow = 'hidden';
+            filterHelpSection(currentActiveTabId || 'all');
+        }
+
+        function closeHelpModal() {
+            document.getElementById('helpModalOverlay').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        function filterHelpSection(sectionKey) {
+            const pills = document.querySelectorAll('#helpNavBar .help-nav-pill');
+            pills.forEach(p => {
+                p.classList.toggle('active', p.getAttribute('data-section') === sectionKey);
+            });
+
+            const sections = document.querySelectorAll('.help-modal-body .help-section');
+            sections.forEach(sec => {
+                const id = sec.getAttribute('data-help-id');
+                if (sectionKey === 'all') {
+                    sec.style.display = 'block';
+                } else {
+                    sec.style.display = (id === sectionKey || id === 'Origini') ? 'block' : 'none';
+                }
+            });
+
+            document.querySelector('.help-modal-body').scrollTop = 0;
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeHelpModal();
+            }
+        });
+
         function populateMostreForAnno(selectedAnno) {
             const mostreAnno = [...new Set(
                 rawData
@@ -1493,6 +1753,7 @@
         // --- FUNZIONE PER GESTIRE LE SCHEDE (TABS) ---
         function openTab(evt, tabName) {
             let i, tabcontent, tablinks;
+            currentActiveTabId = tabName;
             
             tabcontent = document.getElementsByClassName("tab-content");
             for (i = 0; i < tabcontent.length; i++) {
@@ -3087,7 +3348,10 @@ function updateGeographicCharts() {
 
     let excludedSearchEntry = null;
     if (config.excludeValue && excludedCurr > 0) {
-        const excShare = denominatorCurr > 0 ? (excludedCurr / denominatorCurr) * 100 : 0;
+        const tileDenomForSearch = (typeSelected === 'nazioni' && nazioniBaseMode === 'foreign')
+            ? denominatorCurr + excludedCurr
+            : denominatorCurr;
+        const excShare = tileDenomForSearch > 0 ? (excludedCurr / tileDenomForSearch) * 100 : 0;
         const excYoyDiff = hasPrevYear ? (excludedCurr - excludedPrev) : null;
         const excYoyPerc = (hasPrevYear && excludedPrev > 0) ? ((excludedCurr - excludedPrev) / excludedPrev) * 100 : null;
         excludedSearchEntry = {
@@ -3147,7 +3411,10 @@ function updateGeographicCharts() {
         topN
     });
 
-    updateTop10SideTile(config, excludedCurr, excludedPrev, denominatorCurr, hasPrevYear, prevAnno);
+    const tileDenominator = (typeSelected === 'nazioni' && nazioniBaseMode === 'foreign')
+        ? denominatorCurr + excludedCurr
+        : denominatorCurr;
+    updateTop10SideTile(config, excludedCurr, excludedPrev, tileDenominator, hasPrevYear, prevAnno);
     onGeoSearchInput();
 }
 
@@ -3397,7 +3664,6 @@ function shiftIsoDateByYears(isoDate, deltaYears) {
     if (!isoDate) return '';
     const [y, m, d] = isoDate.split('-').map(Number);
     const dt = new Date(y + deltaYears, m - 1, d);
-    // Gestisce il 29 febbraio sugli anni non bisestili
     if (dt.getMonth() !== m - 1) {
         return `${y + deltaYears}-${String(m).padStart(2, '0')}-28`;
     }
@@ -3453,7 +3719,7 @@ function ensureBiglietteriaLoaded() {
                         const ridotto = parseInt(r.Ridotto, 10) || 0;
                         const omaggio = parseInt(r.Omaggio, 10) || 0;
                         const card = parseInt(r.Card, 10) || 0;
-                        const dow = (dt.getDay() + 6) % 7; // 0 = Lunedì ... 6 = Domenica
+                        const dow = (dt.getDay() + 6) % 7;
 
                         if (!minD || giorno < minD) minD = giorno;
                         if (!maxD || giorno > maxD) maxD = giorno;
@@ -3521,10 +3787,8 @@ function initBiglietteriaControls() {
         el.max = biglietteriaMaxDate;
     });
 
-    // Default vista principale: anno più recente disponibile
     applyBiglietteriaPreset('latestYear');
 
-    // Default confronto date esatte: ultimo mese vs stesso mese anno prima
     const defaultAEnd = biglietteriaMaxDate;
     const defaultAStart = `${defaultAEnd.slice(0, 7)}-01` >= biglietteriaMinDate
         ? `${defaultAEnd.slice(0, 7)}-01`
@@ -3610,10 +3874,9 @@ function getFilteredBiglietteriaRows() {
 function updateBiglietteriaDashboard() {
     if (!biglietteriaLoaded) return;
     const filtered = getFilteredBiglietteriaRows();
-    const ticketKey = document.getElementById('tickTicketTypeSelect').value; // Totale | Intero | Ridotto | Omaggio | Card
+    const ticketKey = document.getElementById('tickTicketTypeSelect').value;
     const museo = document.getElementById('tickMuseoSelect').value;
 
-    // 1. Calcoli base su giorni di apertura, ore e giorni settimana
     const uniqueDays = new Set();
     const dowOpeningDays = Array.from({ length: 7 }, () => new Set());
     const dowTotals = Array(7).fill(0);
@@ -3642,7 +3905,6 @@ function updateBiglietteriaDashboard() {
     const numDays = uniqueDays.size;
     const avgPerDay = numDays > 0 ? sumSelected / numDays : 0;
 
-    // 2. Aggiorna 4 KPI
     document.getElementById('tickKpiTotal').textContent = sumSelected.toLocaleString('it-IT');
     document.getElementById('tickKpiTotalLabel').textContent =
         ticketKey === 'Totale'
@@ -3651,7 +3913,6 @@ function updateBiglietteriaDashboard() {
     document.getElementById('tickKpiTotalSub').textContent =
         numDays > 0 ? `Media ${avgPerDay.toFixed(1).replace('.', ',')} / giorno (${numDays} gg apertura)` : 'Nessun dato nel periodo';
 
-    // Giorno più affollato in media
     let bestDowIdx = -1;
     let bestDowAvg = -1;
     for (let d = 0; d < 7; d++) {
@@ -3673,7 +3934,6 @@ function updateBiglietteriaDashboard() {
         document.getElementById('tickKpiPeakDaySub').textContent = '—';
     }
 
-    // Fascia oraria di picco
     const sortedHours = Object.keys(hourTotals).sort();
     let bestHour = '—';
     let bestHourVal = -1;
@@ -3692,7 +3952,6 @@ function updateBiglietteriaDashboard() {
         document.getElementById('tickKpiPeakHourSub').textContent = '—';
     }
 
-    // Composizione biglietti
     const grandAllTickets = sumIntero + sumRidotto + sumOmaggio + sumCard;
     if (grandAllTickets > 0) {
         const pPag = (((sumIntero + sumRidotto) / grandAllTickets) * 100).toFixed(1).replace('.', ',');
@@ -3707,23 +3966,15 @@ function updateBiglietteriaDashboard() {
         document.getElementById('tickKpiMixSub').textContent = '—';
     }
 
-    // 3. Heatmap Giorno x Fascia Oraria
     renderTickHeatmap(sortedHours, cellMatrix, dowOpeningDays, dowTotals);
-
-    // 4. Grafico profilo orario per tipologia biglietto
     renderTickHourlyChart(filtered, sortedHours, museo);
-
-    // 5. Grafico andamento giornaliero o media Lun–Dom
     renderTickDailyChart(dailyTotals, dowTotals, dowOpeningDays, ticketKey, museo);
-
-    // 6. Tabella riepilogativa per Museo
     renderTickMuseumTable(filtered);
 }
 
 function getHeatmapCellColor(val, maxVal) {
     if (maxVal <= 0 || val <= 0) return { bg: '#f8fafc', fg: '#94a3b8' };
     const ratio = Math.min(1, val / maxVal);
-    // Gradiente pulito da azzurro tenue (#eef2ff) a indaco/blu scuro (#4338ca) e rosso caldo (#dc2626) sopra 0.85
     let r, g, b;
     if (ratio < 0.5) {
         const t = ratio * 2;
@@ -3942,7 +4193,6 @@ function renderTickDailyChart(dailyTotals, dowTotals, dowOpeningDays, ticketKey,
         return;
     }
 
-    // Modalità andamento giorno per giorno
     const sortedDates = Object.keys(dailyTotals).sort();
     const values = sortedDates.map(d => dailyTotals[d]);
     const labels = sortedDates.map(d => `${d.slice(8, 10)}/${d.slice(5, 7)}/${d.slice(2, 4)}`);
