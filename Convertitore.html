@@ -200,13 +200,23 @@
             border-radius: 8px;
             font-weight: 600;
         }
+        .auto-multi-badge {
+            display: inline-block;
+            font-size: 0.88rem;
+            color: #3730a3;
+            background: #e0e7ff;
+            border: 1px solid #c7d2fe;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-weight: 700;
+        }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="header">
         <h1>🛠️ Convertitore Export Biglietteria (Strada A)</h1>
-        <p>Fondi gli export Excel (.xls / .xlsx / .csv) dei singoli musei in un unico CSV pulito pronto per la Dashboard</p>
+        <p>Fondi gli export MIDA (.xls/.xlsx) e i file Torre dell'Orologio / Palazzo d'Accursio (.ods/.xlsx) in un unico CSV pulito</p>
     </div>
 
     <!-- STEP 1: CSV ESISTENTE (OPZIONALE) -->
@@ -227,11 +237,11 @@
 
     <!-- STEP 2: CARICAMENTO NUOVI EXPORT -->
     <div class="card">
-        <div class="card-title">2️⃣ Carica i nuovi export dei musei (.xls, .xlsx, .csv)</div>
+        <div class="card-title">2️⃣ Carica i nuovi export dei musei (.xls, .xlsx, .ods, .csv)</div>
         <div class="dropzone" id="dropzone" onclick="document.getElementById('filesInput').click()">
             <div class="dropzone-icon">📥</div>
             <div class="dropzone-text">Trascina qui i file dei musei oppure clicca per selezionarli</div>
-            <div class="dropzone-sub">Mantiene le date italiane esatte (GG/MM/AAAA) senza inversioni giorno/mese, rileva la tabella e riconosce il museo.</div>
+            <div class="dropzone-sub">Riconosce automaticamente sia gli export orari MIDA sia i fogli mensili .ods di Torre dell'Orologio e Palazzo d'Accursio.</div>
         </div>
         <input type="file" id="filesInput" multiple accept=".xls,.xlsx,.csv,.ods" style="display:none;" onchange="handleNewFiles(this.files)">
 
@@ -269,7 +279,7 @@
                 <thead>
                     <tr>
                         <th>Museo</th>
-                        <th class="num">Fasce orarie</th>
+                        <th class="num">Righe / Fasce</th>
                         <th class="num">Intero</th>
                         <th class="num">Ridotto</th>
                         <th class="num">Omaggio</th>
@@ -398,7 +408,7 @@ function normalizeDate(val) {
     return null;
 }
 
-function normalizeTime(val) {
+function normalizeTime(val, allowND = false) {
     if (val === null || val === undefined || val === '') return null;
 
     if (typeof val === 'number' && !isNaN(val)) {
@@ -410,6 +420,9 @@ function normalizeTime(val) {
     }
 
     const str = String(val).trim();
+    if (allowND && str.toUpperCase() === 'N/D') {
+        return 'N/D';
+    }
     const m = str.match(/^(\d{1,2})[:.](\d{2})/);
     if (m) {
         return `${m[1].padStart(2, '0')}:${m[2]}`;
@@ -448,8 +461,6 @@ function findColIndexStrict(rowCells, exactCandidates, partialCandidates = [], e
     return -1;
 }
 
-// Se il .xls è in realtà una tabella HTML, la leggiamo direttamente col DOMParser
-// per evitare che SheetJS converta "12/10/2026" in data USA "2026-12-10"
 function tryParseHtmlTableBuffer(arrayBuffer) {
     const sample = new TextDecoder('utf-8', { fatal: false }).decode(arrayBuffer.slice(0, 600)).trim().toLowerCase();
     if (!sample.startsWith('<') || (!sample.includes('<html') && !sample.includes('<table') && !sample.includes('<!doctype') && !sample.includes('<meta'))) {
@@ -465,19 +476,377 @@ function tryParseHtmlTableBuffer(arrayBuffer) {
     return trs.map(tr => Array.from(tr.querySelectorAll('th, td')).map(td => td.textContent.trim()));
 }
 
-function parseWorkbookBuffer(arrayBuffer, hasMuseumCol = false) {
+// Estrae content.xml da un archivio .ods (ZIP) usando le API standard del browser,
+// evitando il bug di SheetJS 0.18.5 su <table:covered-table-cell table:number-columns-repeated="..."/>
+async function extractOdsContentXml(arrayBuffer) {
+    if (typeof DecompressionStream !== 'function') return null;
+    const bytes = new Uint8Array(arrayBuffer);
+    if (bytes.length < 22 || bytes[0] !== 0x50 || bytes[1] !== 0x4B) return null;
+
+    const view = new DataView(arrayBuffer);
+    const minOff = Math.max(0, bytes.length - 65558);
+    let eocd = -1;
+    for (let i = bytes.length - 22; i >= minOff; i--) {
+        if (view.getUint32(i, true) === 0x06054b50) {
+            eocd = i;
+            break;
+        }
+    }
+    if (eocd === -1) return null;
+
+    const totalEntries = view.getUint16(eocd + 10, true);
+    let pos = view.getUint32(eocd + 16, true);
+    const dec = new TextDecoder('utf-8');
+
+    for (let i = 0; i < totalEntries && pos + 46 <= bytes.length; i++) {
+        if (view.getUint32(pos, true) !== 0x02014b50) break;
+        const method = view.getUint16(pos + 10, true);
+        const compSize = view.getUint32(pos + 20, true);
+        const nameLen = view.getUint16(pos + 28, true);
+        const extraLen = view.getUint16(pos + 30, true);
+        const commentLen = view.getUint16(pos + 32, true);
+        const localOffset = view.getUint32(pos + 42, true);
+
+        const entryName = dec.decode(bytes.subarray(pos + 46, pos + 46 + nameLen));
+        if (entryName === 'content.xml') {
+            if (localOffset + 30 > bytes.length || view.getUint32(localOffset, true) !== 0x04034b50) {
+                return null;
+            }
+            const lfNameLen = view.getUint16(localOffset + 26, true);
+            const lfExtraLen = view.getUint16(localOffset + 28, true);
+            const dataStart = localOffset + 30 + lfNameLen + lfExtraLen;
+            const compBytes = bytes.slice(dataStart, dataStart + compSize);
+
+            if (method === 0) {
+                return dec.decode(compBytes);
+            } else if (method === 8) {
+                const ds = new DecompressionStream('deflate-raw');
+                return await new Response(new Blob([compBytes]).stream().pipeThrough(ds)).text();
+            }
+            return null;
+        }
+        pos += 46 + nameLen + extraLen + commentLen;
+    }
+    return null;
+}
+
+function collectOdsTableRows(node, outRows) {
+    for (const child of node.children) {
+        const ln = child.localName;
+        if (ln === 'table-row') {
+            outRows.push(child);
+        } else if (ln === 'table-header-rows' || ln === 'table-row-group' || ln === 'table-rows') {
+            collectOdsTableRows(child, outRows);
+        }
+    }
+}
+
+async function parseOdsXmlSheets(arrayBuffer) {
+    const xmlText = await extractOdsContentXml(arrayBuffer);
+    if (!xmlText) return null;
+
+    const doc = new DOMParser().parseFromString(xmlText, 'text/xml');
+    if (doc.querySelector('parsererror')) return null;
+
+    const tableEls = Array.from(doc.getElementsByTagNameNS('*', 'table'));
+    if (!tableEls.length) return null;
+
+    const sheetNames = [];
+    const matricesByName = {};
+
+    for (let tIdx = 0; tIdx < tableEls.length; tIdx++) {
+        const tableEl = tableEls[tIdx];
+        const sheetName = tableEl.getAttribute('table:name') || tableEl.getAttribute('name') || `Foglio${tIdx + 1}`;
+        const rowEls = [];
+        collectOdsTableRows(tableEl, rowEls);
+
+        const matrix = [];
+        const merges = [];
+
+        for (const rowEl of rowEls) {
+            const rowRep = parseInt(rowEl.getAttribute('table:number-rows-repeated') || '1', 10) || 1;
+            const rowArr = [];
+            const rowMerges = [];
+            let colIdx = 0;
+            let hasNonEmpty = false;
+
+            for (const cellEl of rowEl.children) {
+                const ln = cellEl.localName;
+                if (ln !== 'table-cell' && ln !== 'covered-table-cell') continue;
+
+                const colRep = parseInt(cellEl.getAttribute('table:number-columns-repeated') || '1', 10) || 1;
+
+                // Avanza dell'esatto numero di colonne coperte (fix del bug SheetJS su covered-table-cell ripetute)
+                if (ln === 'covered-table-cell') {
+                    colIdx += colRep;
+                    continue;
+                }
+
+                let val = '';
+                const vType = cellEl.getAttribute('office:value-type') || '';
+                if (vType === 'date') {
+                    val = cellEl.getAttribute('office:date-value') || cellEl.textContent.trim();
+                } else if (vType === 'float' || vType === 'currency' || vType === 'percentage') {
+                    const ov = cellEl.getAttribute('office:value');
+                    if (ov !== null && ov !== '' && !isNaN(Number(ov))) {
+                        val = Number(ov);
+                    } else {
+                        val = cellEl.textContent.trim();
+                    }
+                } else {
+                    const pEls = Array.from(cellEl.getElementsByTagNameNS('*', 'p'));
+                    val = pEls.length
+                        ? pEls.map(p => p.textContent).join(' ').replace(/\s+/g, ' ').trim()
+                        : cellEl.textContent.replace(/\s+/g, ' ').trim();
+                }
+
+                if (val === '' && colRep > 50) {
+                    colIdx += colRep;
+                    continue;
+                }
+
+                if (val !== '') hasNonEmpty = true;
+
+                const colSpan = parseInt(cellEl.getAttribute('table:number-columns-spanned') || '1', 10) || 1;
+                const rowSpan = parseInt(cellEl.getAttribute('table:number-rows-spanned') || '1', 10) || 1;
+
+                for (let k = 0; k < colRep; k++) {
+                    const targetCol = colIdx + k;
+                    rowArr[targetCol] = val;
+                    if ((colSpan > 1 || rowSpan > 1) && val !== '') {
+                        rowMerges.push({ c: targetCol, colSpan, rowSpan, val });
+                    }
+                }
+                colIdx += colRep;
+            }
+
+            const repeatCount = (!hasNonEmpty && rowRep > 50) ? 1 : Math.min(rowRep, 200);
+            for (let rr = 0; rr < repeatCount; rr++) {
+                const curRowIdx = matrix.length;
+                matrix.push(rowArr.slice());
+                if (rr === 0 && rowMerges.length) {
+                    for (const m of rowMerges) {
+                        merges.push({
+                            s: { r: curRowIdx, c: m.c },
+                            e: { r: curRowIdx + m.rowSpan - 1, c: m.c + m.colSpan - 1 },
+                            val: m.val
+                        });
+                    }
+                }
+            }
+        }
+
+        // Espande le celle unite su tutte le celle coperte
+        for (const merge of merges) {
+            for (let rr = merge.s.r; rr <= merge.e.r && rr < matrix.length; rr++) {
+                if (!matrix[rr]) matrix[rr] = [];
+                for (let cc = merge.s.c; cc <= merge.e.c; cc++) {
+                    if (matrix[rr][cc] === '' || matrix[rr][cc] === undefined) {
+                        matrix[rr][cc] = merge.val;
+                    }
+                }
+            }
+        }
+
+        sheetNames.push(sheetName);
+        matricesByName[sheetName] = matrix;
+    }
+
+    return { sheetNames, matricesByName };
+}
+
+function expandSheetMergesOnMatrix(ws, matrix) {
+    if (!ws['!merges'] || !ws['!merges'].length) return matrix;
+    ws['!merges'].forEach(merge => {
+        const topLeftVal = (matrix[merge.s.r] || [])[merge.s.c];
+        if (topLeftVal !== undefined && topLeftVal !== '') {
+            for (let rr = merge.s.r; rr <= merge.e.r && rr < matrix.length; rr++) {
+                if (!matrix[rr]) matrix[rr] = [];
+                for (let cc = merge.s.c; cc <= merge.e.c; cc++) {
+                    if (matrix[rr][cc] === '' || matrix[rr][cc] === undefined) {
+                        matrix[rr][cc] = topLeftVal;
+                    }
+                }
+            }
+        }
+    });
+    return matrix;
+}
+
+// Rilevamento e parsing dedicato per i fogli mensili di Torre dell'Orologio / Palazzo d'Accursio (.ods/.xlsx)
+function tryParseTorreAccursioMatrices(sheetNames, getMatrixFn) {
+    const extractedRows = [];
+    const coveredMonthsSet = new Set();
+    let matchedSheets = 0;
+    let totalSheets = sheetNames.length;
+    let skipped = 0;
+    let minDate = '';
+    let maxDate = '';
+    let foundOrologio = false;
+    let foundAccursio = false;
+
+    for (const sheetName of sheetNames) {
+        const matrix = getMatrixFn(sheetName);
+        if (!matrix || !matrix.length) continue;
+
+        let headerRowIdx = -1;
+        let idxData = -1;
+        let orologioCols = [];
+        let accursioCols = [];
+
+        const maxScan = Math.min(matrix.length, 60);
+        for (let r = 0; r < maxScan; r++) {
+            const rowCells = matrix[r] || [];
+
+            const oCols = [];
+            const aCols = [];
+            for (let c = 0; c < rowCells.length; c++) {
+                const cellLow = String(rowCells[c] || '').toLowerCase();
+                if (cellLow.includes('orologio')) oCols.push(c);
+                if (cellLow.includes('accursio')) aCols.push(c);
+            }
+
+            if (oCols.length === 0 && aCols.length === 0) continue;
+
+            // Cerca la colonna "Data" sulla stessa riga r, oppure fino a 2 righe sopra (intestazioni su più righe)
+            let dIdx = findColIndexStrict(rowCells, ['data']);
+            if (dIdx === -1 && r > 0) dIdx = findColIndexStrict(matrix[r - 1] || [], ['data']);
+            if (dIdx === -1 && r > 1) dIdx = findColIndexStrict(matrix[r - 2] || [], ['data']);
+            if (dIdx === -1) continue;
+
+            // Verifica che nelle righe subito sotto ci sia almeno una data valida nella colonna Data
+            let hasDateBelow = false;
+            for (let checkR = r + 1; checkR <= Math.min(matrix.length - 1, r + 4); checkR++) {
+                if (normalizeDate((matrix[checkR] || [])[dIdx])) {
+                    hasDateBelow = true;
+                    break;
+                }
+            }
+            if (!hasDateBelow) continue;
+
+            headerRowIdx = r;
+            idxData = dIdx;
+            orologioCols = oCols.filter(c => c !== dIdx);
+            accursioCols = aCols.filter(c => c !== dIdx);
+            break;
+        }
+
+        if (headerRowIdx === -1) continue;
+
+        matchedSheets++;
+        if (orologioCols.length > 0) foundOrologio = true;
+        if (accursioCols.length > 0) foundAccursio = true;
+
+        let startedTable = false;
+
+        for (let r = headerRowIdx + 1; r < matrix.length; r++) {
+            const rowCells = matrix[r] || [];
+            const giorno = normalizeDate(rowCells[idxData]);
+            if (!giorno) {
+                if (startedTable) break;
+                skipped++;
+                continue;
+            }
+            startedTable = true;
+            coveredMonthsSet.add(giorno.slice(0, 7));
+
+            const sumOrologio = orologioCols.reduce((s, colIdx) => s + toInt(rowCells[colIdx]), 0);
+            const sumAccursio = accursioCols.reduce((s, colIdx) => s + toInt(rowCells[colIdx]), 0);
+
+            if (sumOrologio > 0) {
+                if (!minDate || giorno < minDate) minDate = giorno;
+                if (!maxDate || giorno > maxDate) maxDate = giorno;
+                extractedRows.push({
+                    Museo: "Torre dell'Orologio",
+                    Giorno: giorno,
+                    Ora: 'N/D',
+                    Intero: 0,
+                    Ridotto: 0,
+                    Omaggio: sumOrologio,
+                    Card: 0
+                });
+            }
+            if (sumAccursio > 0) {
+                if (!minDate || giorno < minDate) minDate = giorno;
+                if (!maxDate || giorno > maxDate) maxDate = giorno;
+                extractedRows.push({
+                    Museo: "Palazzo d'Accursio",
+                    Giorno: giorno,
+                    Ora: 'N/D',
+                    Intero: 0,
+                    Ridotto: 0,
+                    Omaggio: sumAccursio,
+                    Card: 0
+                });
+            }
+        }
+    }
+
+    if (matchedSheets === 0) return null;
+
+    const foundCols = ['Data'];
+    if (foundOrologio) foundCols.push('Orologio');
+    if (foundAccursio) foundCols.push('Accursio');
+
+    return {
+        isMultiMuseumAuto: true,
+        rows: extractedRows,
+        coveredMonths: Array.from(coveredMonthsSet),
+        skipped,
+        matchedSheets,
+        totalSheets,
+        headerRowIndex: 0,
+        preambleText: '',
+        foundCols,
+        minDate,
+        maxDate,
+        error: null
+    };
+}
+
+function tryParseTorreAccursioWorkbook(wb) {
+    return tryParseTorreAccursioMatrices(wb.SheetNames, sheetName => {
+        const ws = wb.Sheets[sheetName];
+        if (!ws) return null;
+        const rawMatrix = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: '' });
+        if (!rawMatrix || !rawMatrix.length) return null;
+        return expandSheetMergesOnMatrix(ws, rawMatrix);
+    });
+}
+
+async function parseWorkbookBuffer(arrayBuffer, hasMuseumCol = false, fileName = '') {
     let matrix = tryParseHtmlTableBuffer(arrayBuffer);
 
     if (!matrix) {
-        // raw: true impedisce a SheetJS di convertire stringhe GG/MM/AAAA in date USA MM/GG/AAAA
-        const wb = XLSX.read(arrayBuffer, { type: 'array', raw: true });
-        const firstSheetName = wb.SheetNames[0];
-        const ws = wb.Sheets[firstSheetName];
-        matrix = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: '' });
+        // Per i file .ods usiamo il lettore XML diretto per evitare lo slittamento di colonne di SheetJS 0.18.5
+        if (!hasMuseumCol && fileName.toLowerCase().endsWith('.ods')) {
+            const odsData = await parseOdsXmlSheets(arrayBuffer);
+            if (odsData) {
+                const torreOds = tryParseTorreAccursioMatrices(
+                    odsData.sheetNames,
+                    name => odsData.matricesByName[name]
+                );
+                if (torreOds) return torreOds;
+                matrix = odsData.matricesByName[odsData.sheetNames[0]] || [];
+            }
+        }
+
+        if (!matrix) {
+            const wb = XLSX.read(arrayBuffer, { type: 'array', raw: true });
+
+            if (!hasMuseumCol) {
+                const torreResult = tryParseTorreAccursioWorkbook(wb);
+                if (torreResult) return torreResult;
+            }
+
+            const firstSheetName = wb.SheetNames[0];
+            const ws = wb.Sheets[firstSheetName];
+            matrix = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: '' });
+        }
     }
 
     if (!matrix || !matrix.length) {
-        return { rows: [], skipped: 0, headerRowIndex: -1, preambleText: '', foundCols: [], minDate: '', maxDate: '', error: 'Il foglio non contiene dati.' };
+        return { isMultiMuseumAuto: false, rows: [], skipped: 0, headerRowIndex: -1, preambleText: '', foundCols: [], minDate: '', maxDate: '', error: 'Il foglio non contiene dati.' };
     }
 
     let headerRowIndex = -1;
@@ -504,7 +873,7 @@ function parseWorkbookBuffer(arrayBuffer, hasMuseumCol = false) {
         const omIdx = findColIndexStrict(rowCells, ['omaggio', 'gratuito'], ['omaggio']);
         const cIdx = findColIndexStrict(rowCells, ['card', 'cardcultura'], ['cardcultura', 'cardmetro', 'quantitacard']);
 
-        const hasTicketCols = (iIdx !== -1 || rIdx !== -1 || omIdx !== -1);
+        const hasTicketCols = (iIdx !== -1 || rIdx !== -1 || omIdx !== -1 || cIdx !== -1);
 
         if (gIdx !== -1 && oIdx !== -1 && gIdx !== oIdx && (!hasMuseumCol || mIdx !== -1) && hasTicketCols) {
             headerRowIndex = r;
@@ -521,6 +890,7 @@ function parseWorkbookBuffer(arrayBuffer, hasMuseumCol = false) {
 
     if (headerRowIndex === -1) {
         return {
+            isMultiMuseumAuto: false,
             rows: [],
             skipped: matrix.length,
             headerRowIndex: -1,
@@ -528,7 +898,7 @@ function parseWorkbookBuffer(arrayBuffer, hasMuseumCol = false) {
             foundCols: [],
             minDate: '',
             maxDate: '',
-            error: 'Riga intestazione non trovata (attese colonne: Giorno, Ora, Intero/Ridotto/Omaggio).'
+            error: 'Riga intestazione non trovata (attese colonne: Giorno, Ora, Intero/Ridotto/Omaggio oppure file Torre/Accursio).'
         };
     }
 
@@ -555,7 +925,8 @@ function parseWorkbookBuffer(arrayBuffer, hasMuseumCol = false) {
     for (let r = headerRowIndex + 1; r < matrix.length; r++) {
         const rowCells = matrix[r] || [];
         const giorno = normalizeDate(rowCells[idxGiorno]);
-        const ora = normalizeTime(rowCells[idxOra]);
+        // Quando si legge il CSV esistente (hasMuseumCol = true), accetta anche Ora = "N/D"
+        const ora = normalizeTime(rowCells[idxOra], hasMuseumCol);
         if (!giorno || !ora) {
             skipped++;
             continue;
@@ -579,13 +950,13 @@ function parseWorkbookBuffer(arrayBuffer, hasMuseumCol = false) {
         });
     }
 
-    return { rows: parsedRows, skipped, headerRowIndex, preambleText, foundCols, minDate, maxDate, error: null };
+    return { isMultiMuseumAuto: false, rows: parsedRows, skipped, headerRowIndex, preambleText, foundCols, minDate, maxDate, error: null };
 }
 
 async function handleExistingCsv(file) {
     if (!file) return;
     const buf = await file.arrayBuffer();
-    const res = parseWorkbookBuffer(buf, true);
+    const res = await parseWorkbookBuffer(buf, true, file.name);
     const statusEl = document.getElementById('existingCsvStatus');
     const clearBtn = document.getElementById('clearExistingBtn');
 
@@ -594,7 +965,9 @@ async function handleExistingCsv(file) {
         return;
     }
     existingRows = res.rows;
-    statusEl.innerHTML = `<span style="color:#166534; font-weight:700;">✅ Caricato "${file.name}": ${existingRows.length.toLocaleString('it-IT')} righe esistenti pronte per l'unione.</span>`;
+    const ndCount = existingRows.filter(r => r.Ora === 'N/D').length;
+    const ndNote = ndCount > 0 ? ` (di cui ${ndCount.toLocaleString('it-IT')} senza fascia oraria)` : '';
+    statusEl.innerHTML = `<span style="color:#166534; font-weight:700;">✅ Caricato "${file.name}": ${existingRows.length.toLocaleString('it-IT')} righe esistenti${ndNote} pronte per l'unione.</span>`;
     clearBtn.style.display = 'inline-block';
     document.getElementById('outputFilename').value = file.name;
 }
@@ -613,9 +986,30 @@ async function handleNewFiles(fileList) {
     for (const file of fileList) {
         try {
             const buf = await file.arrayBuffer();
-            const res = parseWorkbookBuffer(buf, false);
+            const res = await parseWorkbookBuffer(buf, false, file.name);
             if (res.error) {
                 msgEl.innerHTML += `<div class="alert alert-warn">⚠️ ${file.name}: ${res.error}</div>`;
+                continue;
+            }
+
+            if (res.isMultiMuseumAuto) {
+                uploadedFiles.push({
+                    id: Date.now() + Math.random(),
+                    fileName: file.name,
+                    isMultiMuseumAuto: true,
+                    coveredMonths: res.coveredMonths || [],
+                    matchedSheets: res.matchedSheets,
+                    totalSheets: res.totalSheets,
+                    rows: res.rows,
+                    skippedCount: res.skipped,
+                    headerRowIndex: res.headerRowIndex,
+                    foundCols: res.foundCols,
+                    minDate: res.minDate,
+                    maxDate: res.maxDate,
+                    assignedMuseum: '__AUTO__',
+                    customMuseum: '',
+                    detectSource: 'report'
+                });
                 continue;
             }
 
@@ -627,6 +1021,7 @@ async function handleNewFiles(fileList) {
             uploadedFiles.push({
                 id: Date.now() + Math.random(),
                 fileName: file.name,
+                isMultiMuseumAuto: false,
                 rows: res.rows,
                 skippedCount: res.skipped,
                 headerRowIndex: res.headerRowIndex,
@@ -661,6 +1056,24 @@ function renderFilesTable() {
 
     wrap.style.display = 'block';
     tbody.innerHTML = uploadedFiles.map((item, idx) => {
+        const dateRangeInfo = item.minDate
+            ? `<br><small style="color:#0f766e; font-weight:700;">Date: ${fmtDateIt(item.minDate)} → ${fmtDateIt(item.maxDate)}</small>`
+            : '';
+
+        if (item.isMultiMuseumAuto) {
+            const sheetsInfo = `<br><small style="color:#4a3fa5;">Fogli letti: ${item.matchedSheets}/${item.totalSheets} • Colonne: ${item.foundCols.join(', ')}</small>`;
+            return `<tr>
+                <td><strong>${item.fileName}</strong></td>
+                <td><strong>${item.rows.length.toLocaleString('it-IT')}</strong> righe giornaliere${dateRangeInfo}${sheetsInfo}</td>
+                <td>
+                    <span class="auto-multi-badge">✨ Automatico: Torre dell'Orologio + Palazzo d'Accursio (Ora = N/D)</span>
+                </td>
+                <td style="text-align:center;">
+                    <button type="button" class="btn btn-danger" onclick="removeUploadedFile(${idx})">Rimuovi</button>
+                </td>
+            </tr>`;
+        }
+
         const optionsHtml = [
             `<option value="">-- Seleziona Museo --</option>`,
             ...MUSEI_NOTI.map(m => `<option value="${m.name}" ${item.assignedMuseum === m.name ? 'selected' : ''}>${m.name}</option>`),
@@ -668,9 +1081,6 @@ function renderFilesTable() {
         ].join('');
 
         const showCustom = item.assignedMuseum === '__CUSTOM__';
-        const dateRangeInfo = item.minDate
-            ? `<br><small style="color:#0f766e; font-weight:700;">Date: ${fmtDateIt(item.minDate)} → ${fmtDateIt(item.maxDate)}</small>`
-            : '';
         const colsInfo = item.foundCols && item.foundCols.length
             ? `<br><small style="color:#4a3fa5;">Riga ${item.headerRowIndex + 1} • Colonne: ${item.foundCols.join(', ')}</small>`
             : '';
@@ -733,6 +1143,7 @@ function processAndPreview() {
     }
 
     for (const item of uploadedFiles) {
+        if (item.isMultiMuseumAuto) continue;
         const finalName = item.assignedMuseum === '__CUSTOM__' ? item.customMuseum.trim() : item.assignedMuseum;
         if (!finalName) {
             msgEl.innerHTML = `<div class="alert alert-warn">⚠️ Seleziona o scrivi il nome del museo per il file "<strong>${item.fileName}</strong>".</div>`;
@@ -742,22 +1153,58 @@ function processAndPreview() {
 
     const mergedMap = new Map();
     let overwrittenFromExisting = 0;
+    let purgedStaleFromExisting = 0;
     let duplicatesWithinNew = 0;
+    const dupDetailsByMuseum = {};
 
     existingRows.forEach(r => {
         const key = `${r.Museo}|||${r.Giorno}|||${r.Ora}`;
         mergedMap.set(key, { ...r, _fromExisting: true });
     });
 
+    // Rimuove eventuali vecchie righe di Torre dell'Orologio / Palazzo d'Accursio nei mesi coperti
+    // dai nuovi file .ods/.xlsx caricati (evita righe fantasma su giorni che ora valgono 0)
+    const multiAutoMonths = new Set();
     uploadedFiles.forEach(item => {
-        const museumName = item.assignedMuseum === '__CUSTOM__' ? item.customMuseum.trim() : item.assignedMuseum;
+        if (item.isMultiMuseumAuto && Array.isArray(item.coveredMonths)) {
+            item.coveredMonths.forEach(m => multiAutoMonths.add(m));
+        }
+    });
+    if (multiAutoMonths.size > 0) {
+        for (const [key, val] of mergedMap.entries()) {
+            if (
+                val._fromExisting &&
+                (val.Museo === "Torre dell'Orologio" || val.Museo === "Palazzo d'Accursio") &&
+                multiAutoMonths.has(val.Giorno.slice(0, 7))
+            ) {
+                mergedMap.delete(key);
+                purgedStaleFromExisting++;
+            }
+        }
+    }
+
+    uploadedFiles.forEach(item => {
+        const defaultName = item.assignedMuseum === '__CUSTOM__' ? item.customMuseum.trim() : item.assignedMuseum;
         item.rows.forEach(r => {
+            const museumName = item.isMultiMuseumAuto ? r.Museo : defaultName;
             const key = `${museumName}|||${r.Giorno}|||${r.Ora}`;
             if (mergedMap.has(key)) {
-                if (mergedMap.get(key)._fromExisting) {
+                const prev = mergedMap.get(key);
+                if (prev._fromExisting) {
                     overwrittenFromExisting++;
                 } else {
                     duplicatesWithinNew++;
+                    if (!dupDetailsByMuseum[museumName]) {
+                        dupDetailsByMuseum[museumName] = { count: 0, samples: [] };
+                    }
+                    dupDetailsByMuseum[museumName].count++;
+                    if (dupDetailsByMuseum[museumName].samples.length < 3) {
+                        const prevTot = prev.Intero + prev.Ridotto + prev.Omaggio + prev.Card;
+                        const newTot = r.Intero + r.Ridotto + r.Omaggio + r.Card;
+                        dupDetailsByMuseum[museumName].samples.push(
+                            `${r.Giorno} ${r.Ora} (prima: ${prevTot}, dopo: ${newTot})`
+                        );
+                    }
                 }
             }
             mergedMap.set(key, {
@@ -779,10 +1226,10 @@ function processAndPreview() {
         return a.Ora.localeCompare(b.Ora);
     });
 
-    renderOutputSummary(overwrittenFromExisting, duplicatesWithinNew);
+    renderOutputSummary(overwrittenFromExisting, duplicatesWithinNew, dupDetailsByMuseum, purgedStaleFromExisting);
 }
 
-function renderOutputSummary(overwrittenFromExisting, duplicatesWithinNew) {
+function renderOutputSummary(overwrittenFromExisting, duplicatesWithinNew, dupDetailsByMuseum = {}, purgedStaleFromExisting = 0) {
     const card = document.getElementById('outputCard');
     card.style.display = 'block';
 
@@ -809,18 +1256,24 @@ function renderOutputSummary(overwrittenFromExisting, duplicatesWithinNew) {
 
     document.getElementById('statsGrid').innerHTML = `
         <div class="stat-box"><div class="stat-val">${finalMergedRows.length.toLocaleString('it-IT')}</div><div class="stat-lbl">Righe totali CSV</div></div>
-        <div class="stat-box"><div class="stat-val">${Object.keys(byMuseum).length}</div><div class="stat-lbl">Musei inclusi</div></div>
+        <div class="stat-box"><div class="stat-val">${Object.keys(byMuseum).length}</div><div class="stat-lbl">Musei / Voci incluse</div></div>
         <div class="stat-box"><div class="stat-val">${totalIngressi.toLocaleString('it-IT')}</div><div class="stat-lbl">Ingressi totali</div></div>
         <div class="stat-box"><div class="stat-val" style="font-size:1.15rem;">${fmtDateIt(minDate)} → ${fmtDateIt(maxDate)}</div><div class="stat-lbl">Periodo coperto</div></div>
     `;
 
     const mergeAlert = document.getElementById('mergeAlert');
     let alertHtml = '';
+    if (purgedStaleFromExisting > 0) {
+        alertHtml += `<div class="alert alert-info">🧹 Sostituite <strong>${purgedStaleFromExisting.toLocaleString('it-IT')}</strong> vecchie righe di Torre dell'Orologio / Palazzo d'Accursio nei mesi appena ricaricati (rimosse anche eventuali righe precedentemente sfasate).</div>`;
+    }
     if (overwrittenFromExisting > 0) {
-        alertHtml += `<div class="alert alert-info">ℹ️ Aggiornate <strong>${overwrittenFromExisting.toLocaleString('it-IT')}</strong> righe già presenti nel CSV precedente.</div>`;
+        alertHtml += `<div class="alert alert-info">ℹ️ Aggiornate <strong>${overwrittenFromExisting.toLocaleString('it-IT')}</strong> righe già presenti nel CSV precedente (nessun duplicato creato).</div>`;
     }
     if (duplicatesWithinNew > 0) {
-        alertHtml += `<div class="alert alert-warn">⚠️ Nei nuovi file erano presenti <strong>${duplicatesWithinNew.toLocaleString('it-IT')}</strong> righe duplicate (stesso Museo/Giorno/Ora): è stata mantenuta l'ultima occorrenza.</div>`;
+        const detailLines = Object.entries(dupDetailsByMuseum)
+            .map(([m, info]) => `<li><strong>${m}</strong>: ${info.count} duplicati (es. ${info.samples.join('; ')})</li>`)
+            .join('');
+        alertHtml += `<div class="alert alert-warn">⚠️ Nei nuovi file erano presenti <strong>${duplicatesWithinNew.toLocaleString('it-IT')}</strong> righe duplicate (stesso Museo/Giorno/Ora): è stata mantenuta l'ultima occorrenza.<ul style="margin-top:6px; padding-left:20px; font-weight:normal;">${detailLines}</ul></div>`;
     }
     if (!alertHtml) {
         alertHtml = `<div class="alert alert-ok">✅ Nessun duplicato trovato. Il file è pronto per essere scaricato!</div>`;
@@ -853,6 +1306,7 @@ function renderOutputSummary(overwrittenFromExisting, duplicatesWithinNew) {
 
     card.scrollIntoView({ behavior: 'smooth' });
 }
+
 
 function escapeCsvField(val) {
     const str = String(val);
