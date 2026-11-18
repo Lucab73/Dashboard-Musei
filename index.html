@@ -3725,6 +3725,8 @@ function daysBetweenInclusive(startIso, endIso) {
     return Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
 }
 
+const TORRE_DA_SEDE_RAW = "Torre dell'Orologio (da Sede)";
+
 function ensureBiglietteriaLoaded() {
     if (biglietteriaLoaded || biglietteriaLoading) return;
     biglietteriaLoading = true;
@@ -3745,6 +3747,9 @@ function ensureBiglietteriaLoaded() {
                 transformHeader: h => h.replace(/^\uFEFF/, '').trim(),
                 complete: function(results) {
                     const parsed = [];
+                    const daSedeByDay = {};
+                    const torreMapByKey = new Map();
+                    const collezioniByDay = {};
                     let minD = '';
                     let maxD = '';
 
@@ -3767,18 +3772,126 @@ function ensureBiglietteriaLoaded() {
                         if (!minD || giorno < minD) minD = giorno;
                         if (!maxD || giorno > maxD) maxD = giorno;
 
-                        parsed.push({
+                        if (museo === TORRE_DA_SEDE_RAW) {
+                            const valSede = intero + ridotto + omaggio + card;
+                            if (valSede > 0) {
+                                daSedeByDay[giorno] = (daSedeByDay[giorno] || 0) + valSede;
+                            }
+                            const tKey = `${giorno}|||${ora}`;
+                            if (!torreMapByKey.has(tKey)) {
+                                const tRow = {
+                                    Museo: "Torre dell'Orologio",
+                                    Giorno: giorno,
+                                    Ora: ora,
+                                    Intero: intero,
+                                    Ridotto: ridotto,
+                                    Paganti: intero + ridotto,
+                                    Omaggio: omaggio,
+                                    Card: card,
+                                    Totale: intero + ridotto + omaggio + card,
+                                    _dow: dow,
+                                    _isWeekend: dow >= 5
+                                };
+                                torreMapByKey.set(tKey, tRow);
+                                parsed.push(tRow);
+                            } else {
+                                const tRow = torreMapByKey.get(tKey);
+                                tRow.Intero += intero;
+                                tRow.Ridotto += ridotto;
+                                tRow.Paganti = tRow.Intero + tRow.Ridotto;
+                                tRow.Omaggio += omaggio;
+                                tRow.Card += card;
+                                tRow.Totale = tRow.Intero + tRow.Ridotto + tRow.Omaggio + tRow.Card;
+                            }
+                            return;
+                        }
+
+                        if (museo === "Torre dell'Orologio") {
+                            const tKey = `${giorno}|||${ora}`;
+                            if (!torreMapByKey.has(tKey)) {
+                                const tRow = {
+                                    Museo: museo,
+                                    Giorno: giorno,
+                                    Ora: ora,
+                                    Intero: intero,
+                                    Ridotto: ridotto,
+                                    Paganti: intero + ridotto,
+                                    Omaggio: omaggio,
+                                    Card: card,
+                                    Totale: intero + ridotto + omaggio + card,
+                                    _dow: dow,
+                                    _isWeekend: dow >= 5
+                                };
+                                torreMapByKey.set(tKey, tRow);
+                                parsed.push(tRow);
+                            } else {
+                                const tRow = torreMapByKey.get(tKey);
+                                tRow.Intero += intero;
+                                tRow.Ridotto += ridotto;
+                                tRow.Paganti = tRow.Intero + tRow.Ridotto;
+                                tRow.Omaggio += omaggio;
+                                tRow.Card += card;
+                                tRow.Totale = tRow.Intero + tRow.Ridotto + tRow.Omaggio + tRow.Card;
+                            }
+                            return;
+                        }
+
+                        const rowObj = {
                             Museo: museo,
                             Giorno: giorno,
                             Ora: ora,
                             Intero: intero,
                             Ridotto: ridotto,
-                            Paganti: intero + ridotto, 
+                            Paganti: intero + ridotto,
                             Omaggio: omaggio,
                             Card: card,
                             Totale: intero + ridotto + omaggio + card,
                             _dow: dow,
                             _isWeekend: dow >= 5
+                        };
+
+                        if (museo === 'Collezioni Comunali' && omaggio > 0) {
+                            if (!collezioniByDay[giorno]) collezioniByDay[giorno] = [];
+                            collezioniByDay[giorno].push(rowObj);
+                        }
+
+                        parsed.push(rowObj);
+                    });
+
+                    // Scorpora dagli Omaggio giornalieri di "Collezioni Comunali" i biglietti "da Sede"
+                    // già inclusi in MIDA (distribuzione intera proporzionale sulle fasce orarie del giorno)
+                    Object.entries(daSedeByDay).forEach(([giorno, daSedeVal]) => {
+                        const rowsDay = collezioniByDay[giorno];
+                        if (!rowsDay || !rowsDay.length || daSedeVal <= 0) return;
+
+                        const totalOma = rowsDay.reduce((s, r) => s + r.Omaggio, 0);
+                        const toDeduct = Math.min(daSedeVal, totalOma);
+                        if (toDeduct <= 0) return;
+
+                        const plan = rowsDay.map((r, idx) => {
+                            const exact = (r.Omaggio / totalOma) * toDeduct;
+                            const base = Math.min(r.Omaggio, Math.floor(exact));
+                            return { idx, base, rem: exact - Math.floor(exact), max: r.Omaggio };
+                        });
+
+                        let assigned = plan.reduce((s, p) => s + p.base, 0);
+                        let remaining = toDeduct - assigned;
+
+                        if (remaining > 0) {
+                            const order = [...plan].sort((a, b) => (b.rem - a.rem) || (b.max - a.max));
+                            for (const p of order) {
+                                if (remaining <= 0) break;
+                                if (p.base < p.max) {
+                                    p.base += 1;
+                                    remaining -= 1;
+                                }
+                            }
+                        }
+
+                        plan.forEach(p => {
+                            const row = rowsDay[p.idx];
+                            row.Omaggio -= p.base;
+                            row.Totale = row.Intero + row.Ridotto + row.Omaggio + row.Card;
                         });
                     });
 

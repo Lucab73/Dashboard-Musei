@@ -210,6 +210,12 @@
             border-radius: 8px;
             font-weight: 700;
         }
+        .sub-note {
+            display: block;
+            font-size: 0.78rem;
+            color: #64748b;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -273,7 +279,7 @@
         <div class="stats-grid" id="statsGrid"></div>
         <div id="mergeAlert"></div>
 
-        <h4 style="margin-top: 18px; margin-bottom: 8px; color: #334155;">🏛️ Riepilogo per Museo</h4>
+        <h4 style="margin-top: 18px; margin-bottom: 8px; color: #334155;">🏛️ Riepilogo per Museo (netto scorpori)</h4>
         <div style="overflow-x: auto;">
             <table>
                 <thead>
@@ -334,6 +340,13 @@ const MUSEI_NOTI = [
     { name: 'Museo Morandi', keywords: ['museo morandi'] },
     { name: 'Villa delle Rose', keywords: ['villa delle rose', 'villadellerose'] }
 ];
+
+const TORRE_DA_SEDE_NAME = "Torre dell'Orologio (da Sede)";
+const TORRE_ACCURSIO_OWNED = new Set([
+    "Torre dell'Orologio",
+    TORRE_DA_SEDE_NAME,
+    "Palazzo d'Accursio"
+]);
 
 let existingRows = [];
 let uploadedFiles = [];
@@ -476,8 +489,7 @@ function tryParseHtmlTableBuffer(arrayBuffer) {
     return trs.map(tr => Array.from(tr.querySelectorAll('th, td')).map(td => td.textContent.trim()));
 }
 
-// Estrae content.xml da un archivio .ods (ZIP) usando le API standard del browser,
-// evitando il bug di SheetJS 0.18.5 su <table:covered-table-cell table:number-columns-repeated="..."/>
+// Estrae content.xml da un archivio .ods (ZIP) evitando il bug SheetJS 0.18.5 su covered-table-cell ripetute
 async function extractOdsContentXml(arrayBuffer) {
     if (typeof DecompressionStream !== 'function') return null;
     const bytes = new Uint8Array(arrayBuffer);
@@ -576,7 +588,6 @@ async function parseOdsXmlSheets(arrayBuffer) {
 
                 const colRep = parseInt(cellEl.getAttribute('table:number-columns-repeated') || '1', 10) || 1;
 
-                // Avanza dell'esatto numero di colonne coperte (fix del bug SheetJS su covered-table-cell ripetute)
                 if (ln === 'covered-table-cell') {
                     colIdx += colRep;
                     continue;
@@ -636,7 +647,6 @@ async function parseOdsXmlSheets(arrayBuffer) {
             }
         }
 
-        // Espande le celle unite su tutte le celle coperte
         for (const merge of merges) {
             for (let rr = merge.s.r; rr <= merge.e.r && rr < matrix.length; rr++) {
                 if (!matrix[rr]) matrix[rr] = [];
@@ -673,7 +683,7 @@ function expandSheetMergesOnMatrix(ws, matrix) {
     return matrix;
 }
 
-// Rilevamento e parsing dedicato per i fogli mensili di Torre dell'Orologio / Palazzo d'Accursio (.ods/.xlsx)
+// Parsing dedicato per i fogli mensili di Torre dell'Orologio / Palazzo d'Accursio (.ods/.xlsx)
 function tryParseTorreAccursioMatrices(sheetNames, getMatrixFn) {
     const extractedRows = [];
     const coveredMonthsSet = new Set();
@@ -683,6 +693,7 @@ function tryParseTorreAccursioMatrices(sheetNames, getMatrixFn) {
     let minDate = '';
     let maxDate = '';
     let foundOrologio = false;
+    let foundOrologioDaSede = false;
     let foundAccursio = false;
 
     for (const sheetName of sheetNames) {
@@ -691,30 +702,37 @@ function tryParseTorreAccursioMatrices(sheetNames, getMatrixFn) {
 
         let headerRowIdx = -1;
         let idxData = -1;
-        let orologioCols = [];
+        let orologioPureCols = [];
+        let orologioDaSedeCols = [];
         let accursioCols = [];
 
         const maxScan = Math.min(matrix.length, 60);
         for (let r = 0; r < maxScan; r++) {
             const rowCells = matrix[r] || [];
 
-            const oCols = [];
+            const oPure = [];
+            const oDaSede = [];
             const aCols = [];
             for (let c = 0; c < rowCells.length; c++) {
                 const cellLow = String(rowCells[c] || '').toLowerCase();
-                if (cellLow.includes('orologio')) oCols.push(c);
+                if (cellLow.includes('orologio')) {
+                    // "Ingresso biglietto Torre Orologio" è già dentro Collezioni.xls (MIDA)
+                    if (cellLow.includes('biglietto')) {
+                        oDaSede.push(c);
+                    } else {
+                        oPure.push(c);
+                    }
+                }
                 if (cellLow.includes('accursio')) aCols.push(c);
             }
 
-            if (oCols.length === 0 && aCols.length === 0) continue;
+            if (oPure.length === 0 && oDaSede.length === 0 && aCols.length === 0) continue;
 
-            // Cerca la colonna "Data" sulla stessa riga r, oppure fino a 2 righe sopra (intestazioni su più righe)
             let dIdx = findColIndexStrict(rowCells, ['data']);
             if (dIdx === -1 && r > 0) dIdx = findColIndexStrict(matrix[r - 1] || [], ['data']);
             if (dIdx === -1 && r > 1) dIdx = findColIndexStrict(matrix[r - 2] || [], ['data']);
             if (dIdx === -1) continue;
 
-            // Verifica che nelle righe subito sotto ci sia almeno una data valida nella colonna Data
             let hasDateBelow = false;
             for (let checkR = r + 1; checkR <= Math.min(matrix.length - 1, r + 4); checkR++) {
                 if (normalizeDate((matrix[checkR] || [])[dIdx])) {
@@ -726,7 +744,8 @@ function tryParseTorreAccursioMatrices(sheetNames, getMatrixFn) {
 
             headerRowIdx = r;
             idxData = dIdx;
-            orologioCols = oCols.filter(c => c !== dIdx);
+            orologioPureCols = oPure.filter(c => c !== dIdx);
+            orologioDaSedeCols = oDaSede.filter(c => c !== dIdx);
             accursioCols = aCols.filter(c => c !== dIdx);
             break;
         }
@@ -734,7 +753,8 @@ function tryParseTorreAccursioMatrices(sheetNames, getMatrixFn) {
         if (headerRowIdx === -1) continue;
 
         matchedSheets++;
-        if (orologioCols.length > 0) foundOrologio = true;
+        if (orologioPureCols.length > 0) foundOrologio = true;
+        if (orologioDaSedeCols.length > 0) foundOrologioDaSede = true;
         if (accursioCols.length > 0) foundAccursio = true;
 
         let startedTable = false;
@@ -750,10 +770,11 @@ function tryParseTorreAccursioMatrices(sheetNames, getMatrixFn) {
             startedTable = true;
             coveredMonthsSet.add(giorno.slice(0, 7));
 
-            const sumOrologio = orologioCols.reduce((s, colIdx) => s + toInt(rowCells[colIdx]), 0);
+            const sumOrologioPure = orologioPureCols.reduce((s, colIdx) => s + toInt(rowCells[colIdx]), 0);
+            const sumOrologioDaSede = orologioDaSedeCols.reduce((s, colIdx) => s + toInt(rowCells[colIdx]), 0);
             const sumAccursio = accursioCols.reduce((s, colIdx) => s + toInt(rowCells[colIdx]), 0);
 
-            if (sumOrologio > 0) {
+            if (sumOrologioPure > 0) {
                 if (!minDate || giorno < minDate) minDate = giorno;
                 if (!maxDate || giorno > maxDate) maxDate = giorno;
                 extractedRows.push({
@@ -762,7 +783,20 @@ function tryParseTorreAccursioMatrices(sheetNames, getMatrixFn) {
                     Ora: 'N/D',
                     Intero: 0,
                     Ridotto: 0,
-                    Omaggio: sumOrologio,
+                    Omaggio: sumOrologioPure,
+                    Card: 0
+                });
+            }
+            if (sumOrologioDaSede > 0) {
+                if (!minDate || giorno < minDate) minDate = giorno;
+                if (!maxDate || giorno > maxDate) maxDate = giorno;
+                extractedRows.push({
+                    Museo: TORRE_DA_SEDE_NAME,
+                    Giorno: giorno,
+                    Ora: 'N/D',
+                    Intero: 0,
+                    Ridotto: 0,
+                    Omaggio: sumOrologioDaSede,
                     Card: 0
                 });
             }
@@ -786,6 +820,7 @@ function tryParseTorreAccursioMatrices(sheetNames, getMatrixFn) {
 
     const foundCols = ['Data'];
     if (foundOrologio) foundCols.push('Orologio');
+    if (foundOrologioDaSede) foundCols.push('Orologio (da Sede)');
     if (foundAccursio) foundCols.push('Accursio');
 
     return {
@@ -818,7 +853,6 @@ async function parseWorkbookBuffer(arrayBuffer, hasMuseumCol = false, fileName =
     let matrix = tryParseHtmlTableBuffer(arrayBuffer);
 
     if (!matrix) {
-        // Per i file .ods usiamo il lettore XML diretto per evitare lo slittamento di colonne di SheetJS 0.18.5
         if (!hasMuseumCol && fileName.toLowerCase().endsWith('.ods')) {
             const odsData = await parseOdsXmlSheets(arrayBuffer);
             if (odsData) {
@@ -925,7 +959,6 @@ async function parseWorkbookBuffer(arrayBuffer, hasMuseumCol = false, fileName =
     for (let r = headerRowIndex + 1; r < matrix.length; r++) {
         const rowCells = matrix[r] || [];
         const giorno = normalizeDate(rowCells[idxGiorno]);
-        // Quando si legge il CSV esistente (hasMuseumCol = true), accetta anche Ora = "N/D"
         const ora = normalizeTime(rowCells[idxOra], hasMuseumCol);
         if (!giorno || !ora) {
             skipped++;
@@ -1066,7 +1099,7 @@ function renderFilesTable() {
                 <td><strong>${item.fileName}</strong></td>
                 <td><strong>${item.rows.length.toLocaleString('it-IT')}</strong> righe giornaliere${dateRangeInfo}${sheetsInfo}</td>
                 <td>
-                    <span class="auto-multi-badge">✨ Automatico: Torre dell'Orologio + Palazzo d'Accursio (Ora = N/D)</span>
+                    <span class="auto-multi-badge">✨ Automatico: Torre dell'Orologio (incl. scorporo da Sede) + Palazzo d'Accursio (Ora = N/D)</span>
                 </td>
                 <td style="text-align:center;">
                     <button type="button" class="btn btn-danger" onclick="removeUploadedFile(${idx})">Rimuovi</button>
@@ -1162,8 +1195,6 @@ function processAndPreview() {
         mergedMap.set(key, { ...r, _fromExisting: true });
     });
 
-    // Rimuove eventuali vecchie righe di Torre dell'Orologio / Palazzo d'Accursio nei mesi coperti
-    // dai nuovi file .ods/.xlsx caricati (evita righe fantasma su giorni che ora valgono 0)
     const multiAutoMonths = new Set();
     uploadedFiles.forEach(item => {
         if (item.isMultiMuseumAuto && Array.isArray(item.coveredMonths)) {
@@ -1174,7 +1205,7 @@ function processAndPreview() {
         for (const [key, val] of mergedMap.entries()) {
             if (
                 val._fromExisting &&
-                (val.Museo === "Torre dell'Orologio" || val.Museo === "Palazzo d'Accursio") &&
+                TORRE_ACCURSIO_OWNED.has(val.Museo) &&
                 multiAutoMonths.has(val.Giorno.slice(0, 7))
             ) {
                 mergedMap.delete(key);
@@ -1234,35 +1265,70 @@ function renderOutputSummary(overwrittenFromExisting, duplicatesWithinNew, dupDe
     card.style.display = 'block';
 
     const byMuseum = {};
+    const daSedeByDay = {};
+    const collezioniOmaByDay = {};
     let minDate = null;
     let maxDate = null;
-    let totalIngressi = 0;
+    let daSedeTotal = 0;
 
     finalMergedRows.forEach(r => {
         if (!minDate || r.Giorno < minDate) minDate = r.Giorno;
         if (!maxDate || r.Giorno > maxDate) maxDate = r.Giorno;
-        if (!byMuseum[r.Museo]) {
-            byMuseum[r.Museo] = { rows: 0, Intero: 0, Ridotto: 0, Omaggio: 0, Card: 0, Totale: 0 };
-        }
         const tot = r.Intero + r.Ridotto + r.Omaggio + r.Card;
+
+        if (r.Museo === TORRE_DA_SEDE_NAME) {
+            daSedeTotal += tot;
+            daSedeByDay[r.Giorno] = (daSedeByDay[r.Giorno] || 0) + tot;
+            return;
+        }
+        if (r.Museo === 'Collezioni Comunali') {
+            collezioniOmaByDay[r.Giorno] = (collezioniOmaByDay[r.Giorno] || 0) + r.Omaggio;
+        }
+
+        if (!byMuseum[r.Museo]) {
+            byMuseum[r.Museo] = { rows: 0, Intero: 0, Ridotto: 0, Omaggio: 0, Card: 0, Totale: 0, note: '' };
+        }
         byMuseum[r.Museo].rows++;
         byMuseum[r.Museo].Intero += r.Intero;
         byMuseum[r.Museo].Ridotto += r.Ridotto;
         byMuseum[r.Museo].Omaggio += r.Omaggio;
         byMuseum[r.Museo].Card += r.Card;
         byMuseum[r.Museo].Totale += tot;
-        totalIngressi += tot;
     });
+
+    let scorporoEffettivo = 0;
+    Object.entries(daSedeByDay).forEach(([g, val]) => {
+        scorporoEffettivo += Math.min(val, collezioniOmaByDay[g] || 0);
+    });
+
+    if (daSedeTotal > 0) {
+        if (!byMuseum["Torre dell'Orologio"]) {
+            byMuseum["Torre dell'Orologio"] = { rows: 0, Intero: 0, Ridotto: 0, Omaggio: 0, Card: 0, Totale: 0, note: '' };
+        }
+        byMuseum["Torre dell'Orologio"].Omaggio += daSedeTotal;
+        byMuseum["Torre dell'Orologio"].Totale += daSedeTotal;
+        byMuseum["Torre dell'Orologio"].note = `incl. ${daSedeTotal.toLocaleString('it-IT')} da biglietto Sede`;
+    }
+    if (scorporoEffettivo > 0 && byMuseum['Collezioni Comunali']) {
+        byMuseum['Collezioni Comunali'].Omaggio -= scorporoEffettivo;
+        byMuseum['Collezioni Comunali'].Totale -= scorporoEffettivo;
+        byMuseum['Collezioni Comunali'].note = `scorporati ${scorporoEffettivo.toLocaleString('it-IT')} di Torre Orologio`;
+    }
+
+    const totalIngressiNetto = Object.values(byMuseum).reduce((s, m) => s + m.Totale, 0);
 
     document.getElementById('statsGrid').innerHTML = `
         <div class="stat-box"><div class="stat-val">${finalMergedRows.length.toLocaleString('it-IT')}</div><div class="stat-lbl">Righe totali CSV</div></div>
         <div class="stat-box"><div class="stat-val">${Object.keys(byMuseum).length}</div><div class="stat-lbl">Musei / Voci incluse</div></div>
-        <div class="stat-box"><div class="stat-val">${totalIngressi.toLocaleString('it-IT')}</div><div class="stat-lbl">Ingressi totali</div></div>
+        <div class="stat-box"><div class="stat-val">${totalIngressiNetto.toLocaleString('it-IT')}</div><div class="stat-lbl">Ingressi totali (netti)</div></div>
         <div class="stat-box"><div class="stat-val" style="font-size:1.15rem;">${fmtDateIt(minDate)} → ${fmtDateIt(maxDate)}</div><div class="stat-lbl">Periodo coperto</div></div>
     `;
 
     const mergeAlert = document.getElementById('mergeAlert');
     let alertHtml = '';
+    if (daSedeTotal > 0) {
+        alertHtml += `<div class="alert alert-info">🔄 Scorporo automatico Torre / Sede: rilevati <strong>${daSedeTotal.toLocaleString('it-IT')}</strong> ingressi <em>"Ingresso biglietto Torre Orologio"</em>. La dashboard li somma a <strong>Torre dell'Orologio</strong> e li scorpora da <strong>Sede museale (Collezioni Comunali)</strong> senza doppi conteggi.</div>`;
+    }
     if (purgedStaleFromExisting > 0) {
         alertHtml += `<div class="alert alert-info">🧹 Sostituite <strong>${purgedStaleFromExisting.toLocaleString('it-IT')}</strong> vecchie righe di Torre dell'Orologio / Palazzo d'Accursio nei mesi appena ricaricati (rimosse anche eventuali righe precedentemente sfasate).</div>`;
     }
@@ -1284,7 +1350,7 @@ function renderOutputSummary(overwrittenFromExisting, duplicatesWithinNew, dupDe
     sumBody.innerHTML = Object.entries(byMuseum)
         .sort(([, a], [, b]) => b.Totale - a.Totale)
         .map(([name, s]) => `<tr>
-            <td><strong>${name}</strong></td>
+            <td><strong>${name}</strong>${s.note ? `<span class="sub-note">${s.note}</span>` : ''}</td>
             <td class="num">${s.rows.toLocaleString('it-IT')}</td>
             <td class="num">${s.Intero.toLocaleString('it-IT')}</td>
             <td class="num">${s.Ridotto.toLocaleString('it-IT')}</td>
@@ -1306,7 +1372,6 @@ function renderOutputSummary(overwrittenFromExisting, duplicatesWithinNew, dupDe
 
     card.scrollIntoView({ behavior: 'smooth' });
 }
-
 
 function escapeCsvField(val) {
     const str = String(val);
