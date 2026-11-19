@@ -7,6 +7,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script> 
 <style>
         * {
             margin: 0;
@@ -241,6 +242,41 @@
     text-align: center;
     background: none !important;
     -webkit-text-fill-color: #000000 !important;
+}
+
+.table-header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+.table-header-bar .table-title {
+    margin-bottom: 0;
+    text-align: left;
+    flex: 1 1 300px;
+}
+.excel-export-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 9px 16px;
+    font-size: 0.94rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(22, 163, 74, 0.25);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+.excel-export-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 5px 14px rgba(22, 163, 74, 0.35);
+    filter: brightness(1.06);
 }
 
 .type-pill {
@@ -1164,6 +1200,7 @@
                         <li><strong>Pulsante "Applica anche ai grafici":</strong> i 3 grafici sotto (torte di provenienza e andamento mensile) hanno un proprio blocco di filtri indipendente per poter esplorare un singolo museo o una singola mostra. Con il pulsante <em>"Applica anche ai grafici"</em> puoi copiare subito le scelte della tabella anche sui grafici.</li>
                         <li><strong>Ordinamento e distinzione Musei/Mostre:</strong> la tabella è ordinata dal totale più alto a quello più basso, ma puoi cliccare su qualunque intestazione di colonna per cambiare l'ordine. Le etichette colorate distinguono a colpo d'occhio i musei dalle mostre temporanee.</li>
                         <li><strong>Grafico dell'andamento mensile in %:</strong> sopra il grafico a linee trovi i due pulsanti per passare dai numeri assoluti alla quota percentuale sul totale di ogni mese (utile per vedere quando cresce il peso dei visitatori stranieri rispetto ai residenti).</li>
+                        <li><strong>Esportazione in Excel:</strong> il pulsante verde <em>"📥 Scarica Excel"</em> sopra la tabella permette di scaricare un file <code>.xlsx</code> esattamente con i dati filtrati e ordinati visibili in quel momento (comprese le percentuali).</li>
                     </ul>
                 </div>
 
@@ -1173,6 +1210,7 @@
                         <li><strong>Scelta di due periodi flessibili:</strong> puoi impostare <em>Periodo A</em> e <em>Periodo B</em> scegliendo mese e anno di inizio e fine, anche a cavallo tra due anni (ad esempio dicembre–gennaio). I pulsanti rapidi in alto impostano subito i periodi più comuni.</li>
                         <li><strong>Allineamento automatico:</strong> appena modifichi il <em>Periodo A</em>, il <em>Periodo B</em> si imposta in automatico sullo stesso intervallo dell'anno precedente. Se mancano i dati dell'anno prima o se selezioni due durate diverse (es. 2 mesi contro 3 mesi), compare un avviso chiaro sopra la tabella.</li>
                         <li><strong>Scelta della metrica e delle mostre:</strong> oltre al totale dei visitatori, puoi confrontare solo i bolognesi, il resto d'Italia, gli stranieri o la <em>% di stranieri</em>. Di default il confronto riguarda le sole <em>Collezioni permanenti</em> (così si confrontano gli stessi musei da un anno all'altro).</li>
+                        <li><strong>Esportazione in Excel:</strong> il pulsante <em>"📥 Scarica Excel"</em> sopra la tabella esporta in <code>.xlsx</code> il confronto completo tra i due periodi (valori, differenza <code>Δ</code> e variazione <code>Δ%</code>).</li>  
                     </ul>
                     <div class="help-tip">
                         💡 <strong>Nota sulle mostre nei confronti:</strong> quando includi le mostre, quelle presenti solo l'anno scorso mostrano <strong>-100%</strong>. Questo valore <strong>non</strong> falsa la percentuale del <em>Totale Generale</em>: il totale è calcolato sulla somma complessiva degli ingressi dell'uno e dell'altro periodo, non come media delle singole percentuali.
@@ -1198,6 +1236,7 @@
                         <li><strong>Collezioni Comunali, Torre dell'Orologio e Palazzo d'Accursio:</strong> nelle tabelle compare la voce <em>Collezioni Comunali (Complessivo)</em> seguita dalle righe rientrate <em>"di cui Sede museale"</em>, <em>"di cui Torre dell'Orologio"</em> e <em>"di cui Palazzo d'Accursio"</em>. Il <em>Totale Generale</em> in fondo conta ogni voce una sola volta senza doppi conteggi.</li>
                         <li><strong>Mappa di calore e dati senza fascia oraria:</strong> la modalità predefinita <em>"Media per apertura"</em> evita che un mese con 5 domeniche sembri più affollato di uno con 4. Gli ingressi di Torre dell'Orologio e Palazzo d'Accursio (rilevati solo su base giornaliera) compaiono nella colonna <em>"Senza ora"</em> della mappa di calore e sono esclusi dal profilo orario (08:00–19:00) per non alterare le ore di picco.</li>
                         <li><strong>Confronto tra date esatte:</strong> in fondo alla pagina puoi confrontare direttamente due intervalli precisi (ad esempio <em>23 settembre – 23 novembre</em> di un anno contro lo stesso periodo dell'anno precedente).</li>
+                        <li><strong>Esportazione in Excel:</strong> sia la <em>Mappa di Calore</em>, sia il <em>Riepilogo Biglietteria per Museo</em>, sia il <em>Confronto tra Date Esatte</em> hanno il pulsante <em>"📥 Scarica Excel"</em> per scaricare in <code>.xlsx</code> i dati calcolati in base a date, museo, giorni e tipologia di biglietto scelti.</li>   
                     </ul>
                 </div>
             </div>
@@ -1595,11 +1634,14 @@
 
             <!-- HEATMAP GIORNO SETTIMANA x FASCIA ORARIA -->
             <div class="table-container">
-                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:14px;">
-                    <h3 class="table-title" style="margin-bottom:0; text-align:left;">🔥 Mappa di Calore: Giorno della Settimana × Fascia Oraria</h3>
-                    <div class="mode-toggle-group">
-                        <button type="button" id="heatmapModeAvgBtn" class="mode-toggle-btn active" onclick="setHeatmapMode('avg')">📊 Media per apertura</button>
-                        <button type="button" id="heatmapModeTotBtn" class="mode-toggle-btn" onclick="setHeatmapMode('total')">🔢 Totale ingressi</button>
+                <div class="table-header-bar" style="margin-bottom:14px;">
+                    <h3 class="table-title">🔥 Mappa di Calore: Giorno della Settimana × Fascia Oraria</h3>
+                    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                        <div class="mode-toggle-group">
+                            <button type="button" id="heatmapModeAvgBtn" class="mode-toggle-btn active" onclick="setHeatmapMode('avg')">📊 Media per apertura</button>
+                            <button type="button" id="heatmapModeTotBtn" class="mode-toggle-btn" onclick="setHeatmapMode('total')">🔢 Totale ingressi</button>
+                        </div>
+                        <button type="button" class="excel-export-btn" onclick="exportTableToExcel('heatmap')">📥 Scarica Excel</button>
                     </div>
                 </div>
                 <div id="tickHeatmapContainer" style="overflow-x:auto;"></div>
@@ -1630,8 +1672,10 @@
             <div id="tickMuseumTableContainer"></div>
 
             <!-- CONFRONTO TRA DATE ESATTE (PERIODO A vs PERIODO B) -->
-            <div class="chart-container" style="margin-top: 30px;">
-                <h3 class="table-title" style="margin-bottom: 18px;">🆚 Confronto tra Date Esatte (es. 23 sett – 23 nov)</h3>
+            <div class="table-header-bar" style="margin-bottom: 18px;">
+                    <h3 class="table-title">🆚 Confronto tra Date Esatte (es. 23 sett – 23 nov)</h3>
+                    <button type="button" class="excel-export-btn" onclick="exportTableToExcel('tickComparison')">📥 Scarica Excel</button>
+                </div>
                 <div class="comparison-controls-wrapper">
                     <div class="periods-grid">
                         <div class="period-box">
@@ -1857,6 +1901,80 @@
         let tickCompSyncWarning = '';
         window.tickHourlyChart = null;
         window.tickDailyChart = null;
+
+        // === MOTORE ESPORTAZIONE EXCEL (.xlsx) ===
+        window.excelExportCache = {
+            panoramica: null,
+            confronti: null,
+            heatmap: null,
+            tickMuseum: null,
+            tickComparison: null
+        };
+
+        function sanitizeExcelSheetName(name) {
+            return String(name || 'Dati').replace(/[\\\/\?\*\[\]:]/g, ' ').trim().slice(0, 31) || 'Dati';
+        }
+
+        function sanitizeExcelFileName(name) {
+            return String(name || 'Export').replace(/[\\\/\?\*\[\]:"<>|]/g, '_').replace(/\s+/g, '_');
+        }
+
+        function exportTableToExcel(cacheKey) {
+            if (typeof XLSX === 'undefined') {
+                alert('Libreria Excel non caricata. Verifica la connessione internet e ricarica la pagina.');
+                return;
+            }
+            const payload = window.excelExportCache[cacheKey];
+            if (!payload || !payload.aoa || payload.aoa.length === 0) {
+                alert('Nessun dato disponibile da esportare con i filtri attuali.');
+                return;
+            }
+
+            const aoa = [];
+            if (payload.title) aoa.push([payload.title]);
+            if (payload.subtitle) aoa.push([payload.subtitle]);
+            if (payload.title || payload.subtitle) aoa.push([]);
+
+            const headerOffset = aoa.length;
+            payload.aoa.forEach(row => aoa.push(row));
+
+            const ws = XLSX.utils.aoa_to_sheet(aoa);
+
+            // Applica formati numerici reali (interi, decimali, percentuali, delta)
+            if (payload.colFormats) {
+                const range = XLSX.utils.decode_range(ws['!ref']);
+                for (let r = headerOffset + 1; r <= range.e.r; r++) {
+                    const rowMeta = payload.rowFormats && payload.rowFormats[r - (headerOffset + 1)];
+                    for (let c = 0; c <= range.e.c; c++) {
+                        const cellAddr = XLSX.utils.encode_cell({ r, c });
+                        const cell = ws[cellAddr];
+                        if (!cell || cell.t !== 'n') continue;
+                        const fmt = (rowMeta && rowMeta[c]) || payload.colFormats[c];
+                        if (fmt) cell.z = fmt;
+                    }
+                }
+            }
+
+            // Calcola automaticamente la larghezza delle colonne (ignorando le righe titolo in cima)
+            const numCols = Math.max(...payload.aoa.map(r => r.length), 1);
+            const colWidths = [];
+            for (let c = 0; c < numCols; c++) {
+                let maxLen = 10;
+                payload.aoa.forEach(row => {
+                    const v = row[c];
+                    if (v !== null && v !== undefined) {
+                        const len = typeof v === 'number' ? v.toLocaleString('it-IT').length + 3 : String(v).length + 2;
+                        if (len > maxLen) maxLen = len;
+                    }
+                });
+                colWidths.push({ wch: Math.min(maxLen, 48) });
+            }
+            ws['!cols'] = colWidths;
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, sanitizeExcelSheetName(payload.sheetName || 'Dati'));
+            XLSX.writeFile(wb, `${sanitizeExcelFileName(payload.fileName || 'Export_Musei')}.xlsx`);
+        }
 
         function darkenColor(hex, percent) {
             let num = parseInt(hex.replace("#", ""), 16);
@@ -2746,8 +2864,38 @@ function updateAnnualComparison() {
         ? museo
         : (tipo === 'SoloMusei' ? 'Tutti i Musei' : tipo === 'SoloMostre' ? 'Tutte le Mostre' : 'Musei + Mostre');
 
+    // Prepara payload Excel per il tab Confronti
+    const excelHeadersConfronti = isPercent
+        ? [firstColTitle, `${shortA} (A)`, `${shortB} (B)`, 'Δ (p.p.)']
+        : [firstColTitle, `${shortA} (A)`, `${shortB} (B)`, 'Δ', 'Δ%'];
+
+    const excelRowsConfronti = sortedRows.map(r => isPercent
+        ? [r.label, r.base !== null ? r.base / 100 : null, r.comp !== null ? r.comp / 100 : null, r.diff !== null ? Number(r.diff.toFixed(1)) : null]
+        : [r.label, r.base, r.comp, r.diff, r.perc !== null ? r.perc / 100 : null]
+    );
+
+    const totRow = buildComparisonRowObj('Totale Generale', totBucketA, totBucketB, metrica);
+    excelRowsConfronti.push(isPercent
+        ? [totRow.label, totRow.base !== null ? totRow.base / 100 : null, totRow.comp !== null ? totRow.comp / 100 : null, totRow.diff !== null ? Number(totRow.diff.toFixed(1)) : null]
+        : [totRow.label, totRow.base, totRow.comp, totRow.diff, totRow.perc !== null ? totRow.perc / 100 : null]
+    );
+
+    window.excelExportCache.confronti = {
+        title: `Confronto (${metricaInfo.label}): ${labelA} vs ${labelB}`,
+        subtitle: `Ambito: ${scopeLabel}`,
+        sheetName: 'Confronto Provenienze',
+        fileName: `Confronto_${shortA}_vs_${shortB}`,
+        aoa: [excelHeadersConfronti, ...excelRowsConfronti],
+        colFormats: isPercent
+            ? { 1: '0.0%', 2: '0.0%', 3: '+0.0" p.p.";-0.0" p.p.";0.0" p.p."' }
+            : { 1: '#,##0', 2: '#,##0', 3: '+#,##0;-#,##0;0', 4: '+0.0%;-0.0%;0.0%' }
+    };
+
     let html = `<div class="table-container">
-      <h3 class="table-title">📊 Confronto (${metricaInfo.label}): ${labelA} vs ${labelB} – ${scopeLabel}</h3>
+      <div class="table-header-bar">
+        <h3 class="table-title">📊 Confronto (${metricaInfo.label}): ${labelA} vs ${labelB} – ${scopeLabel}</h3>
+        <button type="button" class="excel-export-btn" onclick="exportTableToExcel('confronti')">📥 Scarica Excel</button>
+      </div>
       <table class="summary-table">
         <thead>
           <tr>
@@ -2773,12 +2921,11 @@ function updateAnnualComparison() {
         </tr>`;
     });
 
-    const totRow = buildComparisonRowObj('📈 Totale Generale', totBucketA, totBucketB, metrica);
     const totDiffClass = totRow.diff === null ? '' : (totRow.diff >= 0 ? 'percentage-cell positive' : 'percentage-cell negative');
     const totPercClass = totRow.perc === null ? '' : (totRow.perc >= 0 ? 'percentage-cell positive' : 'percentage-cell negative');
 
     html += `<tr class="total-row">
-      <td>${totRow.label}</td>
+      <td>📈 ${totRow.label}</td>
       <td class="numeric-cell">${formatMetricValue(totRow.base, isPercent)}</td>
       <td class="numeric-cell">${formatMetricValue(totRow.comp, isPercent)}</td>
       <td class="${isPercent ? totDiffClass : 'numeric-cell'}">${isPercent && totRow.diff !== null ? (totRow.diff > 0 ? '▲ ' : totRow.diff < 0 ? '▼ ' : '') + formatMetricDiff(totRow.diff, true) : formatMetricDiff(totRow.diff, false)}</td>
@@ -4209,6 +4356,7 @@ function renderTickHeatmap(sortedHours, cellMatrix, dowOpeningDays, dowTotals, n
     const hasNoHourData = noHourByDow.some(v => v > 0);
 
     if (!sortedHours.length && !hasNoHourData) {
+        window.excelExportCache.heatmap = null;
         container.innerHTML = '<p style="text-align:center; color:#64748b; padding:20px;">Nessun dato disponibile per i filtri selezionati.</p>';
         return;
     }
@@ -4225,6 +4373,16 @@ function renderTickHeatmap(sortedHours, cellMatrix, dowOpeningDays, dowTotals, n
         });
     }
 
+    const excelHeaders = ['Giorno', 'Giorni apertura', ...sortedHours];
+    if (hasNoHourData) excelHeaders.push('Senza ora');
+    excelHeaders.push(isAvg ? 'Media / giorno' : 'Totale');
+
+    const excelRows = [];
+    const colFormats = { 1: '#,##0' };
+    for (let c = 2; c < excelHeaders.length; c++) {
+        colFormats[c] = isAvg ? '#,##0.0' : '#,##0';
+    }
+
     let html = '<table class="heatmap-table"><thead><tr><th>Giorno</th>';
     sortedHours.forEach(h => { html += `<th>${h}</th>`; });
     if (hasNoHourData) {
@@ -4234,15 +4392,18 @@ function renderTickHeatmap(sortedHours, cellMatrix, dowOpeningDays, dowTotals, n
 
     for (let d = 0; d < 7; d++) {
         const openCount = dowOpeningDays[d].size;
+        const excelRow = [GIORNI_SETTIMANA_IT[d], openCount];
         html += `<tr><td>${GIORNI_SETTIMANA_IT[d]} <small style="color:#64748b; font-weight:600;">(${openCount} gg)</small></td>`;
 
         sortedHours.forEach(h => {
             if (openCount === 0) {
+                excelRow.push(null);
                 html += `<td style="background:#f8fafc; color:#cbd5e1;">—</td>`;
                 return;
             }
             const rawVal = cellMatrix[d][h] || 0;
             const val = isAvg ? rawVal / openCount : rawVal;
+            excelRow.push(isAvg ? Number(val.toFixed(1)) : Math.round(val));
             const { bg, fg } = getHeatmapCellColor(val, maxCellVal);
             const txt = val === 0
                 ? '0'
@@ -4252,16 +4413,22 @@ function renderTickHeatmap(sortedHours, cellMatrix, dowOpeningDays, dowTotals, n
 
         if (hasNoHourData) {
             if (openCount === 0) {
+                excelRow.push(null);
                 html += `<td class="heatmap-nohour-col">—</td>`;
             } else {
                 const rawNd = noHourByDow[d] || 0;
                 const valNd = isAvg ? rawNd / openCount : rawNd;
+                excelRow.push(isAvg ? Number(valNd.toFixed(1)) : Math.round(valNd));
                 const txtNd = valNd === 0
                     ? '0'
                     : (isAvg ? valNd.toFixed(1).replace('.', ',') : Math.round(valNd).toLocaleString('it-IT'));
                 html += `<td class="heatmap-nohour-col" title="${GIORNI_SETTIMANA_IT[d]} senza fascia oraria: ${txtNd}">${txtNd}</td>`;
             }
         }
+
+        const rowValNum = openCount > 0 ? (isAvg ? Number((dowTotals[d] / openCount).toFixed(1)) : dowTotals[d]) : null;
+        excelRow.push(rowValNum);
+        excelRows.push(excelRow);
 
         const rowVal = isAvg
             ? (openCount > 0 ? (dowTotals[d] / openCount).toFixed(1).replace('.', ',') : '—')
@@ -4271,6 +4438,21 @@ function renderTickHeatmap(sortedHours, cellMatrix, dowOpeningDays, dowTotals, n
 
     html += '</tbody></table>';
     container.innerHTML = html;
+
+    const start = document.getElementById('tickDateStart').value;
+    const end = document.getElementById('tickDateEnd').value;
+    const museoTxt = getMuseoScopeDisplayName(document.getElementById('tickMuseoSelect').value);
+    const dayTypeTxt = document.getElementById('tickDayTypeSelect').selectedOptions[0]?.textContent || '';
+    const ticketTxt = document.getElementById('tickTicketTypeSelect').selectedOptions[0]?.textContent || '';
+
+    window.excelExportCache.heatmap = {
+        title: `Mappa di Calore Biglietteria (${isAvg ? 'Media per apertura' : 'Totale ingressi'})`,
+        subtitle: `Periodo: ${formatDateIt(start)} – ${formatDateIt(end)} | Museo: ${museoTxt} | Giorni: ${dayTypeTxt} | Biglietto: ${ticketTxt}`,
+        sheetName: 'Mappa di Calore',
+        fileName: `Biglietteria_Mappa_Calore_${start}_${end}`,
+        aoa: [excelHeaders, ...excelRows],
+        colFormats
+    };
 }
 
 function renderTickHourlyChart(filtered, sortedHours, scopeTxt, noHourAllTicketsTotal) {
@@ -4613,8 +4795,37 @@ function renderTickMuseumTable(filtered, selectedMuseoFilter) {
     }, { Intero: 0, Ridotto: 0, Omaggio: 0, Card: 0, Totale: 0 });
     const totMedia = allDays.size > 0 ? tot.Totale / allDays.size : 0;
 
+    const start = document.getElementById('tickDateStart').value;
+    const end = document.getElementById('tickDateEnd').value;
+    const museoTxt = getMuseoScopeDisplayName(selectedMuseoFilter);
+    const dayTypeTxt = document.getElementById('tickDayTypeSelect').selectedOptions[0]?.textContent || '';
+
+    const excelHeaders = ['Museo', 'Giorni apertura', 'Intero', 'Ridotto', 'Omaggio', 'Card Cultura', 'Totale', 'Media / giorno'];
+    const excelRows = [];
+    topLevelRows.forEach(r => {
+        excelRows.push([r.Museo, r.Giorni, r.Intero, r.Ridotto, r.Omaggio, r.Card, r.Totale, Number(r.Media.toFixed(1))]);
+        if (r.isParentGroup && r.children.length) {
+            r.children.forEach(sub => {
+                excelRows.push([`  ${sub.Museo}`, sub.Giorni, sub.Intero, sub.Ridotto, sub.Omaggio, sub.Card, sub.Totale, Number(sub.Media.toFixed(1))]);
+            });
+        }
+    });
+    excelRows.push(['Totale Generale', allDays.size, tot.Intero, tot.Ridotto, tot.Omaggio, tot.Card, tot.Totale, Number(totMedia.toFixed(1))]);
+
+    window.excelExportCache.tickMuseum = {
+        title: `Riepilogo Biglietteria per Museo`,
+        subtitle: `Periodo: ${formatDateIt(start)} – ${formatDateIt(end)} | Filtro Museo: ${museoTxt} | Giorni: ${dayTypeTxt}`,
+        sheetName: 'Biglietteria Musei',
+        fileName: `Biglietteria_Riepilogo_${start}_${end}`,
+        aoa: [excelHeaders, ...excelRows],
+        colFormats: { 1: '#,##0', 2: '#,##0', 3: '#,##0', 4: '#,##0', 5: '#,##0', 6: '#,##0', 7: '#,##0.0' }
+    };
+
     let html = `<div class="table-container">
-        <h3 class="table-title">📋 Riepilogo Biglietteria per Museo</h3>
+        <div class="table-header-bar">
+            <h3 class="table-title">📋 Riepilogo Biglietteria per Museo</h3>
+            <button type="button" class="excel-export-btn" onclick="exportTableToExcel('tickMuseum')">📥 Scarica Excel</button>
+        </div>
         <table class="summary-table">
             <thead>
                 <tr>
@@ -4889,7 +5100,35 @@ function updateBiglietteriaDateComparison() {
         <td class="${totPClass}">${totPText}</td>
         <td class="numeric-cell">${totAvgA.toFixed(1).replace('.', ',')} vs ${totAvgB.toFixed(1).replace('.', ',')}</td>
     </tr></tbody></table>`;
+    const ticketTxt = document.getElementById('tickCompTicketSelect').selectedOptions[0]?.textContent || ticketKey;
+    const excelHeadersComp = [
+        'Museo',
+        `Periodo A (${formatDateIt(sA)}–${formatDateIt(eA)})`,
+        `Periodo B (${formatDateIt(sB)}–${formatDateIt(eB)})`,
+        'Δ',
+        'Δ%',
+        'Media/gg A',
+        'Media/gg B'
+    ];
+    const excelRowsComp = [];
+    topRows.forEach(r => {
+        excelRowsComp.push([r.nome, r.a, r.b, r.diff, r.perc !== null ? r.perc / 100 : null, Number(r.avgA.toFixed(1)), Number(r.avgB.toFixed(1))]);
+        if (r.isParentGroup && r.children.length) {
+            r.children.forEach(sub => {
+                excelRowsComp.push([`  ${sub.nome}`, sub.a, sub.b, sub.diff, sub.perc !== null ? sub.perc / 100 : null, Number(sub.avgA.toFixed(1)), Number(sub.avgB.toFixed(1))]);
+            });
+        }
+    });
+    excelRowsComp.push(['Totale Generale', totA, totB, totDiff, totPerc !== null ? totPerc / 100 : null, Number(totAvgA.toFixed(1)), Number(totAvgB.toFixed(1))]);
 
+    window.excelExportCache.tickComparison = {
+        title: `Confronto Biglietteria tra Date Esatte (${ticketTxt})`,
+        subtitle: `Periodo A: ${formatDateIt(sA)} – ${formatDateIt(eA)} vs Periodo B: ${formatDateIt(sB)} – ${formatDateIt(eB)}`,
+        sheetName: 'Confronto Date',
+        fileName: `Biglietteria_Confronto_${sA}_${eA}_vs_${sB}_${eB}`,
+        aoa: [excelHeadersComp, ...excelRowsComp],
+        colFormats: { 1: '#,##0', 2: '#,##0', 3: '+#,##0;-#,##0;0', 4: '+0.0%;-0.0%;0.0%', 5: '#,##0.0', 6: '#,##0.0' }
+    };
     document.getElementById('tickCompTableContainer').innerHTML = html;
 }
 
@@ -5361,8 +5600,51 @@ function updateTable() {
   const titoloMese = mese === 'Tutti' ? 'Tutti i mesi' : mese;
   const titoloTipo = tipo === 'SoloMusei' ? 'Collezioni permanenti' : tipo === 'SoloMostre' ? 'Solo Mostre' : 'Musei + Mostre';
 
+  const excelHeadersPan = ['Tipo', 'Museo / Mostra', ...aree.map(c => labels[c]), 'Totale', '% sul Totale'];
+  const excelRowsPan = righeTabella.map(r => [
+    r.isMostra ? 'Mostra' : 'Museo',
+    r.Museo,
+    ...aree.map(c => r[c]),
+    r.Totale,
+    r.PercTotale / 100
+  ]);
+  const rowFormatsPan = {};
+  const totRowIdx = excelRowsPan.length;
+  excelRowsPan.push(['', 'Totale Generale', ...aree.map(c => totColonna[c]), totColonna.Totale, totColonna.Totale > 0 ? 1 : 0]);
+  const pctRowIdx = excelRowsPan.length;
+  excelRowsPan.push([
+    '',
+    'Distribuzione %',
+    ...aree.map(c => totColonna.Totale > 0 ? totColonna[c] / totColonna.Totale : 0),
+    null,
+    null
+  ]);
+  rowFormatsPan[pctRowIdx] = {};
+  for (let c = 2; c < 2 + aree.length; c++) {
+    rowFormatsPan[pctRowIdx][c] = '0.0%';
+  }
+
+  const colFormatsPan = {};
+  for (let c = 2; c <= 2 + aree.length; c++) {
+    colFormatsPan[c] = '#,##0';
+  }
+  colFormatsPan[2 + aree.length + 1] = '0.0%';
+
+  window.excelExportCache.panoramica = {
+    title: `Riepilogo Visitatori per Provenienza - ${titoloMese} ${anno}`,
+    subtitle: `Filtro Tipo: ${titoloTipo}`,
+    sheetName: 'Panoramica Provenienze',
+    fileName: `Panoramica_Provenienze_${anno}_${titoloMese}`,
+    aoa: [excelHeadersPan, ...excelRowsPan],
+    colFormats: colFormatsPan,
+    rowFormats: rowFormatsPan
+  };
+
   let html = `<div class="table-container">
-    <h3 class="table-title">📊 Riepilogo Visitatori per Provenienza - ${titoloMese} ${anno} (${titoloTipo})</h3>
+    <div class="table-header-bar">
+      <h3 class="table-title">📊 Riepilogo Visitatori per Provenienza - ${titoloMese} ${anno} (${titoloTipo})</h3>
+      <button type="button" class="excel-export-btn" onclick="exportTableToExcel('panoramica')">📥 Scarica Excel</button>
+    </div>
     <table class="summary-table">`;
   
   html += `<thead><tr><th class="sortable-th" onclick="setSummaryTableSort('Museo')">Museo / Mostra ${sortArrow('Museo')}</th>`;
